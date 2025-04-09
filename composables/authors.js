@@ -1,10 +1,29 @@
 export const useAuthors = () => {
   const supabase = useSupabaseClient();
   const authorModel = useSupabaseClient().from('authors');
-  const bookBucket = useSupabaseClient().storage.from('books');
+  const { uploadPhoto } = useImages('books');
+  const TABLE_NAME = 'authors';
+
   const authors = useState('authors', () => []);
-  const totalAuthors = useState('totalAuthors', () => null);
+  const totalAuthors = useState('totalAuthors', () => 0);
   const perPage = 5;
+
+  const processAuthor = async(authorData) => {
+    try {
+      const uploadedPhoto = await uploadPhoto(authorData.logo, TABLE_NAME);
+      if (uploadedPhoto) {
+        authorData.photo = uploadedPhoto;
+      }
+
+      const { data, error} = await authorModel.upsert(authorData).select();
+      if (error) throw error;
+
+      return data;
+    } catch(err) {
+      console.log('[ERROR] upsertAuthor: ', err);
+      return null;
+    }
+  }
 
   const deleteAuthor = async(authorId) => {
     try {
@@ -24,36 +43,30 @@ export const useAuthors = () => {
     }
   }
 
-  //Handling Page Redirection After Item Deletion
-  const getNewPage = (currentPage, totalItem, itemsPerPage) => {
-    const isLastItemOnPage = (totalItem % itemsPerPage === 1);
-    const isLastPage = currentPage === Math.ceil(totalItem / itemsPerPage);
-    
-    let redirectPage = currentPage;
-    if (isLastItemOnPage && isLastPage && currentPage > 1) {
-      redirectPage = currentPage - 1;
-    }
-
-    return redirectPage;
-  }
-
   const searchAuthors = async(authorIds, page = 1) => {
     try {
+      let from = (page - 1) * perPage;
+      let to = page * perPage - 1;
+      console.log(`FROM ${from} TO ${to}`);
       if (authorIds && authorIds.length > 0) {
-        await getAuthorsByIds(authorIds, page);
+        await getAuthorsByIds(authorIds, from, to);
+        totalAuthors.value = authorIds.value.length;
       } else {
-        await getFullAuthors(page);
+        await getFullAuthors(from, to);
+        await getTotalCount();
       }
+
+      return authors.value;
     } catch(error) {
       console.log('[ERROR] searchAuthors: ', error);
-      authors.value = [];
+      return [];
     }
   }
 
   const getTotalCount = async() => {
     try {
       const { count, error } = await supabase
-        .from('authors')
+        .from(TABLE_NAME)
         .select('*', { count: 'exact', head: true })
       
       if (error) throw error
@@ -61,15 +74,13 @@ export const useAuthors = () => {
       totalAuthors.value = count;
     } catch(err) {
       console.log('[ERROR] getTotalCount: ', err);
+      totalAuthors.value = 0;
     }
   }
 
-  const getFullAuthors = async(page = 1) => {
+  const getFullAuthors = async(from, to) => {
     try {
-      let from = (page - 1) * perPage;
-      let to = page * perPage - 1;
-      console.log(`FROM ${from} TO ${to}`);
-      const { data, error } = await supabase.from('authors').select(`
+      const { data, error } = await supabase.from(TABLE_NAME).select(`
         id,
         fullname:full_name,
         photo,
@@ -78,27 +89,18 @@ export const useAuthors = () => {
       `)
       .limit(perPage)
       .range(from, to);
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       authors.value = data;
-      await getTotalCount();
     } catch(err) {
       console.log('[ERROR] getFullAuthors: ', err);
-      return [];
+      authors.value = [];
     }
   }
 
-  const getAuthorsByIds = async(ids, page = 1) => {
+  const getAuthorsByIds = async(ids, from, to) => {
     try {
-      let from = 0;
-      let to = perPage;
-      if (page > 1) {
-        from = (page - 1) * perPage;
-        to = perPage * page;
-      }
-      const { data, error } = await supabase.from('authors').select(`
+      const { data, error } = await supabase.from(TABLE_NAME).select(`
         id,
         fullname:full_name,
         photo,
@@ -108,52 +110,13 @@ export const useAuthors = () => {
       .filter('id', 'in', `(${ids.join(',')})`)
       .limit(perPage)
       .range(from, to);
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       authors.value = data;
-      await getTotalCount();
     } catch(err) {
       console.log('[ERROR] getAuthorsByIds: ', err);
-      return [];
+      authors.value = [];
     }
-  }
-
-  const processAuthor = async(authorData) => {
-    try {
-      const uploadedPhoto = await uploadPhoto(authorData.photo);
-      if (uploadedPhoto) {
-        authorData.photo = uploadedPhoto;
-      }
-      const { data, error} = await authorModel.upsert(authorData).select();
-      if (error) {
-        throw error;
-      }
-      return data;
-    } catch(err) {
-      console.log('[ERROR] upserAuthor: ', err);
-    }
-  }
-
-  const uploadPhoto = async(photo) => {
-    let publicUrl = null;
-    if (photo) {
-      const photoExt = photo.name.split('.').pop();
-      const photoName = `${Math.random()}.${photoExt}`;
-      const photoPath = `authors/${photoName}`;
-
-      const { data: uploadedPhoto, error: storageError } = await bookBucket.upload(photoPath, photo);
-
-      if (storageError) {
-        console.log('[ERROR] uploading photo: ', storageError);
-        throw storageError;
-      }
-      const { data: dataPublicUrl } = bookBucket.getPublicUrl(photoPath);
-      publicUrl = dataPublicUrl.publicUrl;
-    }
-
-    return publicUrl;
   }
 
   const getAuthorsFilter = async() => {
@@ -162,9 +125,7 @@ export const useAuthors = () => {
         id,
         label:full_name
       `);
-      if (queryError) {
-        throw queryError;
-      }
+      if (queryError) throw queryError;
 
       return data;
     } catch(error) {
@@ -173,26 +134,13 @@ export const useAuthors = () => {
     }
   }
 
-  const toPage = (page) => {
-    return {
-      query: {
-        page
-      },
-      hash: '#with-links'
-    }
-  }
-
   return {
     authors,
     totalAuthors,
     perPage,
-    toPage,
     getAuthorsFilter,
     processAuthor,
-    uploadPhoto,
     searchAuthors,
-    deleteAuthor,
-    getNewPage,
-    getTotalCount
+    deleteAuthor
   }
 }

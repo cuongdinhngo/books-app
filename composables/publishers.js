@@ -1,20 +1,144 @@
 export const usePublishers = () => {
-  const { apiPath } = useSettings();
-  const { token } = useAuth();
+  const supabase = useSupabaseClient();
+  const publisherModel = useSupabaseClient().from('publishers');
+  const { uploadPhoto, deletePhoto } = useImages('books');
+  const TABLE_NAME = 'publishers';
+
+  const publishers = useState('publishers', () => []);
+  const totalPublishers = useState('totalPublishers', () => 0);
+  const perPage = 5;
+
+  const processPublisher = async(publisherData) => {
+    try {
+      const uploadedLogo = await uploadPhoto(publisherData.logo, TABLE_NAME);
+      if (uploadedLogo) {
+        publisherData.logo = uploadedLogo;
+      }
+
+      const { data, error} = await publisherModel.upsert(publisherData).select();
+      if (error) throw error;
+
+      return data;
+    } catch(err) {
+      console.log('[ERROR] upserPublisher: ', err);
+      return null;
+    }
+  }
+
+  const deletePublisher = async(publisherId) => {
+    try {
+      const { status, error: deletedError } = await publisherModel.delete().eq('id', publisherId);
+      if (deletedError) throw deletedError;
+
+      if (204 === status) {
+        await getTotalCount();
+        if (publishers.value.length > 0) {
+          publishers.value = removeObjectById(publishers.value, publisherId);
+        }
+      } else {
+        console.log('[ERROR] deletePublisher: status is NOT 204');
+      }
+    } catch(error) {
+      console.log('[ERROR] deletePublisher: ', error);
+    }
+  }
+
+  const searchPublishers = async(publisherIds, page = 1) => {
+    try {
+      let from = (page - 1) * perPage;
+      let to = page * perPage - 1;
+      console.log(`FROM ${from} TO ${to}`);
+      if (publisherIds && publisherIds.length > 0) {
+        await getPublishersByIds(publisherIds, from, to);
+        totalPublishers.value = publishers.value.length;
+      } else {
+        await getFullPublishers(from, to);
+        await getTotalCount();
+      }
+
+      return publishers.value;
+    } catch(error) {
+      console.log('[ERROR] searchAuthors: ', error);
+      return [];
+    }
+  }
+
+  const getTotalCount = async() => {
+    try {
+      const { count, error } = await supabase
+        .from(TABLE_NAME)
+        .select('*', { count: 'exact', head: true })
+
+      if (error) throw error
+
+      totalPublishers.value = count;
+    } catch(err) {
+      console.log('[ERROR] getTotalCount: ', err);
+      totalPublishers.value = 0;
+    }
+  }
+
+  const getFullPublishers = async(from, to) => {
+    try {
+      const { data, error } = await supabase.from(TABLE_NAME).select(`
+        id,
+        name,
+        logo
+      `)
+      .limit(perPage)
+      .range(from, to);
+      if (error) throw error;
+
+      publishers.value = data;
+    } catch(err) {
+      console.log('[ERROR] getFullPublishers: ', err);
+      publishers.value = [];
+    }
+  }
+
+  const getPublishersByIds = async(ids, from, to) => {
+    try {
+      const { data, error } = await supabase.from(TABLE_NAME).select(`
+        id,
+        name,
+        logo
+      `)
+      .filter('id', 'in', `(${ids.join(',')})`)
+      .limit(perPage)
+      .range(from, to);
+      if (error) throw error;
+
+      publishers.value = data;
+    } catch(err) {
+      console.log('[ERROR] getAuthorsByIds: ', err);
+      publishers.value = [];
+    }
+  }
 
   const getPublishersFilter = async() => {
     try {
-      return await $fetch(`${apiPath}/publishers/filter`, {
-        headers: {
-          Authorization: `Bearer ${token.value}`
-        }
-      });
+      const { data, error: queryError } = await publisherModel.select(`
+        id,
+        label:name
+      `);
+      if (queryError) throw queryError;
+
+      return data;
     } catch(error) {
-      console.log('[ERROR] getPublishersFilter: ', error);
+      console.log('[ERROR] getAuthorsFilter: ', error);
+      return [];
     }
   }
 
   return {
-    getPublishersFilter
+    publishers,
+    totalPublishers,
+    perPage,
+    getPublishersFilter,
+    processPublisher,
+    searchPublishers,
+    deletePublisher,
+    getNewPage,
+    getTotalCount
   }
 }

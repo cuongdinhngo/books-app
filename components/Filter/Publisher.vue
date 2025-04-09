@@ -10,11 +10,19 @@
 </template>
 
 <script setup>
+const props = defineProps({
+  modelValue: Array
+});
+const emit = defineEmits(['update:modelValue']);
 const { getPublishersFilter } = usePublishers();
-const items = ref([]);
-const publishers = ref('')
 
-// onMounted(async() => {
-//   items.value = await getPublishersFilter();
-// });
+const publishers = computed({
+  get: () => props.modelValue,
+  set: (value) => emit('update:modelValue', value)
+});
+const items = ref([]);
+
+onMounted(async() => {
+  items.value = await getPublishersFilter();
+});
 </script>

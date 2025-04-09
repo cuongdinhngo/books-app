@@ -6,43 +6,34 @@
       />
     </div>
     <div class="flex justify-between gap-4">
-      <button type="submit" 
-        class="flex-1 bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700"
-      >
-        Search
-      </button>
-      <a href="/admin/authors/form" 
-        class="flex-1 bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 text-center"
-      >
-        Create New Author
-      </a>
+      <FormSearchButton
+        button-name="Search"
+      />
+
+      <FormCreateLink
+        name="Create New Author"
+        link="/admin/authors/form"
+      />
     </div>
   </form>
 
-  <UTable
-    v-if="authors?.length > 0"
+  <DataTable
     :data="authors"
     :columns="columns"
-    class="flex-1"
   />
 
-  <div class="mt-6 flex justify-center space-x-2 text-stone-950" id="with-links">
-    <UPagination
-      v-if="totalAuthors > 0"
-      v-model="page"
-      show-edges
-      :sibling-count="2"
-      :items-per-page="perPage || 10"
-      :total="totalAuthors"
-      :to="toPage"
-      @update:page="handlePageChange"
-    />
-  </div>
+  <Pagination
+    v-model="page"
+    v-if="totalAuthors > 0"
+    :totalCounts="totalAuthors"
+    :items-per-page="perPage"
+    @changePage="handlePageChange"
+  />
 </template>
 
 <script setup>
 const route = useRoute();
-const { authors, searchAuthors, deleteAuthor, totalAuthors, perPage, getNewPage, getTotalCount, toPage } = useAuthors();
+const { authors, searchAuthors, deleteAuthor, totalAuthors, perPage } = useAuthors();
 const selectedAuthors = ref([]);
 const page = ref(1);
 
@@ -68,7 +59,8 @@ const columns = [
   },
   {
     accessorKey: 'birthYear',
-    header: 'Birth Year'
+    header: 'Birth Year',
+    cell: ({ row }) => row.getValue('birthYear') ? row.getValue('birthYear') : '----'
   },
   {
     accessorKey: 'deathYear',
@@ -132,7 +124,7 @@ const handlePageChange = async(newPage) => {
 
 onMounted(async() => {
   page.value = Number(route.query.page);
-  await searchAuthors(selectedAuthors.value, Number(route.query.page));
+  await searchAuthors(selectedAuthors.value, Number(route.query.page) || 1);
 });
 
 onBeforeMount(() => {
