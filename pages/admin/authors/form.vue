@@ -1,0 +1,84 @@
+<template>
+  <form class="mb-6 space-y-4 w-1/2 mx-auto" @submit.prevent="submitForm">
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Author name</label>
+      <UInput v-model="fullName" placeholder="Author's fullname"/>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Photo</label>
+      <UInput type="file" @change="handleFileUpload"/>
+      <img v-if="imagePreview" :src="imagePreview" alt="Preview" class="image-preview" />
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Birth year</label>
+      <UInput v-model="birthYear" />
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Death year</label>
+      <UInput v-model="deathYear" />
+    </div>
+    <div class="flex justify-between gap-4">
+      <button type="submit" 
+        class="flex-1 bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700"
+      >
+        {{ useRoute().query?.id ? 'Update' : 'Add new' }}
+      </button>
+    </div>
+    <h3 v-if="errorMessage" class="text-red-500">{{ errorMessage }}</h3>
+    <h3 v-if="successMessage" class="text-green-600">{{ successMessage }}</h3>
+  </form>
+</template>
+
+<script setup>
+const { processAuthor, searchAuthors } = useAuthors();
+const fullName = ref(null);
+const birthYear = ref(null);
+const deathYear = ref(null);
+const selectedPhoto = ref(null);
+const imagePreview = ref(null);
+const errorMessage = ref('');
+const successMessage = ref('');
+
+onMounted(async() => {
+  const authorId = useRoute().query?.id;
+  if (authorId) {
+    const response = await searchAuthors([authorId]);
+    fullName.value = response[0].fullname;
+    birthYear.value = response[0].birthYear;
+    deathYear.value = response[0].deathYear;
+    selectedPhoto.value = null;
+    imagePreview.value = response[0].photo;
+  }
+});
+
+const handleFileUpload = (event) => {
+  const file = event.target.files[0];
+  if (file && file.type.startsWith("image/")) {
+    selectedPhoto.value = file;
+    imagePreview.value = URL.createObjectURL(file);
+  }
+};
+
+const submitForm = async() => {
+  let data = {
+    id: useRoute().query?.id,
+    full_name: fullName.value,
+    birth_year: birthYear.value || null,
+    death_year: deathYear.value || null,
+  };
+
+  if (selectedPhoto.value) {
+    data = {
+      ...data,
+      photo: selectedPhoto.value
+    }
+  }
+
+  const response = await processAuthor(data);
+  if (response && response[0]?.id) {
+    successMessage.value = 'New author was created succesfully!'
+  } else {
+    errorMessage.value = 'Creating new author was failed!'
+  }
+}
+</script>
