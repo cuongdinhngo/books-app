@@ -1,15 +1,16 @@
 <template>
   <header class="bg-primary-500 p-4 flex items-center justify-between">
-    <div class="text-2xl font-bold text-white">Admin::Look Book</div>
+    <div class="text-2xl font-bold text-white"><a href="/">Look Book</a></div>
     <div class="w-1/2">
       <UInput
         icon="i-lucide-search"
         placeholder="Search..."
         variant="soft"
+        v-model="searchTerm"
+        
       />
-        <!--         style="bacround-color: white !important; color: black !important;" -->
     </div>
-    <div class="flex items-center space-x-4">
+    <!-- <div class="flex items-center space-x-4">
       <UDropdownMenu
         class="bg-primary-600 border-primary-900 hover:bg-primary-700"
         :items="items"
@@ -24,11 +25,12 @@
       >
         <UButton icon="lucide:settings" color="neutral" variant="outline" class="ring-0 bg-primary-800 text-lg" />
       </UDropdownMenu>
-    </div>
+    </div> -->
   </header>
 </template>
 
 <script setup>
+const { searchTerm } = useBooks();
 const items = ref([
   {
     label: 'Profile',

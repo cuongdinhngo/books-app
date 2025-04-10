@@ -1,11 +1,11 @@
 <template>
   <USelectMenu
-    placeholder="Select author"
     v-model="authors"
+    :items="items"
     value-key="id"
     multiple
-    :items="items"
     variant="none"
+    placeholder="Select author"
     class="w-full border text-stone-800 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
 </template>
 

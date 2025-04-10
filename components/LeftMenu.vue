@@ -12,6 +12,6 @@
 </template>
 
 <script setup>
-const { getRouteByName } = useRouters();
-const items = ref([[getRouteByName('books')]]);
+const { adminRoutes, getRouteByName } = useRouters();
+const items = ref([[getRouteByName(adminRoutes, 'books')]]);
 </script>

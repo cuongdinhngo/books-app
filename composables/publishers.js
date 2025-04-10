@@ -20,7 +20,7 @@ export const usePublishers = () => {
 
       return data;
     } catch(err) {
-      console.log('[ERROR] upserPublisher: ', err);
+      console.log('[ERROR] upsertPublisher: ', err);
       return null;
     }
   }
@@ -138,7 +138,6 @@ export const usePublishers = () => {
     processPublisher,
     searchPublishers,
     deletePublisher,
-    getNewPage,
     getTotalCount
   }
 }

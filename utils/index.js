@@ -21,6 +21,10 @@ export function generateUUID() {
   });
 }
 
+export function capitalize(value) {
+  return value.charAt(0).toUpperCase() + value.slice(1)
+}
+
 export function getNewPage(currentPage, totalItem, itemsPerPage) {
   const isLastItemOnPage = (totalItem % itemsPerPage === 1);
   const isLastPage = currentPage === Math.ceil(totalItem / itemsPerPage);

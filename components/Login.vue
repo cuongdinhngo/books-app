@@ -27,7 +27,6 @@
 </template>
 
 <script setup>
-// const { login, storeUser } = useUsers();
 const { signin, token } = useAuth();
 const email = ref('');
 const password = ref('');

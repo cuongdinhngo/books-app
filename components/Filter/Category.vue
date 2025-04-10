@@ -1,8 +1,8 @@
 <template>
   <USelectMenu
     v-model="categories"
-    value-key="id"
     :items="items"
+    value-key="id"
     variant="none"
     multiple
     placeholder="Select Categories"

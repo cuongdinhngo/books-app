@@ -1,5 +1,5 @@
 export const useRouters = () => {
-  const routes = [
+  const adminRoutes = [
     {
       label: 'Home',
       name: 'home',
@@ -40,15 +40,17 @@ export const useRouters = () => {
     }
   ];
 
-  const getRouteByLabelPath = (labelPath) => {
-    if (!labelPath) return undefined;
+
+
+  const getRouteByLabelPath = (routes, labelPath) => {
+    if (!labelPath) return null;
     
     const labels = labelPath.split('.');
     let currentLevel = routes;
 
     for (const label of labels) {
       const foundItem = currentLevel?.find(item => item.label === label);
-      if (!foundItem) return undefined;
+      if (!foundItem) return null;
 
       if (label !== labels[labels.length - 1]) {
         currentLevel = foundItem.children;
@@ -57,10 +59,10 @@ export const useRouters = () => {
       }
     }
 
-    return undefined;
+    return null;
   };
 
-  const getRouteByName = (name) => {
+  const getRouteByName = (routes, name) => {
     const search = (items) => {
       for (const item of items) {
         if (item.name === name) return item;
@@ -69,13 +71,13 @@ export const useRouters = () => {
           if (found) return found;
         }
       }
-      return undefined;
+      return null;
     };
 
     return search(routes);
   };
 
-  const getRouteByTo = (wantedTo) => {
+  const getRouteByTo = (routes, wantedTo) => {
     const search = (items) => {
       for (const item of items) {
         if (item.to === wantedTo || item.to === wantedTo) return item;
@@ -84,14 +86,13 @@ export const useRouters = () => {
           if (found) return found;
         }
       }
-      return undefined;
+      return null;
     };
 
     return search(routes);
   };
 
   const getBreadcrumbs = (currentPath) => {
-    // Default to Home if no path or invalid path
     if (!currentPath || typeof currentPath !== 'string') {
       return [getRouteByLabelPath('Home')];
     }
@@ -99,10 +100,8 @@ export const useRouters = () => {
     const breadcrumbs = [getRouteByLabelPath('Home')];
 
     const findMatchingRoute = (items, path, parents = []) => {
-      // Safeguard against invalid items
       if (!Array.isArray(items)) return null;
       
-      // Normalize path safely
       const normalizePath = (p) => {
         if (!p || typeof p !== 'string') return '';
         return p.replace(/\/+$/, '');
@@ -111,7 +110,6 @@ export const useRouters = () => {
       const normalizedPath = normalizePath(path);
       
       for (const item of items) {
-        // Safely handle missing path in route definition
         const itemPath = item.to || '';
         if (normalizePath(itemPath) === normalizedPath) {
           return [...parents, item];
@@ -141,7 +139,7 @@ export const useRouters = () => {
   };
 
   return {
-    routes,
+    adminRoutes,
     getRouteByLabelPath,
     getRouteByName,
     getRouteByTo,

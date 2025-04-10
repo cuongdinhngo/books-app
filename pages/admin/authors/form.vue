@@ -1,32 +1,47 @@
 <template>
-  <form class="mb-6 space-y-4 w-1/2 mx-auto" @submit.prevent="submitForm">
-    <div>
-      <label class="block text-sm font-medium text-gray-700">Author name</label>
-      <UInput v-model="fullName" placeholder="Author's fullname"/>
-    </div>
-    <div>
-      <label class="block text-sm font-medium text-gray-700">Photo</label>
-      <UInput type="file" @change="handleFileUpload"/>
-      <img v-if="imagePreview" :src="imagePreview" alt="Preview" class="image-preview" />
-    </div>
-    <div>
-      <label class="block text-sm font-medium text-gray-700">Birth year</label>
-      <UInput v-model="birthYear" />
-    </div>
-    <div>
-      <label class="block text-sm font-medium text-gray-700">Death year</label>
-      <UInput v-model="deathYear" />
-    </div>
-    <div class="flex justify-between gap-4">
-      <button type="submit" 
-        class="flex-1 bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700"
-      >
-        {{ useRoute().query?.id ? 'Update' : 'Add new' }}
-      </button>
-    </div>
-    <h3 v-if="errorMessage" class="text-red-500">{{ errorMessage }}</h3>
-    <h3 v-if="successMessage" class="text-green-600">{{ successMessage }}</h3>
-  </form>
+  <div class="mb-6 flex flex-col md:flex-row gap-6">
+    <form class="space-y-4 w-full md:w-1/2" @submit.prevent="submitForm">
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Author name</label>
+        <UInput v-model="fullName" placeholder="Author's fullname"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Photo</label>
+        <UInput type="file" @change="handleFileUpload"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Birth year</label>
+        <UInput v-model="birthYear" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Death year</label>
+        <UInput v-model="deathYear" />
+      </div>
+      <div class="flex justify-between gap-4">
+        <button type="submit" 
+          class="flex-1 bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700"
+        >
+          {{ useRoute().query?.id ? 'Update' : 'Add new' }}
+        </button>
+      </div>
+      <h3 v-if="errorMessage" class="text-red-500">{{ errorMessage }}</h3>
+      <h3 v-if="successMessage" class="text-green-600">{{ successMessage }}</h3>
+    </form>
+
+    <!-- Photo Preview -->
+    <div class="w-full md:w-1/2 flex items-center justify-center">
+      <div id="photo-frame" 
+        class="w-60 h-80 bg-gray-100 border-2 border-solid border-gray-400 rounded-lg shadow flex items-center justify-center overflow-hidden">
+        <img
+          v-if="imagePreview"
+          :src="imagePreview"
+          alt="Photo Preview" 
+          class="max-w-full h-auto rounded-lg shadow"
+        />
+        <span v-else id="placeholder-text" class="text-gray-500 text-sm">No Photo Selected</span>
+      </div>
+  </div>
+  </div>
 </template>
 
 <script setup>
