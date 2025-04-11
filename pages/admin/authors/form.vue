@@ -54,6 +54,8 @@ const imagePreview = ref(null);
 const errorMessage = ref('');
 const successMessage = ref('');
 
+const authorModel = useAuthorModel();
+
 onMounted(async() => {
   const authorId = useRoute().query?.id;
   if (authorId) {
@@ -76,10 +78,10 @@ const handleFileUpload = (event) => {
 
 const submitForm = async() => {
   let data = {
-    id: useRoute().query?.id,
-    full_name: fullName.value,
-    birth_year: birthYear.value || null,
-    death_year: deathYear.value || null,
+    id: Number(useRoute().query?.id) || null,
+    fullName: fullName.value,
+    birthYear: birthYear.value || null,
+    deathYear: deathYear.value || null,
   };
 
   if (selectedPhoto.value) {
@@ -89,7 +91,8 @@ const submitForm = async() => {
     }
   }
 
-  const response = await processAuthor(data);
+  // const response = await processAuthor(data);
+  const response = await authorModel.processData(data);
   if (response && response[0]?.id) {
     successMessage.value = 'New author was created succesfully!'
   } else {
