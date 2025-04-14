@@ -14,32 +14,28 @@
 <script setup>
 const { getCategoriesFilter } = useCategories();
 const { getPublishersFilter } = usePublishers();
-const items = ref([
-  {
-    label: 'Categories',
-    icon: 'i-lucide-book-open',
-    children: [
-    ]
-  },
-  {
-    label: 'Publishers',
-    icon: 'lucide:building-2',
-    children: [
-    ]
-  },
-]);
+const items = ref([]);
 
 let categories = await getCategoriesFilter();
-let categoryChildren = categories.map(item => ({
-  ...item,
-  to: `/?category=${item.id}`
-}));
-items.value[0].children = items.value[0].children.concat(categoryChildren);
+let categoryChildren = computed(() => {
+  return categories.map(item => ({...item, to: `/?category=${item.id}`}));
+});
+const categoriesMenu = {
+  label: 'Categories',
+  icon: 'i-lucide-book-open',
+  children: categoryChildren
+};
+items.value.push(categoriesMenu);
 
 let publishers = await getPublishersFilter();
-let publisherChildren = publishers.map(item => ({
-  ...item,
-  to: `/?publisher=${item.id}`
-}));
-items.value[1].children = items.value[1].children.concat(publisherChildren);
+let publisherChildren = computed(() => {
+  return publishers.map(item => ({...item, to: `/?publisher=${item.id}`}));
+});
+const publishesrMenu = {
+  label: 'Publishers',
+  icon: 'lucide:building-2',
+  children: publisherChildren
+};
+
+items.value.push(publishesrMenu);
 </script>

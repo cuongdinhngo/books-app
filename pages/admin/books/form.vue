@@ -66,14 +66,53 @@
       />
     </div>
   </div>
+  <div>
+    <DataTable
+      v-if="bookItems.length > 0"
+      :data="bookItems"
+      :columns="columns"
+    />
+    <h3 v-else class="justify-center flex text-stone-900">No Book Items</h3>
+
+    <Pagination
+      v-if="totalBookItems > 0"
+      v-model="page"
+      :totalCounts="totalBookItems"
+      :items-per-page="itemsPerPage"
+      @changePage="handlePageChange"
+    />
+
+    <UModal title="Update status" v-model:open="openBookItemModal">
+      <template #body>
+        <USelect
+          v-model="currentBookStatus"
+          :items="bookStatus"
+          value-key="id"
+          class="w-48"
+          @change="handleBookStatus"
+        />
+      </template>
+    </UModal>
+  </div>
 </template>
 
 <script setup>
-const { processBook, getBookById } = useBooks();
+
+const { processBook, getBookById, book } = useBooks();
 const { processBookAuthor } = useBooksAuthors();
 const { processBookCategory } = useBooksCategories();
 const { processBookPublisher } = useBooksPublishers();
+const {
+  bookItems,
+  getItemsByBookId,
+  insertBookItems,
+  totalBookItems,
+  itemsPerPage,
+  updateBookItemStatus,
+  deleteBookItem
+} = useBookItems();
 
+const page = ref(1);
 const title = ref(null);
 const selectedAuthors = ref(null);
 const selectedCategories = ref(null);
@@ -88,21 +127,134 @@ const oldAuthors = ref(null);
 const oldCategories = ref(null);
 const oldPublishers = ref(null);
 
+const openBookItemModal = ref(false);
+const currentBookItem = ref(null);
+
+const bookStatus = ref([
+  {
+    label: 'Pending',
+    id: 'pending'
+  },
+  {
+    label: 'Open',
+    id: 'open'
+  },
+  {
+    label: 'Borrowed',
+    id: 'borrowed'
+  },
+  {
+    label: 'Lost',
+    id: 'lost'
+  }
+])
+const currentBookStatus = ref('');
+
+const UBadge = resolveComponent('UBadge');
+const UButton = resolveComponent('UButton');
+const UDropdownMenu = resolveComponent('UDropdownMenu');
+const columns = [
+  {
+    accessorKey: 'id',
+    header: '#ID',
+    cell: ({ row }) => `#${row.getValue('id')}`
+  },
+  {
+    accessorKey: 'status',
+    header: 'Status',
+    cell: ({ row }) => {
+      const color = {
+        open: 'success',
+        pending: 'info',
+        borrowed: 'warning',
+        lost: 'neutral'
+      }[row.getValue('status')]
+
+      return h(UBadge, { class: 'capitalize', variant: 'subtle', color }, () =>
+        row.getValue('status')
+      )
+    }
+  },
+  {
+    header: 'Actions',
+    id: 'actions',
+    cell: ({ row }) => {
+      return h(
+        'div',
+        { class: 'text-right' },
+        h(
+          UDropdownMenu,
+          {
+            content: {
+              align: 'end'
+            },
+            items: getActionItems(row),
+            'aria-label': 'Actions dropdown'
+          },
+          () =>
+            h(UButton, {
+              icon: 'i-lucide-ellipsis-vertical',
+              color: 'neutral',
+              variant: 'ghost',
+              class: 'ml-auto text-stone-800',
+              'aria-label': 'Actions dropdown'
+            })
+        )
+      )
+    }
+  }
+]
+
+function getActionItems(row) {
+  return [
+    {
+      label: 'Update status',
+      onSelect() {
+        openBookItemModal.value = !openBookItemModal.value;
+        currentBookItem.value = row.original.id;
+        currentBookStatus.value = row.original.status;
+      }
+    },
+    {
+      label: 'Delete',
+      async onSelect() {
+        deleteBookItem(row.original.id);
+        await getItemsByBookId(useRoute().query.id, Number(useRoute().query.page));
+      }
+    }
+  ]
+}
+
+const handleBookStatus = async() => {
+  await updateBookItemStatus(currentBookItem.value, {status: currentBookStatus.value});
+  await getItemsByBookId(useRoute().query.id, Number(useRoute().query.page));
+  openBookItemModal.value = !openBookItemModal.value;
+}
+
+const handlePageChange = async(newPage) => {
+  await getItemsByBookId(useRoute().query.id, Number(newPage));
+}
+
 onMounted(async() => {
-  const bookId = useRoute().query?.id;
+  const routeQuery = useRoute().query;
+  const bookId = routeQuery.id;
   if (bookId) {
-    const book = await getBookById(bookId);
-    title.value = book.title;
-    description.value = book.description;
-    quantity.value = book.quantity;
+    await getBookById(bookId);
+    title.value = book.value.title;
+    description.value = book.value.description;
+    quantity.value = book.value.quantity;
     selectedPhoto.value = null;
-    imagePreview.value = book.coverImage;
-    selectedPublishers.value = book.publishers.map(publisher => publisher.id);;
-    selectedCategories.value = book.categories.map(category => category.id);
-    selectedAuthors.value = book.authors.map(author => author.id);
-    oldCategories.value = book.categories.map(category => category.id);
-    oldAuthors.value = book.authors.map(author => author.id);
-    oldPublishers.value = book.publishers.map(publisher => publisher.id);;
+    imagePreview.value = book.value.coverImage;
+    selectedPublishers.value = book.value.publishers.map(publisher => publisher.id);
+    selectedCategories.value = book.value.categories.map(category => category.id);
+    selectedAuthors.value = book.value.authors.map(author => author.id);
+    oldCategories.value = book.value.categories.map(category => category.id);
+    oldAuthors.value = book.value.authors.map(author => author.id);
+    oldPublishers.value = book.value.publishers.map(publisher => publisher.id);
+
+    await getItemsByBookId(bookId, Number(routeQuery.page | 1));
+
+    console.log('Total Book Items -> ', totalBookItems.value);
   }
 });
 
@@ -164,6 +316,9 @@ const submitForm = async() => {
         oldCategories.value
       );
     }
+
+    await insertBookItems(quantity.value, {book_id: bookId, status: 'pending'})
+    await getItemsByBookId(bookId);
 
     successMessage.value = 'New book was created succesfully!'
   } else {

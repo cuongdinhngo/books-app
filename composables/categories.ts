@@ -1,15 +1,21 @@
+export interface Category {
+  id?: Number,
+  name?: String
+}
+
 export const useCategories = () => {
   const supabase = useSupabaseClient();
-  const categoryModel = useSupabaseClient().from('categories');
   const TABLE_NAME = 'categories';
 
-  const categories = useState('categories', () => []);
-  const totalCategories = useState('totalCategories', () => 0);
+  const categories = ref([]);
+  const totalCategoryCounts = ref<Number|null>(0);
   const perPage = 5;
 
-  const processCategory = async(categoryData) => {
+  const processCategory = async(categoryData: Array<Category>) => {
     try {
-      const { data, error} = await categoryModel.upsert(categoryData).select();
+      const { data, error} = await useSupabaseClient().from(TABLE_NAME)
+        .upsert(categoryData)
+        .select();
       if (error) throw error;
 
       return data;
@@ -19,21 +25,17 @@ export const useCategories = () => {
     }
   }
 
-  const deleteCategory = async(categoryId) => {
+  const deleteCategory = async(categoryId: Number) => {
     try {
-      const { status, error: deletedError } = await categoryModel.delete().eq('id', categoryId);
-      if (deletedError) throw deletedError;
+      const { error } = await useSupabaseClient().from(TABLE_NAME)
+        .delete()
+        .eq('id', categoryId);
+      if (error) throw error;
 
-      if (204 === status) {
-        await getTotalCount();
-        if (categories.value.length > 0) {
-          categories.value = removeObjectById(categories.value, categoryId);
-        }
-      } else {
-        console.log('[ERROR] deleteCategory: status is NOT 204');
-      }
-    } catch(error) {
-      console.log('[ERROR] deleteCategory: ', error);
+      return true;
+    } catch(err) {
+      console.log('[ERROR] deleteCategory: ', err);
+      return false;
     }
   }
 
@@ -41,13 +43,12 @@ export const useCategories = () => {
     try {
       let from = (page - 1) * perPage;
       let to = page * perPage - 1;
-      console.log(`FROM ${from} TO ${to}`);
       if (categoryIds && categoryIds.length > 0) {
         await getCategoriesByIds(categoryIds, from, to);
-        totalCategories.value = categories.value.length;
+        totalCategoryCounts.value = categories.value.length;
       } else {
         await getFullCategories(from, to);
-        await getTotalCount();
+        totalCategoryCounts.value = await getTotalCategoryCounts();
       }
 
       return categories.value;
@@ -57,7 +58,7 @@ export const useCategories = () => {
     }
   }
 
-  const getTotalCount = async() => {
+  const getTotalCategoryCounts = async() => {
     try {
       const { count, error } = await supabase
         .from(TABLE_NAME)
@@ -65,16 +66,20 @@ export const useCategories = () => {
 
       if (error) throw error
 
-      totalCategories.value = count;
+      return count;
     } catch(err) {
-      console.log('[ERROR] getTotalCount: ', err);
-      totalCategories.value = 0;
+      console.log('[ERROR] getTotalCategoryCounts: ', err);
+      return 0;
     }
   }
 
   const getFullCategories = async(from, to) => {
     try {
-      const { data, error } = await supabase.from(TABLE_NAME).select(`id, name`)
+      const { data, error } = await supabase.from(TABLE_NAME)
+        .select(`
+          id,
+          name
+        `)
         .limit(perPage)
         .range(from, to);
       if (error) throw error;
@@ -88,7 +93,11 @@ export const useCategories = () => {
 
   const getCategoriesByIds = async(ids, from, to) => {
     try {
-      const { data, error } = await supabase.from(TABLE_NAME).select(`id, name`)
+      const { data, error } = await supabase.from(TABLE_NAME)
+        .select(`
+          id,
+          name
+        `)
         .filter('id', 'in', `(${ids.join(',')})`)
         .limit(perPage)
         .range(from, to);
@@ -103,10 +112,12 @@ export const useCategories = () => {
 
   const getCategoriesFilter = async() => {
     try {
-      const { data, error: queryError } = await categoryModel.select(`
-        id,
-        label:name
-      `);
+      const { data, error: queryError } = await supabase.from(TABLE_NAME)
+        .select(`
+          id,
+          label:name
+        `)
+      ;
       if (queryError) throw queryError;
 
       return data;
@@ -118,12 +129,12 @@ export const useCategories = () => {
 
   return {
     categories,
-    totalCategories,
+    totalCategoryCounts,
     perPage,
     getCategoriesFilter,
     processCategory,
     searchCategories,
     deleteCategory,
-    getTotalCount
+    getTotalCategoryCounts
   }
 }

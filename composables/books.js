@@ -2,12 +2,16 @@ export const useBooks = () => {
   const supabase = useSupabaseClient();
   const bookModel = useSupabaseClient().from('books');
   const { uploadPhoto, deletePhoto } = useImages('books');
+  const { totalBookItems, getTotalBookItemCounts } = useBookItems();
   
   const TABLE_NAME = 'books';
-  const books = useState('books', () => []);
-  const totalBooks = useState('totalBooks', () => 0);
   const perPage = 12;
+  // const books = useState('books', () => []);
+  const books = ref([]);
+  const totalBooks = useState('totalBooks', () => 0);
   const searchTerm = useState('searchTerm', () => {});
+  const isLoading = useState('isLoading', () => false);
+  const book = useState('book', () => null);
 
   const processBook = async(bookData) => {
     try {
@@ -28,9 +32,30 @@ export const useBooks = () => {
     }
   }
 
-  const getBookById = async(bookId) => {
+  const getBooksByIds = async(bookIds) => {
     try {
-      const { data: book, error: fetchError } = await bookModel
+      const { data, error: fetchError } = await bookModel
+        .select(`
+          id,
+          title,
+          coverImage:cover_image,
+          authors (id, name:full_name)
+        `)
+        .in('id', bookIds)
+      ;
+
+      if (fetchError) throw fetchError;
+
+      books.value = data;
+    } catch(err) {
+      console.log('[ERROR] getBookById: ', err);
+      books.value = [];
+    }
+  }
+
+  const getBookById = async(bookId, bookItemStatus = null) => {
+    try {
+      const { data, error: fetchError } = await bookModel
         .select(`
           bookId:id,
           title,
@@ -47,14 +72,17 @@ export const useBooks = () => {
 
       if (fetchError) throw fetchError;
 
-      return book;
+      await getTotalBookItemCounts(bookId, bookItemStatus);
+
+      book.value = data;
+      book.value.bookItemCounts = totalBookItems.value;
     } catch(err) {
       console.log('[ERROR] getBookById: ', err);
-      return null;
+      book.value = null;
     }
   }
 
-  const getTotalCount = async() => {
+  const getTotalBookCounts = async() => {
     try {
       const { count, error } = await supabase
         .from(TABLE_NAME)
@@ -63,9 +91,11 @@ export const useBooks = () => {
       if (error) throw error
 
       totalBooks.value = count;
+      return count;
     } catch(err) {
-      console.log('[ERROR] getTotalCount: ', err);
+      console.log('[ERROR] getTotalBookCounts: ', err);
       totalBooks.value = 0;
+      return 0;
     }
   }
 
@@ -112,7 +142,7 @@ export const useBooks = () => {
       if (searchQuery && Object.entries(searchQuery).length > 0) {
         totalBooks.value = data.length;
       } else {
-        await getTotalCount();
+        await getTotalBookCounts();
       }
     } catch(err) {
       console.log('[ERROR] searchBook: ', err);
@@ -121,12 +151,16 @@ export const useBooks = () => {
   }
 
   return {
+    book,
     books,
+    isLoading,
     totalBooks,
     perPage,
     getBookById,
     processBook,
     searchBook,
-    searchTerm
+    searchTerm,
+    getBooksByIds,
+    getTotalBookCounts
   }
 }

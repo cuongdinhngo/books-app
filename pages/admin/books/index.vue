@@ -38,6 +38,8 @@
     </div>
   </form>
 
+  <div v-if="isLoading" class="text-center text-stone-950">Loading books ...</div>
+
   <DataTable
     v-if="books.length > 0"
     :data="books"
@@ -55,7 +57,7 @@
 </template>
 
 <script setup>
-const {books, totalBooks, perPage, searchBook} = useBooks();
+const {books, totalBooks, perPage, searchBook, isLoading} = useBooks();
 
 const route = useRoute();
 const page = ref(1);
@@ -144,15 +146,14 @@ function getActionItems(row) {
     {
       label: 'Delete',
       onSelect() {
-        // deletePublisher(row.original.id);
-        // const newPage = getNewPage(Number(route.query.page), totalPublishers.value, perPage);
-        // navigateTo(`/admin/publishers?page=${newPage}#with-links`);
+        //delete
       }
     }
   ]
 }
 
 const handleSearch = async() => {
+  isLoading.value = true;
   const searchTerm = {
     title: title.value,
     publisherId: selectedPublishers.value,
@@ -161,6 +162,7 @@ const handleSearch = async() => {
   }
 
   await searchBook(searchTerm);
+  isLoading.value = false;
 }
 
 const handlePageChange = async(newPage) => {
@@ -177,6 +179,8 @@ const handlePageChange = async(newPage) => {
 }
 
 onMounted(async() => {
+  isLoading.value = true;
   await searchBook();
+  isLoading.value = false;
 });
 </script>

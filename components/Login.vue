@@ -20,6 +20,7 @@
           Login
       </button>
     </div>
+    <h3 v-if="error" class="text-center text-red-700">{{ error }}</h3>
     <p class="text-center text-sm text-gray-600">
         Don’t have an account? <a href="#" class="text-blue-600 hover:underline">Register</a>
     </p>
@@ -27,21 +28,18 @@
 </template>
 
 <script setup>
-const { signin, token } = useAuth();
+const { signin, token, userType, error } = useAuth();
 const email = ref('');
 const password = ref('');
 
 const handleSubmit = async() => {
   console.log('handleSubmit ....');
   if (email.value.trim() && password.value.trim()) {
-    try {
-      const response = await signin({email: email.value, password: password.value});
-      console.log('TOKEN => ', token.value);
-      if (token) {
-        navigateTo('admin/books?page=1#with-links');
-      }
-    } catch (error) {
-      alert('Login failed')
+    const response = await signin({email: email.value, password: password.value});
+    console.log('TOKEN => ', token.value);
+    if (response) {
+      if (userType.value === 'staff') navigateTo('admin/books?page=1#with-links');
+      else navigateTo('/');
     }
   }
 }

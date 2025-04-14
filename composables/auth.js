@@ -1,79 +1,88 @@
 export const useAuth = () => {
+  const supabase = useSupabaseClient();
+  const authModel = useSupabaseClient().auth;
+
   const token = useCookie('token');
+  const userId = useCookie('userId');
   const user = useState('user', () => null);
   const isAuthenticated = useState('isAuthenticated', () => false);
-  const apiPath = useRuntimeConfig().public.apiPath;
-  const beAppUrl = useRuntimeConfig().public.beAppUrl;
-
-  const userModel = useSupabaseClient().from('users');
-  const authModel = useSupabaseClient().auth;
+  const error = useState('error', () => '');
+  const userType = useState('userType', () => '');
+  const session = useState('session', () => []);
 
   const signin = async ({ email, password }) => {
     try {
-      const { data: userInfo, error: signInError } = await authModel.signInWithPassword({
+      const { data, error: signInError } = await authModel.signInWithPassword({
         email,
         password,
       });
 
       if (signInError) {
-        return { code: 401, message: "Invalid email or password" };
+        error.value = 'Invalid email or password. Please try again!';
+        return false;
       }
 
-      setToken(userInfo.session.access_token)
-      return { code: 200, data: userInfo.user};
-    } catch (error) {
-      return { code: 500, message: "Something went wrong" };
+      const { data: user, error: fetchUserError } = await supabase
+        .from('users')
+        .select()
+        .eq('id', data.user.id)
+      ;
+      if (fetchUserError) throw fetchUserError;
+ 
+      if (user?.length > 0) {
+        userType.value = 'staff';
+      } else {
+        userType.value = 'reader';
+      }
+
+      setAuthenticatedUser(data);
+      return true;
+    } catch (err) {
+      console.error('[ERROR] FAIELD: signin ', err);
+      error.value = 'Plase try again!';
+      return false;
     }
   };
+
+  const signout = async() => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+
+      token.value = null;
+      userId.value = null;
+      localStorage.removeItem('session');
+    } catch(err) {
+      console.log('[ERROR] signout: ', err);
+    }
+  }
 
   const setToken = (newToken) => {
     token.value = newToken;
     isAuthenticated.value = !!newToken;
   }
 
-  const login = async(formData) => {
-    try {
-      const response = await $fetch(`${apiPath}/login`, {
-        method: 'POST',
-        body: formData,
-        credentials: 'include'
-      });
-
-      console.log('response -> ', response);
-      if (response.token) {
-        setToken(response.token)
-      }
-    } catch(error) {
-      console.log('[ERROR] login: ', error);
-    }
+  const setAuthenticatedUser = (data) => {
+    token.value = data.session.access_token;
+    userId.value = data.user.id;
+    localStorage.setItem('session', data.session);
   }
 
-  const logout = async () => {
-    await $fetch(`${apiPath}/logout`, {
-      method: 'POST',
-      credentials: 'include'
-    })
-    setToken(null)
-    user.value = null
-  }
-
-  const fetchUser = async () => {
-    try {
-      user.value = await $fetch(`${apiPath}/user`, {
-        credentials: 'include'
-      })
-    } catch (error) {
-      setToken(null)
-    }
+  const getAuthenticatedSession = () => {
+    const storedSession = localStorage.getItem('session');
+    session.value = storedSession ? JSON.stringify(storedSession) : []
   }
 
   return {
     user,
+    userId,
+    error,
     token,
+    session,
+    userType,
     isAuthenticated,
-    login,
-    logout,
-    fetchUser,
-    signin
+    signin,
+    signout,
+    getAuthenticatedSession
   }
 }

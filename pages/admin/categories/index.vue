@@ -23,18 +23,25 @@
 
   <Pagination
     v-model="page"
-    v-if="totalCategories > 0"
-    :totalCounts="totalCategories"
+    v-if="totalCategoryCounts"
+    :total-counts="totalCategoryCounts"
     :items-per-page="perPage"
     @changePage="handlePageChange"
   />
 </template>
 
-<script setup>
+<script setup lang="ts">
 const route = useRoute();
-const { categories, searchCategories, totalCategories, perPage, deleteCategory} = useCategories();
+const {
+  categories,
+  searchCategories,
+  totalCategoryCounts,
+  perPage,
+  deleteCategory,
+  getTotalCategoryCounts
+} = useCategories();
 const selectedCategories = ref([]);
-const page = ref(1);
+const page = ref(Number(route.query.page) || 1);
 
 const UButton = resolveComponent('UButton')
 const UDropdownMenu = resolveComponent('UDropdownMenu');
@@ -86,9 +93,10 @@ function getActionItems(row) {
     },
     {
       label: 'Delete',
-      onSelect() {
-        deleteCategory(row.original.id);
-        const newPage = getNewPage(Number(route.query.page), totalCategories.value, perPage);
+      async onSelect() {
+        await deleteCategory(Number(row.original.id));
+        totalCategoryCounts.value = await getTotalCategoryCounts();
+        const newPage = getNewPage(Number(route.query.page), totalCategoryCounts.value, perPage);
         navigateTo(`/admin/categories?page=${newPage}#with-links`);
       }
     }
@@ -96,7 +104,7 @@ function getActionItems(row) {
 }
 
 const handleSearch = async() => {
-  await searchCategories([...selectedCategories.value]);
+  await searchCategories(selectedCategories.value);
 }
 
 const handlePageChange = async(newPage) => {
@@ -104,7 +112,9 @@ const handlePageChange = async(newPage) => {
 };
 
 onMounted(async() => {
-  page.value = Number(route.query.page);
+  const pageParam = Number(route.query.page);
+  page.value = isNaN(pageParam) ? 1 : pageParam;
+
   await searchCategories(selectedCategories.value, Number(route.query.page) || 1);
 });
 </script>

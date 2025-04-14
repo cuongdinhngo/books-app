@@ -23,8 +23,6 @@ definePageMeta({
 
 const {books, totalBooks, searchBook, perPage, searchTerm} = useBooks();
 const page = ref(1);
-const debounceTimeout = ref(null);
-const debounceDelay = 500;
 const route = useRoute();
 
 const handlePageChange = async(newPage) => {
@@ -48,17 +46,15 @@ onMounted(async() => {
   await searchBook(searchQuery);
 });
 
+const debouncedFn = useDebounceFn(async(newSearchTerm) => {
+  console.log('watching .. ', searchTerm.value);
+  await searchBook({title: newSearchTerm});
+}, 500, { maxWait: 5000 })
+
 watch(
   () => searchTerm.value,
   (newSearchTerm) => {
-    if (debounceTimeout.value) {
-      clearTimeout(debounceTimeout.value)
-    }
-    console.log('watching ...', newSearchTerm);
-
-    debounceTimeout.value = setTimeout(async() => {
-      await searchBook({title: newSearchTerm});
-    }, debounceDelay)
+    debouncedFn(newSearchTerm);
   }
 );
 

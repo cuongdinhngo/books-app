@@ -29,6 +29,7 @@
 </template>
 
 <script setup>
+const { signout } = useAuth();
 const items = ref([
   {
     label: 'Profile',
@@ -37,6 +38,16 @@ const items = ref([
   {
     label: 'Settings',
     icon: 'i-lucide-cog'
+  },
+  {
+    label: 'Logout',
+    icon: 'lucide:log-out',
+    async onSelect() {
+      signout();
+      navigateTo('/login')
+    }
   }
 ]);
+
+console.log('CHECKING PAGE LOADING ....');
 </script>

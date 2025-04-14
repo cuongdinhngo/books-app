@@ -10,7 +10,32 @@
         
       />
     </div>
-    <!-- <div class="flex items-center space-x-4">
+    <div class="flex items-center space-x-4">
+      <UChip
+        v-if="bookCounts > 0"
+        :text="bookCounts"
+        size="3xl"
+        color="neutral"
+        :ui="{
+          base: 'text-stone-900 bg-primary-50',
+        }"
+      >
+        <UButton
+          icon="lucide:shopping-cart"
+          color="neutral"
+          variant="outline"
+          class="ring-0 bg-primary-800 text-lg cursor-pointer"
+          @click="navigateTo('/book/cart')"
+        />
+      </UChip>
+      <UButton
+        v-else
+        icon="lucide:shopping-cart"
+        color="neutral"
+        variant="outline"
+        class="ring-0 bg-primary-800 text-lg cursor-pointer"
+        @click="navigateTo('/book/cart')"
+      />
       <UDropdownMenu
         class="bg-primary-600 border-primary-900 hover:bg-primary-700"
         :items="items"
@@ -25,11 +50,13 @@
       >
         <UButton icon="lucide:settings" color="neutral" variant="outline" class="ring-0 bg-primary-800 text-lg" />
       </UDropdownMenu>
-    </div> -->
+    </div>
+
   </header>
 </template>
 
 <script setup>
+const { signout } = useAuth();
 const { searchTerm } = useBooks();
 const items = ref([
   {
@@ -37,8 +64,30 @@ const items = ref([
     icon: 'i-lucide-user'
   },
   {
+    label: 'Orders',
+    icon: 'lucide:notebook-pen',
+    to: '/reader/orders'
+  },
+  {
     label: 'Settings',
     icon: 'i-lucide-cog'
+  },
+  {
+    label: 'Logout',
+    icon: 'lucide:log-out',
+    async onSelect() {
+      signout();
+      navigateTo('/login')
+    }
   }
 ]);
+
+const { bookCart, getBookCartFromStorage } = useBookCarts();
+
+const bookCounts = computed(() => {
+  getBookCartFromStorage();
+  return bookCart.value.length;
+});
+
+console.log('CHECKING PAGE LOADING ....');
 </script>

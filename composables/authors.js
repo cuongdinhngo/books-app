@@ -31,7 +31,7 @@ export const useAuthors = () => {
       if (deletedError) throw deletedError;
 
       if (204 === status) {
-        await getTotalCount();
+        await getTotalAuthorCounts();
         if (authors.value.length > 0) {
           authors.value = removeObjectById(authors.value, authorId);
         }
@@ -53,7 +53,7 @@ export const useAuthors = () => {
         totalAuthors.value = authorIds.value.length;
       } else {
         await getFullAuthors(from, to);
-        await getTotalCount();
+        await getTotalAuthorCounts();
       }
 
       return authors.value;
@@ -63,7 +63,7 @@ export const useAuthors = () => {
     }
   }
 
-  const getTotalCount = async() => {
+  const getTotalAuthorCounts = async() => {
     try {
       const { count, error } = await supabase
         .from(TABLE_NAME)
@@ -72,9 +72,11 @@ export const useAuthors = () => {
       if (error) throw error
 
       totalAuthors.value = count;
+      return count;
     } catch(err) {
-      console.log('[ERROR] getTotalCount: ', err);
+      console.log('[ERROR] getTotalAuthorCounts: ', err);
       totalAuthors.value = 0;
+      return 0;
     }
   }
 
@@ -141,6 +143,7 @@ export const useAuthors = () => {
     getAuthorsFilter,
     processAuthor,
     searchAuthors,
-    deleteAuthor
+    deleteAuthor,
+    getTotalAuthorCounts
   }
 }

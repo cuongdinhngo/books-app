@@ -5,10 +5,7 @@ export default defineAppConfig({
     },
     pagination: {
       slots: {
-        root: '',
-        list: 'flex items-center gap-1',
         ellipsis: 'pointer-events-none p-2 bg-primary-300 ring-0 hover:bg-primary-500 disabled:bg-stone-500',
-        label: 'min-w-5 text-center',
         first: 'p-2 bg-primary-300 ring-0 hover:bg-primary-500 disabled:bg-stone-500',
         prev: 'p-2 bg-primary-300 ring-0 hover:bg-primary-500 disabled:bg-stone-500',
         item: 'bg-primary-300 ring-0 hover:bg-primary-500',

@@ -40,7 +40,7 @@
         />
         <span v-else id="placeholder-text" class="text-gray-500 text-sm">No Photo Selected</span>
       </div>
-  </div>
+    </div>
   </div>
 </template>
 

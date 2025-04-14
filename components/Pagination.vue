@@ -33,7 +33,7 @@ const props = defineProps({
   }
 });
 
-console.log(`[Pagination] totalCounts = ${props.totalCounts}, currentPage = ${props.modelValue}`);
+console.log(`[Pagination] totalCounts = ${props.totalCounts}, currentPagePage = ${props.modelValue}, `);
 
 const emit = defineEmits(['update:page', 'changePage']);
 
@@ -47,8 +47,9 @@ const currentPage = computed({
 });
 
 const toPage = (page) => {
+  const currentQuery = useRoute().query;
   return {
-    query: { page },
+    query: {...currentQuery, page: page },
     hash: '#with-links'
   };
 };

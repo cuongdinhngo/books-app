@@ -23,8 +23,8 @@
 
   <Pagination
     v-model="page"
-    v-if="totalPublishers > 0"
-    :totalCounts="totalPublishers"
+    v-if="totalPublisherCounts > 0"
+    :totalCounts="totalPublisherCounts"
     :items-per-page="perPage"
     @changePage="handlePageChange"
   />
@@ -34,7 +34,7 @@
 import { FormCreateLink, FormSearchButton } from '#components';
 
 const route = useRoute();
-const { publishers, searchPublishers, totalPublishers, perPage, getNewPage, deletePublisher} = usePublishers();
+const { publishers, searchPublishers, totalPublisherCounts, perPage, getNewPage, deletePublisher} = usePublishers();
 const selectedPublishers = ref([]);
 const page = ref(1);
 
@@ -98,7 +98,7 @@ function getActionItems(row) {
       label: 'Delete',
       onSelect() {
         deletePublisher(row.original.id);
-        const newPage = getNewPage(Number(route.query.page), totalPublishers.value, perPage);
+        const newPage = getNewPage(Number(route.query.page), totalPublisherCounts.value, perPage);
         navigateTo(`/admin/publishers?page=${newPage}#with-links`);
       }
     }

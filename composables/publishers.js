@@ -5,7 +5,7 @@ export const usePublishers = () => {
   const TABLE_NAME = 'publishers';
 
   const publishers = useState('publishers', () => []);
-  const totalPublishers = useState('totalPublishers', () => 0);
+  const totalPublisherCounts = ref(0);
   const perPage = 5;
 
   const processPublisher = async(publisherData) => {
@@ -31,7 +31,7 @@ export const usePublishers = () => {
       if (deletedError) throw deletedError;
 
       if (204 === status) {
-        await getTotalCount();
+        totalPublisherCounts.value = await getTotalPublisherCounts();
         if (publishers.value.length > 0) {
           publishers.value = removeObjectById(publishers.value, publisherId);
         }
@@ -47,13 +47,12 @@ export const usePublishers = () => {
     try {
       let from = (page - 1) * perPage;
       let to = page * perPage - 1;
-      console.log(`FROM ${from} TO ${to}`);
       if (publisherIds && publisherIds.length > 0) {
         await getPublishersByIds(publisherIds, from, to);
-        totalPublishers.value = publishers.value.length;
+        totalPublisherCounts.value = publishers.value.length;
       } else {
         await getFullPublishers(from, to);
-        await getTotalCount();
+        totalPublisherCounts.value = await getTotalPublisherCounts();
       }
 
       return publishers.value;
@@ -63,7 +62,7 @@ export const usePublishers = () => {
     }
   }
 
-  const getTotalCount = async() => {
+  const getTotalPublisherCounts = async() => {
     try {
       const { count, error } = await supabase
         .from(TABLE_NAME)
@@ -71,10 +70,10 @@ export const usePublishers = () => {
 
       if (error) throw error
 
-      totalPublishers.value = count;
+      return count;
     } catch(err) {
-      console.log('[ERROR] getTotalCount: ', err);
-      totalPublishers.value = 0;
+      console.log('[ERROR] getTotalPublisherCounts: ', err);
+      return 0;
     }
   }
 
@@ -132,12 +131,12 @@ export const usePublishers = () => {
 
   return {
     publishers,
-    totalPublishers,
+    totalPublisherCounts,
     perPage,
     getPublishersFilter,
     processPublisher,
     searchPublishers,
     deletePublisher,
-    getTotalCount
+    getTotalPublisherCounts
   }
 }
