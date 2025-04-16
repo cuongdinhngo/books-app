@@ -1,21 +1,37 @@
+interface Author {
+  id?: Number,
+  fullName?: String,
+  photo?: String,
+  birthYear?: String,
+  deathYear?: String
+}
+
 export const useAuthors = () => {
   const supabase = useSupabaseClient();
-  const authorModel = useSupabaseClient().from('authors');
   const { uploadPhoto } = useImages('books');
   const TABLE_NAME = 'authors';
 
-  const authors = useState('authors', () => []);
-  const totalAuthors = useState('totalAuthors', () => 0);
+  const author = ref<Author>({});
+  const authors = ref<Array<Author>>([]);
+  const totalAuthorCounts = ref<Number>(0);
   const perPage = 5;
 
-  const processAuthor = async(authorData) => {
+  const processAuthor = async(authorData: Author) => {
     try {
       const uploadedPhoto = await uploadPhoto(authorData.logo, TABLE_NAME);
       if (uploadedPhoto) {
         authorData.photo = uploadedPhoto;
       }
 
-      const { data, error} = await authorModel.upsert(authorData).select();
+      const { data, error} = await supabase.from(TABLE_NAME)
+        .upsert({
+          id: authorData.id,
+          full_name: authorData.fullName,
+          photo: authorData.photo,
+          birth_year: authorData.birthYear,
+          death_year: authorData.deathYear
+        })
+        .select();
       if (error) throw error;
 
       return data;
@@ -27,76 +43,68 @@ export const useAuthors = () => {
 
   const deleteAuthor = async(authorId) => {
     try {
-      const { status, error: deletedError } = await authorModel.delete().eq('id', authorId);
-      if (deletedError) throw deletedError;
+      const { error } = await supabase.from(TABLE_NAME).delete().eq('id', authorId);
+      if (error) throw error;
 
-      if (204 === status) {
-        await getTotalAuthorCounts();
-        if (authors.value.length > 0) {
-          authors.value = removeObjectById(authors.value, authorId);
-        }
-      } else {
-        console.log('[ERROR] deleteAuthor: status is NOT 204');
-      }
-    } catch(error) {
-      console.log('[ERROR] deleteAuthor: ', error);
+      return true;
+    } catch(err) {
+      console.log('[ERROR] deleteAuthor: ', err);
+      return false;
     }
   }
 
-  const searchAuthors = async(authorIds, page = 1) => {
+  const searchAuthors = async(authorIds = [], page = 1) => {
     try {
       let from = (page - 1) * perPage;
       let to = page * perPage - 1;
-      console.log(`FROM ${from} TO ${to}`);
       if (authorIds && authorIds.length > 0) {
-        await getAuthorsByIds(authorIds, from, to);
-        totalAuthors.value = authorIds.value.length;
+        return await getAuthorsByIds(authorIds, from, to);
       } else {
-        await getFullAuthors(from, to);
-        await getTotalAuthorCounts();
+        return getFullAuthors(from, to);
       }
-
-      return authors.value;
     } catch(error) {
       console.log('[ERROR] searchAuthors: ', error);
       return [];
     }
   }
 
-  const getTotalAuthorCounts = async() => {
+  const getTotalAuthorCounts = async(authorIds = []) => {
     try {
-      const { count, error } = await supabase
+      let query = supabase
         .from(TABLE_NAME)
-        .select('*', { count: 'exact', head: true })
-      
+        .select('*', { count: 'exact', head: true });
+      if (authorIds.length > 0) {
+        query = query.filter('id', 'in', `(${authorIds.join(',')})`);
+      }
+
+      const { count, error } = await query;
       if (error) throw error
 
-      totalAuthors.value = count;
       return count;
     } catch(err) {
       console.log('[ERROR] getTotalAuthorCounts: ', err);
-      totalAuthors.value = 0;
       return 0;
     }
   }
 
   const getFullAuthors = async(from, to) => {
     try {
-      const { data, error } = await supabase.from(TABLE_NAME).select(`
-        id,
-        fullname:full_name,
-        photo,
-        birthYear:birth_year,
-        deathYear:death_year
-      `)
-      .limit(perPage)
-      .range(from, to);
+      const { data, error } = await supabase.from(TABLE_NAME)
+        .select(`
+          id,
+          fullname:full_name,
+          photo,
+          birthYear:birth_year,
+          deathYear:death_year
+        `)
+        .limit(perPage)
+        .range(from, to);
       if (error) throw error;
 
-      authors.value = data;
+      return data;
     } catch(err) {
       console.log('[ERROR] getFullAuthors: ', err);
-      authors.value = [];
+      return [];
     }
   }
 
@@ -114,16 +122,16 @@ export const useAuthors = () => {
       .range(from, to);
       if (error) throw error;
 
-      authors.value = data;
+      return data;
     } catch(err) {
       console.log('[ERROR] getAuthorsByIds: ', err);
-      authors.value = [];
+      return [];
     }
   }
 
   const getAuthorsFilter = async() => {
     try {
-      const { data, error: queryError } = await authorModel.select(`
+      const { data, error: queryError } = await supabase.from(TABLE_NAME).select(`
         id,
         label:full_name
       `);
@@ -137,8 +145,9 @@ export const useAuthors = () => {
   }
 
   return {
+    author,
     authors,
-    totalAuthors,
+    totalAuthorCounts,
     perPage,
     getAuthorsFilter,
     processAuthor,

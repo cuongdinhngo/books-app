@@ -26,12 +26,10 @@ export function capitalize(value) {
 }
 
 export function getNewPage(currentPage, totalItem, itemsPerPage) {
-  const isLastItemOnPage = (totalItem % itemsPerPage === 1);
-  const isLastPage = currentPage === Math.ceil(totalItem / itemsPerPage);
-  let redirectPage = currentPage;
-  if (isLastItemOnPage && isLastPage && currentPage > 1) {
-    redirectPage = currentPage - 1;
+  if (currentPage < 1 || totalItem < 0 || itemsPerPage < 1) {
+    return 1;
   }
+  const totalPages = Math.ceil(totalItem / itemsPerPage);
 
-  return redirectPage;
+  return Math.min(Math.max(1, currentPage), totalPages);
 }

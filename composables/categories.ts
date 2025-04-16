@@ -7,20 +7,25 @@ export const useCategories = () => {
   const supabase = useSupabaseClient();
   const TABLE_NAME = 'categories';
 
-  const categories = ref([]);
+  const category = ref<Category>({ id: null, name: null});
+  const categories = ref<Array<Category>>([]);
   const totalCategoryCounts = ref<Number|null>(0);
   const perPage = 5;
+  const isLoading = ref<Boolean>(false);
 
-  const processCategory = async(categoryData: Array<Category>) => {
+  const processCategory = async(categoryData: Category) => {
     try {
+      isLoading.value = true;
       const { data, error} = await useSupabaseClient().from(TABLE_NAME)
         .upsert(categoryData)
         .select();
       if (error) throw error;
 
+      isLoading.value = false;
       return data;
     } catch(err) {
       console.log('[ERROR] upsertCategory: ', err);
+      isLoading.value = false;
       return null;
     }
   }
@@ -39,31 +44,31 @@ export const useCategories = () => {
     }
   }
 
-  const searchCategories = async(categoryIds, page = 1) => {
+  const searchCategories = async(categoryIds = [], page = 1) => {
     try {
       let from = (page - 1) * perPage;
       let to = page * perPage - 1;
+      
       if (categoryIds && categoryIds.length > 0) {
-        await getCategoriesByIds(categoryIds, from, to);
-        totalCategoryCounts.value = categories.value.length;
+        return await getCategoriesByIds(categoryIds, from, to);
       } else {
-        await getFullCategories(from, to);
-        totalCategoryCounts.value = await getTotalCategoryCounts();
+        return await getFullCategories(from, to);
       }
-
-      return categories.value;
     } catch(error) {
       console.log('[ERROR] searchCategories: ', error);
       return [];
     }
   }
 
-  const getTotalCategoryCounts = async() => {
+  const getTotalCategoryCounts = async(categoryIds = []) => {
     try {
-      const { count, error } = await supabase
-        .from(TABLE_NAME)
-        .select('*', { count: 'exact', head: true })
+      let query = supabase.from(TABLE_NAME)
+        .select('*', { count: 'exact', head: true });
 
+      if (categoryIds.length > 0) {
+        query = query.filter('id', 'in', `(${categoryIds.join(',')})`);
+      }
+      const { count, error } = await query;
       if (error) throw error
 
       return count;
@@ -84,10 +89,10 @@ export const useCategories = () => {
         .range(from, to);
       if (error) throw error;
 
-      categories.value = data;
+      return data;
     } catch(err) {
       console.log('[ERROR] getFullCategories: ', err);
-      categories.value = [];
+      return [];
     }
   }
 
@@ -103,10 +108,10 @@ export const useCategories = () => {
         .range(from, to);
       if (error) throw error;
 
-      categories.value = data;
+      return data;
     } catch(err) {
       console.log('[ERROR] getCategoriesByIds: ', err);
-      categories.value = [];
+      return [];
     }
   }
 
@@ -128,6 +133,8 @@ export const useCategories = () => {
   }
 
   return {
+    isLoading,
+    category,
     categories,
     totalCategoryCounts,
     perPage,

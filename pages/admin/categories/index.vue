@@ -17,14 +17,14 @@
   </form>
 
   <DataTable
-    :data="categories"
+    :data="category?.data"
     :columns="columns"
   />
 
   <Pagination
     v-model="page"
-    v-if="totalCategoryCounts"
-    :total-counts="totalCategoryCounts"
+    v-if="category?.counts"
+    :total-counts="category.counts"
     :items-per-page="perPage"
     @changePage="handlePageChange"
   />
@@ -33,7 +33,6 @@
 <script setup lang="ts">
 const route = useRoute();
 const {
-  categories,
   searchCategories,
   totalCategoryCounts,
   perPage,
@@ -42,6 +41,23 @@ const {
 } = useCategories();
 const selectedCategories = ref([]);
 const page = ref(Number(route.query.page) || 1);
+const searchParams = ref({
+  categories: [],
+  page: page.value
+});
+
+const { data: category, error, refresh } = await useAsyncData(
+  `category-page:${page.value}`,
+  async() => {
+    const data = await searchCategories(searchParams.value.categories, searchParams.value.page);
+    const counts = await getTotalCategoryCounts(searchParams.value.categories);
+    console.log(`useAsyncData => category-page:${page.value} && COUNTS: ${counts}`);
+
+    return {data,counts}
+  }, {
+    watch: [searchParams.value]
+  }
+)
 
 const UButton = resolveComponent('UButton')
 const UDropdownMenu = resolveComponent('UDropdownMenu');
@@ -68,7 +84,7 @@ const columns = [
             content: {
               align: 'end'
             },
-            items: getActionItems(row),
+            items: getActionItems(Number(row.original.id)),
             'aria-label': 'Actions dropdown'
           },
           () =>
@@ -85,36 +101,36 @@ const columns = [
   }
 ]
 
-function getActionItems(row) {
+function getActionItems(categoryId: Number) {
   return [
     {
       label: 'Update information',
-      to: `/admin/categories/form?id=${row.original.id}`,
+      to: `/admin/categories/form?id=${categoryId}`,
     },
     {
       label: 'Delete',
       async onSelect() {
-        await deleteCategory(Number(row.original.id));
+        await deleteCategory(Number(categoryId));
         totalCategoryCounts.value = await getTotalCategoryCounts();
         const newPage = getNewPage(Number(route.query.page), totalCategoryCounts.value, perPage);
-        navigateTo(`/admin/categories?page=${newPage}#with-links`);
+        if (page.value !== newPage) {
+          page.value = newPage;
+          navigateTo(`/admin/categories?page=${newPage}#with-links`);
+        } else {
+          refresh();
+        }
       }
     }
   ]
 }
 
 const handleSearch = async() => {
-  await searchCategories(selectedCategories.value);
+  searchParams.value.categories = selectedCategories.value;
+  refresh();
 }
 
 const handlePageChange = async(newPage) => {
-  await searchCategories(selectedCategories.value, newPage);
+  page.value = newPage;
+  searchParams.value.page = newPage;
 };
-
-onMounted(async() => {
-  const pageParam = Number(route.query.page);
-  page.value = isNaN(pageParam) ? 1 : pageParam;
-
-  await searchCategories(selectedCategories.value, Number(route.query.page) || 1);
-});
 </script>

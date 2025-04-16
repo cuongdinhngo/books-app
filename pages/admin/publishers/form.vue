@@ -16,16 +16,17 @@
         {{ useRoute().query?.id ? 'Update' : 'Add new' }}
       </button>
     </div>
+    <h3 v-if="isLoading" class="text-stone-900">Loading ...</h3>
     <h3 v-if="errorMessage" class="text-red-500">{{ errorMessage }}</h3>
     <h3 v-if="successMessage" class="text-green-600">{{ successMessage }}</h3>
   </form>
 </template>
 
-<script setup>
-const { processPublisher, searchPublishers } = usePublishers();
-const name = ref(null);
-const selectedLogo = ref(null);
-const logoPreview = ref(null);
+<script setup lang="ts">
+const { isLoading, publisher, processPublisher, searchPublishers } = usePublishers();
+const name = ref<string|null>(null);
+const selectedLogo = ref<string|null>(null);
+const logoPreview = ref<string>('');
 const errorMessage = ref('');
 const successMessage = ref('');
 
@@ -51,19 +52,19 @@ const submitForm = async() => {
   successMessage.value = '';
   errorMessage.value = '';
 
-  let data = {
+  publisher.value = {
     id: useRoute().query?.id,
     name: name.value,
   };
 
   if (selectedLogo.value) {
-    data = {
-      ...data,
+    publisher.value = {
+      ...publisher.value,
       logo: selectedLogo.value
     }
   }
 
-  const response = await processPublisher (data);
+  const response = await processPublisher(publisher.value);
   if (response && response[0]?.id) {
     successMessage.value = 'New Publisher was created succesfully!'
   } else {

@@ -6,7 +6,6 @@ export const useBooks = () => {
   
   const TABLE_NAME = 'books';
   const perPage = 12;
-  // const books = useState('books', () => []);
   const books = ref([]);
   const totalBooks = useState('totalBooks', () => 0);
   const searchTerm = useState('searchTerm', () => {});

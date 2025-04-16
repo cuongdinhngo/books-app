@@ -16,7 +16,7 @@
 <script setup>
 const props = defineProps({
   totalCounts: {
-    type: Number,
+    type: [Number, null],
     required: true
   },
   itemsPerPage: {
@@ -32,9 +32,6 @@ const props = defineProps({
     default: 2
   }
 });
-
-console.log(`[Pagination] totalCounts = ${props.totalCounts}, currentPagePage = ${props.modelValue}, `);
-
 const emit = defineEmits(['update:page', 'changePage']);
 
 const currentPage = computed({
@@ -45,6 +42,8 @@ const currentPage = computed({
     emit('update:page', value);
   }
 });
+
+console.log(`[Pagination] totalCounts = ${props.totalCounts}, currentPagePage = ${props.modelValue}`);
 
 const toPage = (page) => {
   const currentQuery = useRoute().query;

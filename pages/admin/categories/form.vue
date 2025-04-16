@@ -11,13 +11,14 @@
         {{ useRoute().query?.id ? 'Update' : 'Add new' }}
       </button>
     </div>
+    <h3 v-if="isLoading" class="text-stone-900">Loading ...</h3>
     <h3 v-if="errorMessage" class="text-red-500">{{ errorMessage }}</h3>
     <h3 v-if="successMessage" class="text-green-600">{{ successMessage }}</h3>
   </form>
 </template>
 
 <script setup>
-const { processCategory, searchCategories } = useCategories();
+const { category, isLoading, processCategory, searchCategories } = useCategories();
 const name = ref(null);
 const errorMessage = ref('');
 const successMessage = ref('');
@@ -34,12 +35,12 @@ const submitForm = async() => {
   successMessage.value = '';
   errorMessage.value = '';
 
-  let data = {
+  category.value = {
     id: useRoute().query?.id,
     name: name.value,
   };
 
-  const response = await processCategory(data);
+  const response = await processCategory(category.value);
   if (response && response[0]?.id) {
     successMessage.value = 'New Publisher was created succesfully!'
   } else {

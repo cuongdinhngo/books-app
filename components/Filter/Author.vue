@@ -17,7 +17,6 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue']);
 const { getAuthorsFilter } = useAuthors();
 
-
 const authors = computed({
   get: () => props.modelValue,
   set: (value) => emit('update:modelValue', value)

@@ -18,24 +18,60 @@
   </form>
 
   <DataTable
-    :data="authors"
+    :data="author?.data"
     :columns="columns"
   />
 
   <Pagination
     v-model="page"
-    v-if="totalAuthors > 0"
-    :totalCounts="totalAuthors"
+    v-if="author?.counts > 0"
+    :totalCounts="author?.counts"
     :items-per-page="perPage"
     @changePage="handlePageChange"
   />
 </template>
 
-<script setup>
-const route = useRoute();
-const { authors, searchAuthors, deleteAuthor, totalAuthors, perPage } = useAuthors();
+<script setup lang="ts">
+const {
+  searchAuthors,
+  deleteAuthor,
+  perPage,
+  getTotalAuthorCounts
+} = useAuthors();
 const selectedAuthors = ref([]);
 const page = ref(1);
+const searchParams = ref({
+  authors: selectedAuthors.value,
+  page: page.value
+});
+
+const { data: author, refresh } = await useAsyncData(
+  `author-page:${page.value}`,
+  async() => {
+    const data = await searchAuthors(searchParams.value.authors, searchParams.value.page);
+    const counts = await getTotalAuthorCounts(searchParams.value.authors);
+
+    console.log(`useAsyncData => author-page:${page.value} && COUNTS: ${counts}`);
+
+    return {data,counts}
+  }, {
+    watch: [searchParams.value]
+  }
+)
+
+const handleSearch = async() => {
+  page.value = 1;
+  searchParams.value = {
+    authors: selectedAuthors.value,
+    page: page.value
+  }
+  refresh();
+}
+
+const handlePageChange = async(newPage) => {
+  page.value = newPage;
+  searchParams.value.page = newPage;
+};
 
 const UAvatar = resolveComponent('UAvatar');
 const UButton = resolveComponent('UButton')
@@ -80,7 +116,7 @@ const columns = [
             content: {
               align: 'end'
             },
-            items: getActionItems(row),
+            items: getActionItems(Number(row.original.id)),
             'aria-label': 'Actions dropdown'
           },
           () =>
@@ -97,37 +133,25 @@ const columns = [
   }
 ]
 
-function getActionItems(row) {
+function getActionItems(authorId: Number) {
   return [
     {
       label: 'Update information',
-      to: `/admin/authors/form?id=${row.original.id}`,
+      to: `/admin/authors/form?id=${authorId}`,
     },
     {
       label: 'Delete',
-      onSelect() {
-        deleteAuthor(row.original.id);
-        const newPage = getNewPage(Number(route.query.page), totalAuthors.value, perPage);
-        navigateTo(`/admin/authors?page=${newPage}#with-links`);
+      async onSelect() {
+        await deleteAuthor(authorId);
+        const authorCounts = await getTotalAuthorCounts(searchParams.value.authors);
+        const newPage = getNewPage(page.value, authorCounts, perPage);
+        if (page.value === newPage) {
+          refresh();
+        } else {
+          navigateTo(`/admin/authors?page=${newPage}#with-links`);
+        };
       }
     }
   ]
 }
-
-const handleSearch = async() => {
-  await searchAuthors([...selectedAuthors.value]);
-}
-
-const handlePageChange = async(newPage) => {
-  await searchAuthors(searchAuthors.value, newPage);
-};
-
-onMounted(async() => {
-  page.value = Number(route.query.page);
-  await searchAuthors(selectedAuthors.value, Number(route.query.page) || 1);
-});
-
-onBeforeMount(() => {
-  page.value = Number(route.query.page);
-});
 </script>

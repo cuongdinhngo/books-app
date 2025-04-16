@@ -44,8 +44,8 @@
   </div>
 </template>
 
-<script setup>
-const { processAuthor, searchAuthors } = useAuthors();
+<script setup lang="ts">
+const { processAuthor, searchAuthors, author } = useAuthors();
 const fullName = ref(null);
 const birthYear = ref(null);
 const deathYear = ref(null);
@@ -75,21 +75,21 @@ const handleFileUpload = (event) => {
 };
 
 const submitForm = async() => {
-  let data = {
+  author.value = {
     id: useRoute().query?.id,
-    full_name: fullName.value,
-    birth_year: birthYear.value || null,
-    death_year: deathYear.value || null,
+    fullName: fullName.value,
+    birthYear: birthYear.value || null,
+    deathYear: deathYear.value || null,
   };
 
   if (selectedPhoto.value) {
-    data = {
-      ...data,
+    author.value = {
+      ...author.value,
       photo: selectedPhoto.value
     }
   }
 
-  const response = await processAuthor(data);
+  const response = await processAuthor(author.value);
   if (response && response[0]?.id) {
     successMessage.value = 'New author was created succesfully!'
   } else {
