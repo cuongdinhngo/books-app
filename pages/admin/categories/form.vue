@@ -18,7 +18,7 @@
 </template>
 
 <script setup>
-const { category, isLoading, processCategory, searchCategories } = useCategories();
+const { category, isLoading, processCategory, getCategories } = useCategories();
 const name = ref(null);
 const errorMessage = ref('');
 const successMessage = ref('');
@@ -26,7 +26,7 @@ const successMessage = ref('');
 onMounted(async() => {
   const categoryId = useRoute().query?.id;
   if (categoryId) {
-    const response = await searchCategories([categoryId]);
+    const response = await getCategories({ filterIds:[categoryId] });
     name.value = response[0].name;
   }
 });

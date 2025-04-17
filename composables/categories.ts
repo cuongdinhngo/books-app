@@ -1,24 +1,29 @@
-export interface Category {
-  id?: Number,
-  name?: String
+import type { Database, Tables, Enums } from '~/types/database.types';
+
+interface GetCategoriesOptions {
+  selectColumns?: string,
+  filterIds?: (string | number)[],
+  page?: number,
+  pageSize?: number,
+  isCountable?: boolean
 }
 
 export const useCategories = () => {
   const supabase = useSupabaseClient();
   const TABLE_NAME = 'categories';
 
-  const category = ref<Category>({ id: null, name: null});
-  const categories = ref<Array<Category>>([]);
-  const totalCategoryCounts = ref<Number|null>(0);
-  const perPage = 5;
-  const isLoading = ref<Boolean>(false);
+  const category = ref<Tables<'categories'>>();
+  const categories = ref<Tables<'categories'>[]>([]);
+  const totalCategoryCounts = ref<number|null>(0);
+  const isLoading = ref<boolean>(false);
 
-  const processCategory = async(categoryData: Category) => {
+  const processCategory = async(categoryData: Tables<'categories'>) => {
     try {
       isLoading.value = true;
       const { data, error} = await useSupabaseClient().from(TABLE_NAME)
         .upsert(categoryData)
-        .select();
+        .select()
+      ;
       if (error) throw error;
 
       isLoading.value = false;
@@ -44,91 +49,54 @@ export const useCategories = () => {
     }
   }
 
-  const searchCategories = async(categoryIds = [], page = 1) => {
+  const getCategories = async(options: GetCategoriesOptions = {}) => {
+    const {
+      selectColumns,
+      filterIds,
+      page,
+      pageSize
+    } = options;
+
     try {
-      let from = (page - 1) * perPage;
-      let to = page * perPage - 1;
-      
-      if (categoryIds && categoryIds.length > 0) {
-        return await getCategoriesByIds(categoryIds, from, to);
-      } else {
-        return await getFullCategories(from, to);
+      let query = supabase.from(TABLE_NAME).select(selectColumns);
+
+      if (filterIds && filterIds.length > 0) {
+        query = query.in('id', filterIds);
       }
-    } catch(error) {
-      console.log('[ERROR] searchCategories: ', error);
+
+      if (page !== null && pageSize !== null && page > 0 && pageSize > 0) {
+        const from = (page - 1) * pageSize;
+        const to = page * pageSize - 1;
+        query = query.range(from, to);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      return data || [];
+    } catch(err) {
+      console.error(`[ERROR] getCategories with ${JSON.stringify(options)} : `, err);
       return [];
     }
   }
 
-  const getTotalCategoryCounts = async(categoryIds = []) => {
+  const getTotalCategoryCounts = async(options: GetCategoriesOptions = {}) => {
     try {
+      const { filterIds } = options;
       let query = supabase.from(TABLE_NAME)
-        .select('*', { count: 'exact', head: true });
-
-      if (categoryIds.length > 0) {
-        query = query.filter('id', 'in', `(${categoryIds.join(',')})`);
+        .select('*', { count: 'exact', head: true })
+      ;
+      if (filterIds && filterIds.length > 0) {
+        query = query.in('id', filterIds);
       }
+
       const { count, error } = await query;
-      if (error) throw error
+      if (error) throw error; 
 
       return count;
     } catch(err) {
-      console.log('[ERROR] getTotalCategoryCounts: ', err);
+      console.log(`[ERROR] getTotalCategoryCounts with ${JSON.stringify(options)}`, err);
       return 0;
-    }
-  }
-
-  const getFullCategories = async(from, to) => {
-    try {
-      const { data, error } = await supabase.from(TABLE_NAME)
-        .select(`
-          id,
-          name
-        `)
-        .limit(perPage)
-        .range(from, to);
-      if (error) throw error;
-
-      return data;
-    } catch(err) {
-      console.log('[ERROR] getFullCategories: ', err);
-      return [];
-    }
-  }
-
-  const getCategoriesByIds = async(ids, from, to) => {
-    try {
-      const { data, error } = await supabase.from(TABLE_NAME)
-        .select(`
-          id,
-          name
-        `)
-        .filter('id', 'in', `(${ids.join(',')})`)
-        .limit(perPage)
-        .range(from, to);
-      if (error) throw error;
-
-      return data;
-    } catch(err) {
-      console.log('[ERROR] getCategoriesByIds: ', err);
-      return [];
-    }
-  }
-
-  const getCategoriesFilter = async() => {
-    try {
-      const { data, error: queryError } = await supabase.from(TABLE_NAME)
-        .select(`
-          id,
-          label:name
-        `)
-      ;
-      if (queryError) throw queryError;
-
-      return data;
-    } catch(error) {
-      console.log('[ERROR] getCategoriesFilter: ', error);
-      return [];
     }
   }
 
@@ -137,10 +105,8 @@ export const useCategories = () => {
     category,
     categories,
     totalCategoryCounts,
-    perPage,
-    getCategoriesFilter,
     processCategory,
-    searchCategories,
+    getCategories,
     deleteCategory,
     getTotalCategoryCounts
   }

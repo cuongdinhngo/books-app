@@ -19,23 +19,25 @@
   <DataTable
     :data="publisher.data"
     :columns="columns"
+    :get-dropdown-actions="getActionItems"
   />
 
   <Pagination
     v-model="page"
     v-if="publisher?.counts > 0"
     :totalCounts="publisher.counts"
-    :items-per-page="perPage"
+    :items-per-page="pageSize"
     @changePage="handlePageChange"
   />
 </template>
 
-<script setup>
+<script setup lang="ts">
+import type { Tables } from '~/types/database.types';
+
 const {
-  searchPublishers,
-  perPage,
   deletePublisher,
-  getTotalPublisherCounts
+  getTotalPublisherCounts,
+  getPublishers
 } = usePublishers();
 const selectedPublishers = ref([]);
 const page = ref(1);
@@ -43,12 +45,19 @@ const searchParams = ref({
   publishers: selectedPublishers.value,
   page: page.value
 });
+const pageSize = 5;
 
 const { data: publisher, refresh } = await useAsyncData(
   `publisher-page:${page.value}`,
   async() => {
-    const data = await searchPublishers(searchParams.value.publishers, searchParams.value.page);
-    const counts = await getTotalPublisherCounts(searchParams.value.publishers);
+    const searchConditions = {
+      selectColumns: 'id, name, logo',
+      filterIds: searchParams.value.publishers,
+      page: searchParams.value.page,
+      pageSize
+    };
+    const data = await getPublishers(searchConditions);
+    const counts = await getTotalPublisherCounts({ filterIds: searchParams.value.publishers });
     console.log(`useAsyncData => publisher-page:${page.value} && COUNTS: ${counts}`);
 
     return { data, counts }
@@ -58,6 +67,7 @@ const { data: publisher, refresh } = await useAsyncData(
 )
 
 const handleSearch = async() => {
+  searchParams.value.page = 1;
   searchParams.value.publishers = selectedPublishers.value;
   refresh();
 }
@@ -67,9 +77,6 @@ const handlePageChange = async(newPage) => {
   searchParams.value.page = newPage;
 };
 
-const UAvatar = resolveComponent('UAvatar');
-const UButton = resolveComponent('UButton')
-const UDropdownMenu = resolveComponent('UDropdownMenu');
 const columns = [
   {
     accessorKey: 'id',
@@ -78,13 +85,7 @@ const columns = [
   },
   {
     accessorKey: 'logo',
-    header: 'Logo',
-    cell: ({ row }) => {
-      return h(
-        UAvatar,
-        { src: row.getValue('logo'), size: 'xl' }
-      )
-    }
+    header: 'Logo'
   },
   {
     accessorKey: 'name',
@@ -92,46 +93,22 @@ const columns = [
   },
   {
     header: 'Actions',
-    id: 'actions',
-    cell: ({ row }) => {
-      return h(
-        'div',
-        { class: 'text-right' },
-        h(
-          UDropdownMenu,
-          {
-            content: {
-              align: 'end'
-            },
-            items: getActionItems(Number(row.original.id)),
-            'aria-label': 'Actions dropdown'
-          },
-          () =>
-            h(UButton, {
-              icon: 'i-lucide-ellipsis-vertical',
-              color: 'neutral',
-              variant: 'ghost',
-              class: 'ml-auto text-stone-800',
-              'aria-label': 'Actions dropdown'
-            })
-        )
-      )
-    }
+    id: 'actions'
   }
 ]
 
-function getActionItems(publisherId) {
+function getActionItems(publisher: Tables<'publishers'>) {
   return [
     {
       label: 'Update information',
-      to: `/admin/publishers/form?id=${publisherId}`,
+      to: `/admin/publishers/form?id=${publisher.id}`,
     },
     {
       label: 'Delete',
       async onSelect() {
-        await deletePublisher(publisherId);
-        const publisherCounts = await getTotalPublisherCounts();
-        const newPage = getNewPage(page.value, publisherCounts, perPage);
+        await deletePublisher(publisher.id);
+        const publisherCounts = await getTotalPublisherCounts({ filterIds: selectedPublishers.value });
+        const newPage = getNewPage(page.value, publisherCounts, pageSize);
         if (page.value !== newPage) {
           page.value = newPage;
           navigateTo(`/admin/publishers?page=${newPage}#with-links`);

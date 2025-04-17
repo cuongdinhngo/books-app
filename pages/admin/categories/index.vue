@@ -19,27 +19,29 @@
   <DataTable
     :data="category?.data"
     :columns="columns"
+    :get-dropdown-actions="getActionItems"
   />
 
   <Pagination
     v-model="page"
     v-if="category?.counts"
     :total-counts="category.counts"
-    :items-per-page="perPage"
+    :items-per-page="pageSize"
     @changePage="handlePageChange"
   />
 </template>
 
 <script setup lang="ts">
+import type { Tables } from '~/types/database.types'
 const route = useRoute();
 const {
-  searchCategories,
+  getCategories,
   totalCategoryCounts,
-  perPage,
   deleteCategory,
   getTotalCategoryCounts
 } = useCategories();
 const selectedCategories = ref([]);
+const pageSize = 5;
 const page = ref(Number(route.query.page) || 1);
 const searchParams = ref({
   categories: [],
@@ -49,8 +51,13 @@ const searchParams = ref({
 const { data: category, error, refresh } = await useAsyncData(
   `category-page:${page.value}`,
   async() => {
-    const data = await searchCategories(searchParams.value.categories, searchParams.value.page);
-    const counts = await getTotalCategoryCounts(searchParams.value.categories);
+    const categoriesOptions = {
+      filterIds: searchParams.value.categories,
+      page: searchParams.value.page,
+      pageSize
+    };
+    const data = await getCategories(categoriesOptions);
+    const counts = await getTotalCategoryCounts({ filterIds: searchParams.value.categories });
     console.log(`useAsyncData => category-page:${page.value} && COUNTS: ${counts}`);
 
     return {data,counts}
@@ -59,8 +66,6 @@ const { data: category, error, refresh } = await useAsyncData(
   }
 )
 
-const UButton = resolveComponent('UButton')
-const UDropdownMenu = resolveComponent('UDropdownMenu');
 const columns = [
   {
     accessorKey: 'id',
@@ -73,46 +78,22 @@ const columns = [
   },
   {
     header: 'Actions',
-    id: 'actions',
-    cell: ({ row }) => {
-      return h(
-        'div',
-        { class: 'text-right' },
-        h(
-          UDropdownMenu,
-          {
-            content: {
-              align: 'end'
-            },
-            items: getActionItems(Number(row.original.id)),
-            'aria-label': 'Actions dropdown'
-          },
-          () =>
-            h(UButton, {
-              icon: 'i-lucide-ellipsis-vertical',
-              color: 'neutral',
-              variant: 'ghost',
-              class: 'ml-auto text-stone-800',
-              'aria-label': 'Actions dropdown'
-            })
-        )
-      )
-    }
+    id: 'actions'
   }
 ]
 
-function getActionItems(categoryId: Number) {
+const getActionItems = (category: Tables<'categories'>) => {
   return [
     {
       label: 'Update information',
-      to: `/admin/categories/form?id=${categoryId}`,
+      to: `/admin/categories/form?id=${category.id}`,
     },
     {
       label: 'Delete',
       async onSelect() {
-        await deleteCategory(Number(categoryId));
+        await deleteCategory(Number(category.id));
         totalCategoryCounts.value = await getTotalCategoryCounts();
-        const newPage = getNewPage(Number(route.query.page), totalCategoryCounts.value, perPage);
+        const newPage = getNewPage(page.value, totalCategoryCounts.value, pageSize);
         if (page.value !== newPage) {
           page.value = newPage;
           navigateTo(`/admin/categories?page=${newPage}#with-links`);
@@ -126,6 +107,7 @@ function getActionItems(categoryId: Number) {
 
 const handleSearch = async() => {
   searchParams.value.categories = selectedCategories.value;
+  searchParams.value.page = 1;
   refresh();
 }
 

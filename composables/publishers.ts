@@ -1,21 +1,56 @@
-export interface Publisher {
-  id?: Number,
-  name?: String,
-  logo?: String
-}
+import type { Tables } from '~/types/database.types';
+
+interface GetPublishersOptions {
+  selectColumns?: string,
+  filterIds?: (number | string)[],
+  page?: number,
+  pageSize?: number
+};
 
 export const usePublishers = () => {
   const supabase = useSupabaseClient();
   const { uploadPhoto, deletePhoto } = useImages('books');
   const TABLE_NAME = 'publishers';
 
-  const publishers = ref<Array<Publisher>>([]);
-  const publisher = ref<Publisher>({})
-  const totalPublisherCounts = ref<Number|null>(0);
+  const publishers = ref<Tables<'publishers'>[]>([]);
+  const publisher = ref<Tables<'publishers'>>();
+  const totalPublisherCounts = ref<number>(0);
   const perPage = 5;
-  const isLoading = ref<Boolean>(false);
+  const isLoading = ref<boolean>(false);
 
-  const processPublisher = async(publisherData: Publisher) => {
+  const getPublishers = async(options: GetPublishersOptions = {}) => {
+    const {
+      selectColumns,
+      filterIds,
+      page,
+      pageSize
+    } = options;
+
+    try {
+      let query = supabase.from(TABLE_NAME)
+        .select(selectColumns)
+      ;
+      if (filterIds && filterIds.length > 0) {
+        query = query.in('id', filterIds);
+      }
+
+      if (page && page > 0 && pageSize && pageSize > 0) {
+        const from = (page - 1) * pageSize;
+        const to = page * pageSize - 1;
+        query = query.range(from, to);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      return data || [];
+    } catch(err) {
+      console.error(`[ERROR] getPublishers with ${JSON.stringify(options)}: `, err);
+      return [];
+    }
+  }
+
+  const processPublisher = async(publisherData: Tables<'publishers'>) => {
     try {
       isLoading.value = true;
       const uploadedLogo = await uploadPhoto(publisherData.logo, TABLE_NAME);
@@ -35,7 +70,7 @@ export const usePublishers = () => {
     }
   }
 
-  const deletePublisher = async(publisherId: Number) => {
+  const deletePublisher = async(publisherId: number) => {
     try {
       const { error } = await supabase.from(TABLE_NAME).delete().eq('id', publisherId);
       if (error) throw error;
@@ -47,28 +82,14 @@ export const usePublishers = () => {
     }
   }
 
-  const searchPublishers = async(publisherIds: Array<Number> = [], page = 1) => {
+  const getTotalPublisherCounts = async(options: GetPublishersOptions = {}) => {
     try {
-      let from = (page - 1) * perPage;
-      let to = page * perPage - 1;
-      if (publisherIds && publisherIds.length > 0) {
-        return await getPublishersByIds(publisherIds, from, to);
-      } else {
-        return await getFullPublishers(from, to);
-      }
-    } catch(error) {
-      console.log('[ERROR] searchAuthors: ', error);
-      return [];
-    }
-  }
-
-  const getTotalPublisherCounts = async(publisherIds = []) => {
-    try {
+      const { filterIds } = options;
       let query = supabase.from(TABLE_NAME)
         .select('*', { count: 'exact', head: true })
       ;
-      if (publisherIds.length > 0) {
-        query = query.filter('id', 'in', `(${publisherIds.join(',')})`)
+      if (filterIds && filterIds.length > 0) {
+        query = query.in('id', filterIds);
       }
 
       const { count, error } = await query;
@@ -76,45 +97,8 @@ export const usePublishers = () => {
 
       return count;
     } catch(err) {
-      console.log('[ERROR] getTotalPublisherCounts: ', err);
+      console.log(`[ERROR] getTotalPublisherCounts with ${JSON.stringify(options)} `, err);
       return 0;
-    }
-  }
-
-  const getFullPublishers = async(from: Number, to: Number) => {
-    try {
-      const { data, error } = await supabase.from(TABLE_NAME).select(`
-        id,
-        name,
-        logo
-      `)
-      .limit(perPage)
-      .range(from, to);
-      if (error) throw error;
-
-      return data;
-    } catch(err) {
-      console.log('[ERROR] getFullPublishers: ', err);
-      return [];
-    }
-  }
-
-  const getPublishersByIds = async(ids: Array<Number>, from: Number, to: Number) => {
-    try {
-      const { data, error } = await supabase.from(TABLE_NAME).select(`
-        id,
-        name,
-        logo
-      `)
-      .filter('id', 'in', `(${ids.join(',')})`)
-      .limit(perPage)
-      .range(from, to);
-      if (error) throw error;
-
-      return data;
-    } catch(err) {
-      console.log('[ERROR] getAuthorsByIds: ', err);
-      return [];
     }
   }
 
@@ -141,8 +125,8 @@ export const usePublishers = () => {
     perPage,
     getPublishersFilter,
     processPublisher,
-    searchPublishers,
     deletePublisher,
-    getTotalPublisherCounts
+    getTotalPublisherCounts,
+    getPublishers
   }
 }

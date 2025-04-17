@@ -12,11 +12,11 @@
 </template>
 
 <script setup>
-const { getCategoriesFilter } = useCategories();
+const { getCategories } = useCategories();
 const { getPublishersFilter } = usePublishers();
 const items = ref([]);
 
-let categories = await getCategoriesFilter();
+let categories = await getCategories({search: 'id, label:name'});
 let categoryChildren = computed(() => {
   return categories.map(item => ({...item, to: `/?category=${item.id}`}));
 });

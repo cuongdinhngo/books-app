@@ -14,7 +14,7 @@ const props = defineProps({
   modelValue: Array
 });
 const emit = defineEmits(['update:modelValue']);
-const { getCategoriesFilter } = useCategories();
+const { getCategories } = useCategories();
 
 const categories = computed({
   get: () => props.modelValue,
@@ -23,6 +23,6 @@ const categories = computed({
 const items = ref([]);
 
 onMounted(async() => {
-  items.value = await getCategoriesFilter();
+  items.value = await getCategories({selectColumns: 'id, label:name'});
 });
 </script>
