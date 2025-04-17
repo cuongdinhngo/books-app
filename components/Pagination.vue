@@ -7,8 +7,7 @@
       :sibling-count="siblingCount"
       :items-per-page="itemsPerPage"
       :total="totalCounts"
-      :to="toPage"
-      @update:page="handlePageUpdate"
+      :to="toPage"      
     />
   </div>
 </template>
@@ -23,25 +22,20 @@ const props = defineProps({
     type: Number,
     default: 10
   },
-  modelValue: {
-    type: Number,
-    default: 1
-  },
+
   siblingCount: {
     type: Number,
     default: 2
   }
 });
-const emit = defineEmits(['update:page', 'changePage']);
 
-const currentPage = computed({
-  get() {
-    return props.modelValue;
-  },
-  set(value) {
-    emit('update:page', value);
+const currentPage = defineModel({
+  type: Number,
+  default: () => {
+    const route = useRoute();
+    return Number(route.query.page) || 1;
   }
-});
+})
 
 console.log(`[Pagination] totalCounts = ${props.totalCounts}, currentPagePage = ${props.modelValue}`);
 
