@@ -11,40 +11,39 @@
         {{ useRoute().query?.id ? 'Update' : 'Add new' }}
       </button>
     </div>
-    <h3 v-if="isLoading" class="text-stone-900">Loading ...</h3>
-    <h3 v-if="errorMessage" class="text-red-500">{{ errorMessage }}</h3>
-    <h3 v-if="successMessage" class="text-green-600">{{ successMessage }}</h3>
+    <h3 v-if="message" :class="textColor">{{ message }}</h3>
   </form>
 </template>
 
 <script setup>
-const { category, isLoading, processCategory, getCategories } = useCategories();
+const { get, insert, update } = useCategories();
 const name = ref(null);
-const errorMessage = ref('');
-const successMessage = ref('');
+const message = ref('');
+const textColor = ref('');
+const { query } = useRoute();
 
 onMounted(async() => {
-  const categoryId = useRoute().query?.id;
-  if (categoryId) {
-    const response = await getCategories({ filterIds:[categoryId] });
-    name.value = response[0].name;
+  if (query.id) {
+    const { data } = await get(Number(query.id));
+    name.value = data.name;
   }
 });
 
 const submitForm = async() => {
-  successMessage.value = '';
-  errorMessage.value = '';
-
-  category.value = {
-    id: useRoute().query?.id,
-    name: name.value,
-  };
-
-  const response = await processCategory(category.value);
-  if (response && response[0]?.id) {
-    successMessage.value = 'New Publisher was created succesfully!'
+  message.value = '';
+  let error = null;
+  if (query.id) {
+    const { error } = await update(Number(query.id), { name: name.value });
   } else {
-    errorMessage.value = 'Creating new Publisher was failed!'
+    const { error } = await insert({ name: name.value });
+  }
+
+  if (null === error) {
+    message.value = 'New Publisher was created succesfully!';
+    textColor.value = 'text-green-600';
+  } else {
+    message.value = 'Creating new Publisher was failed!';
+    textColor.value = 'text-red-500';
   }
 }
 </script>
