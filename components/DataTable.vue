@@ -20,6 +20,10 @@
     <template #logo-cell="{ row }">
       <UAvatar :src="row.original.logo" size="xl" />
     </template>
+
+    <template #photo-cell="{ row }">
+      <UAvatar :src="row.original.photo" size="xl" />
+    </template>
   </UTable>
 </template>
 

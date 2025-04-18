@@ -24,8 +24,7 @@
           {{ useRoute().query?.id ? 'Update' : 'Add new' }}
         </button>
       </div>
-      <h3 v-if="errorMessage" class="text-red-500">{{ errorMessage }}</h3>
-      <h3 v-if="successMessage" class="text-green-600">{{ successMessage }}</h3>
+      <h3 v-if="message" :class="textColor">{{ message }}</h3>
     </form>
 
     <!-- Photo Preview -->
@@ -45,24 +44,26 @@
 </template>
 
 <script setup lang="ts">
-const { processAuthor, searchAuthors, author } = useAuthors();
+import type { Tables } from '~/types/database.types';
+const { insert, update, get } = useAuthors();
 const fullName = ref(null);
 const birthYear = ref(null);
 const deathYear = ref(null);
 const selectedPhoto = ref(null);
 const imagePreview = ref(null);
-const errorMessage = ref('');
-const successMessage = ref('');
+const message = ref('');
+const textColor = ref('');
+const { query } = useRoute();
 
 onMounted(async() => {
-  const authorId = useRoute().query?.id;
+  const authorId = Number(query?.id);
   if (authorId) {
-    const response = await searchAuthors([authorId]);
-    fullName.value = response[0].fullname;
-    birthYear.value = response[0].birthYear;
-    deathYear.value = response[0].deathYear;
+    const { data } = await get(authorId);
+    fullName.value = data?.full_name;
+    birthYear.value = data?.birth_year;
+    deathYear.value = data?.death_year;
+    imagePreview.value = data?.photo;
     selectedPhoto.value = null;
-    imagePreview.value = response[0].photo;
   }
 });
 
@@ -75,25 +76,35 @@ const handleFileUpload = (event) => {
 };
 
 const submitForm = async() => {
-  author.value = {
-    id: useRoute().query?.id,
-    fullName: fullName.value,
-    birthYear: birthYear.value || null,
-    deathYear: deathYear.value || null,
-  };
+
+  let author = {
+    full_name: fullName.value,
+    birth_year: birthYear.value,
+    death_year: deathYear.value,
+  } as Tables<'authors'>;
+
+  if (query.id) {
+    author = {
+      ...author,
+      id: Number(query.id)
+    };
+  }
 
   if (selectedPhoto.value) {
-    author.value = {
-      ...author.value,
+    author = {
+      ...author,
       photo: selectedPhoto.value
     }
   }
 
-  const response = await processAuthor(author.value);
-  if (response && response[0]?.id) {
-    successMessage.value = 'New author was created succesfully!'
+  const { error } = query.id ? await update(query.id, author) : await insert(author); 
+  if (error) {
+    console.log('ERROR => ', error);
+    message.value = query?.id ? 'Author was updated failed!' : 'Creating new Author was failed!';
+    textColor.value = 'text-red-500';
   } else {
-    errorMessage.value = 'Creating new author was failed!'
+    message.value = query?.id ? 'Author was updated succesfully!' : 'New Author was created succesfully!';
+    textColor.value = 'text-green-600';
   }
 }
 </script>

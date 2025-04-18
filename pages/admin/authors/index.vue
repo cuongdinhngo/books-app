@@ -20,41 +20,39 @@
   <DataTable
     :data="author?.data"
     :columns="columns"
+    :get-dropdown-actions="getActionItems"
   />
 
   <Pagination
     v-model="page"
-    v-if="author?.counts > 0"
-    :totalCounts="author?.counts"
-    :items-per-page="perPage"
+    v-if="author?.count > 0"
+    :totalCounts="author.count"
+    :items-per-page="pageSize"
     @changePage="handlePageChange"
   />
 </template>
 
 <script setup lang="ts">
+import type { Tables } from '~/types/database.types';
+
+const { query } = useRoute();
 const {
-  searchAuthors,
-  deleteAuthor,
-  perPage,
-  getTotalAuthorCounts
+  index,
+  remove
 } = useAuthors();
 const selectedAuthors = ref([]);
-const page = ref(1);
+const page = ref(Number(query?.page) || 1);
+const pageSize = 5;
 const searchParams = ref({
-  authors: selectedAuthors.value,
-  page: page.value
+  ids: selectedAuthors.value,
+  page: page.value,
+  size: pageSize
 });
 
-const { data: author, refresh } = await useAsyncData(
-  `author-page:${page.value}`,
-  async() => {
-    const data = await searchAuthors(searchParams.value.authors, searchParams.value.page);
-    const counts = await getTotalAuthorCounts(searchParams.value.authors);
-
-    console.log(`useAsyncData => author-page:${page.value} && COUNTS: ${counts}`);
-
-    return {data,counts}
-  }, {
+const { data: author, error, refresh } = await useAsyncData(
+  `author-page-${page.value}`,
+  () => index(searchParams.value),
+  {
     watch: [searchParams.value]
   }
 )
@@ -62,8 +60,9 @@ const { data: author, refresh } = await useAsyncData(
 const handleSearch = async() => {
   page.value = 1;
   searchParams.value = {
-    authors: selectedAuthors.value,
-    page: page.value
+    ids: selectedAuthors.value,
+    page: page.value,
+    size: pageSize
   }
   refresh();
 }
@@ -73,9 +72,6 @@ const handlePageChange = async(newPage) => {
   searchParams.value.page = newPage;
 };
 
-const UAvatar = resolveComponent('UAvatar');
-const UButton = resolveComponent('UButton')
-const UDropdownMenu = resolveComponent('UDropdownMenu');
 const columns = [
   {
     accessorKey: 'id',
@@ -85,71 +81,49 @@ const columns = [
   {
     accessorKey: 'photo',
     header: 'Profile',
-    cell: ({ row }) => {
-      return h(UAvatar, { src: row.getValue('photo'), size: 'xl' })
-    }
   },
   {
-    accessorKey: 'fullname',
+    accessorKey: 'full_name',
     header: 'Full Name',
   },
   {
-    accessorKey: 'birthYear',
+    accessorKey: 'birth_year',
     header: 'Birth Year',
-    cell: ({ row }) => row.getValue('birthYear') ? row.getValue('birthYear') : '----'
+    cell: ({ row }) => row.getValue('birth_year') ? row.getValue('birth_year') : '----'
   },
   {
-    accessorKey: 'deathYear',
+    accessorKey: 'death_year',
     header: 'Death Year',
-    cell: ({ row }) => row.getValue('deathYear') ? row.getValue('deathYear') : '----'
+    cell: ({ row }) => row.getValue('death_year') ? row.getValue('death_year') : '----'
   },
   {
     header: 'Actions',
-    id: 'actions',
-    cell: ({ row }) => {
-      return h(
-        'div',
-        { class: 'text-right' },
-        h(
-          UDropdownMenu,
-          {
-            content: {
-              align: 'end'
-            },
-            items: getActionItems(Number(row.original.id)),
-            'aria-label': 'Actions dropdown'
-          },
-          () =>
-            h(UButton, {
-              icon: 'i-lucide-ellipsis-vertical',
-              color: 'neutral',
-              variant: 'ghost',
-              class: 'ml-auto text-stone-800',
-              'aria-label': 'Actions dropdown'
-            })
-        )
-      )
-    }
+    id: 'actions'
   }
 ]
 
-function getActionItems(authorId: Number) {
+function getActionItems(author: Tables<'authors'>) {
   return [
     {
       label: 'Update information',
-      to: `/admin/authors/form?id=${authorId}`,
+      to: `/admin/authors/form?id=${author.id}`,
     },
     {
       label: 'Delete',
       async onSelect() {
-        await deleteAuthor(authorId);
-        const authorCounts = await getTotalAuthorCounts(searchParams.value.authors);
-        const newPage = getNewPage(page.value, authorCounts, perPage);
-        if (page.value === newPage) {
-          refresh();
-        } else {
-          navigateTo(`/admin/authors?page=${newPage}#with-links`);
-        };
+        const { error } = await remove(Number(author.id));
+        if (null === error) {
+          const { count } = await index();
+          if (count) {
+            const newPage = getNewPage(page.value, count, pageSize);
+            if (page.value !== newPage) {
+              page.value = newPage;
+              navigateTo(`/admin/authors?page=${newPage}#with-links`);
+            } else {
+              refresh();
+            }
+          }
+        }
       }
     }
   ]
