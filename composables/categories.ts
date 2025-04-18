@@ -1,11 +1,10 @@
-import type { Database, Tables, Enums } from '~/types/database.types';
+import type { Tables } from '~/types/database.types';
 
 interface GetCategoriesOptions {
   columns?: string,
   ids?: (string | number)[],
   page?: number,
-  size?: number,
-  isCountable?: boolean
+  size?: number
 }
 
 const TABLE_NAME = 'categories';

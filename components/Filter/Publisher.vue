@@ -11,24 +11,17 @@
 
 <script setup>
 const props = defineProps({
-  modelValue: {
-    type: [Array, Number],
-  },
   multiple: {
     type: Boolean,
     default: true
   },
 });
-const emit = defineEmits(['update:modelValue']);
-const { getPublishersFilter } = usePublishers();
-
-const publishers = computed({
-  get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value)
-});
+const { index } = usePublishers();
+const publishers = defineModel();
 const items = ref([]);
 
 onMounted(async() => {
-  items.value = await getPublishersFilter();
+  const { data, error } = await index({ columns: 'id, label:name' });
+  items.value = data;
 });
 </script>

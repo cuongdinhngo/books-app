@@ -16,27 +16,29 @@
         {{ useRoute().query?.id ? 'Update' : 'Add new' }}
       </button>
     </div>
-    <h3 v-if="isLoading" class="text-stone-900">Loading ...</h3>
-    <h3 v-if="errorMessage" class="text-red-500">{{ errorMessage }}</h3>
-    <h3 v-if="successMessage" class="text-green-600">{{ successMessage }}</h3>
+    <h3 v-if="message" :class="textColor">{{ message }}</h3>
   </form>
 </template>
 
 <script setup lang="ts">
-const { isLoading, publisher, processPublisher, searchPublishers } = usePublishers();
+import type { Tables } from '~/types/database.types'
+
+const { query } = useRoute();
+const { insert, get, update } = usePublishers();
+
 const name = ref<string|null>(null);
 const selectedLogo = ref<string|null>(null);
 const logoPreview = ref<string>('');
-const errorMessage = ref('');
-const successMessage = ref('');
+const message = ref('');
+const textColor = ref('');
 
 onMounted(async() => {
-  const publisherId = useRoute().query?.id;
+  const publisherId = Number(query.id);
   if (publisherId) {
-    const response = await searchPublishers([publisherId]);
-    name.value = response[0].name;
+    const { data } = await get(publisherId);
+    name.value = data?.name;
     selectedLogo.value = null;
-    logoPreview.value = response[0].logo;
+    logoPreview.value = data?.logo;
   }
 });
 
@@ -49,26 +51,31 @@ const handleFileUpload = (event) => {
 };
 
 const submitForm = async() => {
-  successMessage.value = '';
-  errorMessage.value = '';
-
-  publisher.value = {
-    id: useRoute().query?.id,
+  let publisher = {
     name: name.value,
-  };
+  } as Tables<'publishers'>
+
+  if (query.id) {
+    publisher = {
+      ...publisher,
+      id: Number(query.id)
+    };
+  }
 
   if (selectedLogo.value) {
-    publisher.value = {
-      ...publisher.value,
+    publisher = {
+      ...publisher,
       logo: selectedLogo.value
     }
   }
 
-  const response = await processPublisher(publisher.value);
-  if (response && response[0]?.id) {
-    successMessage.value = 'New Publisher was created succesfully!'
+  const { error } = query?.id ? await update(Number(query?.id), publisher) : await insert(publisher);
+  if (error) {
+    message.value = query?.id ? 'Publisher was updated failed!' : 'Creating new Publisher was failed!';
+    textColor.value = 'text-red-500';
   } else {
-    errorMessage.value = 'Creating new Publisher was failed!'
+    message.value = query?.id ? 'Publisher was updated succesfully!' : 'New Publisher was created succesfully!';
+    textColor.value = 'text-green-600';
   }
 }
 </script>
