@@ -34,26 +34,25 @@
 <script setup lang="ts">
 import type { Tables } from '~/types/database.types'
 const route = useRoute();
-const { index, counts } = useCategories();
+const { index, remove } = useCategories();
 const selectedCategories = ref([]);
 const pageSize = 5;
 const page = ref(Number(route.query.page) || 1);
 const searchParams = ref({
-  categories: [],
-  page: page.value
+  columns: 'id,name',
+  ids: selectedCategories.value,
+  page: page.value,
+  size: pageSize
 });
 
-const { data:category, error, refresh } = await useAsyncData('categories', async() => {
-  const { data } = await index();
-  console.log('DATA => ', data);
 
-  const { count } = await index({ isCountable: true });
-  console.log('COUNT => ', count);
-
-  return { data, count }
-});
-
-console.log(error);
+const { data: category, error, refresh } = await useAsyncData(
+  `categories-page-${page.value}`,
+  () => index(searchParams.value),
+  {
+    watch: [searchParams.value]
+  }
+);
 
 const columns = [
   {
@@ -80,14 +79,18 @@ const getActionItems = (category: Tables<'categories'>) => {
     {
       label: 'Delete',
       async onSelect() {
-        await deleteCategory(Number(category.id));
-        totalCategoryCounts.value = await getTotalCategoryCounts();
-        const newPage = getNewPage(page.value, totalCategoryCounts.value, pageSize);
-        if (page.value !== newPage) {
-          page.value = newPage;
-          navigateTo(`/admin/categories?page=${newPage}#with-links`);
-        } else {
-          refresh();
+        const { error } = await remove(Number(category.id));
+        if (null === error) {
+          const { count } = await index();
+          if (count) {
+            const newPage = getNewPage(page.value, count, pageSize);
+            if (page.value !== newPage) {
+              page.value = newPage;
+              navigateTo(`/admin/categories?page=${newPage}#with-links`);
+            } else {
+              refresh();
+            }
+          }
         }
       }
     }
@@ -95,7 +98,7 @@ const getActionItems = (category: Tables<'categories'>) => {
 }
 
 const handleSearch = async() => {
-  searchParams.value.categories = selectedCategories.value;
+  searchParams.value.ids = selectedCategories.value;
   searchParams.value.page = 1;
   refresh();
 }

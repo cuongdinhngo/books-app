@@ -10,16 +10,8 @@
 </template>
 
 <script setup>
-const props = defineProps({
-  modelValue: Array
-});
-const emit = defineEmits(['update:modelValue']);
 const { index } = useCategories();
-
-const categories = computed({
-  get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value)
-});
+const categories = defineModel();
 const items = ref([]);
 
 onMounted(async() => {
