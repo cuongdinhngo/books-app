@@ -11,19 +11,14 @@
 </template>
 
 <script setup>
-const props = defineProps({
-  modelValue: Array
+const authors = defineModel({
+  type: Array
 });
-const emit = defineEmits(['update:modelValue']);
-const { getAuthorsFilter } = useAuthors();
-
-const authors = computed({
-  get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value)
-});
+const { index } = useAuthors();
 const items = ref([]);
 
 onMounted(async() => {
-  items.value = await getAuthorsFilter();
+  const { data } = await index({ columns: 'id, label:full_name' });
+  items.value = data;
 });
 </script>
