@@ -1,21 +1,63 @@
 import type { Database, Tables, Enums } from '~/types/database.types';
 
 interface GetCategoriesOptions {
-  selectColumns?: string,
-  filterIds?: (string | number)[],
+  columns?: string,
+  ids?: (string | number)[],
   page?: number,
-  pageSize?: number,
+  size?: number,
   isCountable?: boolean
 }
 
+const TABLE_NAME = 'categories';
 export const useCategories = () => {
-  const supabase = useSupabaseClient();
-  const TABLE_NAME = 'categories';
 
-  const category = ref<Tables<'categories'>>();
-  const categories = ref<Tables<'categories'>[]>([]);
-  const totalCategoryCounts = ref<number|null>(0);
-  const isLoading = ref<boolean>(false);
+  const index = (options: GetCategoriesOptions = {}) => {
+    const {
+      columns = '*',
+      ids = null,
+      page = null,
+      size = null,
+      isCountable = false
+    } = options;
+
+    let query = useTable(TABLE_NAME);
+    if (isCountable) {
+      query = query.select('*', {count: 'exact', head: true});
+    } else {
+      query = query.select(columns);
+    }
+
+    if (ids?.length) {
+      query = query.in('in', ids);
+    }
+    if (page && size && page > 1 && size > 1) {
+      const from = (page -1) * size;
+      const to = from + size - 1;
+      query = query.range(from, to);
+    }
+
+    return query;
+  }
+
+  const insert = (data: Tables<'categories'>) => {
+    return useTable(TABLE_NAME).insert(data);
+  }
+
+  const get = (id: number, columns: string = '*') => {
+    return useTable(TABLE_NAME).select(columns).eq('id', id).single();
+  }
+
+  const update = (id: number, data: Tables<'categories'>) => {
+    return useTable(TABLE_NAME).update(data).eq('id', id);
+  }
+
+  const remove = (id: number) => {
+    return useTable(TABLE_NAME).delete().eq('id', id);
+  }
+
+  const counts = () => {
+    return useTable(TABLE_NAME).select('*', {count: 'exact', head: true});
+  }
 
   const processCategory = async(categoryData: Tables<'categories'>) => {
     try {
@@ -101,13 +143,15 @@ export const useCategories = () => {
   }
 
   return {
-    isLoading,
-    category,
-    categories,
-    totalCategoryCounts,
+    index,
+    insert,
+    get,
+    update,
+    remove,
+    counts,
     processCategory,
     getCategories,
     deleteCategory,
-    getTotalCategoryCounts
+    getTotalCategoryCounts,
   }
 }

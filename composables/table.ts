@@ -1,0 +1,1 @@
+export const useTable = (table: string) => useSupabaseClient().from(table);

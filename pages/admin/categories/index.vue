@@ -24,8 +24,8 @@
 
   <Pagination
     v-model="page"
-    v-if="category?.counts"
-    :total-counts="category.counts"
+    v-if="category?.count"
+    :total-counts="category.count"
     :items-per-page="pageSize"
     @changePage="handlePageChange"
   />
@@ -34,12 +34,7 @@
 <script setup lang="ts">
 import type { Tables } from '~/types/database.types'
 const route = useRoute();
-const {
-  getCategories,
-  totalCategoryCounts,
-  deleteCategory,
-  getTotalCategoryCounts
-} = useCategories();
+const { index, counts } = useCategories();
 const selectedCategories = ref([]);
 const pageSize = 5;
 const page = ref(Number(route.query.page) || 1);
@@ -48,23 +43,17 @@ const searchParams = ref({
   page: page.value
 });
 
-const { data: category, error, refresh } = await useAsyncData(
-  `category-page:${page.value}`,
-  async() => {
-    const categoriesOptions = {
-      filterIds: searchParams.value.categories,
-      page: searchParams.value.page,
-      pageSize
-    };
-    const data = await getCategories(categoriesOptions);
-    const counts = await getTotalCategoryCounts({ filterIds: searchParams.value.categories });
-    console.log(`useAsyncData => category-page:${page.value} && COUNTS: ${counts}`);
+const { data:category, error, refresh } = await useAsyncData('categories', async() => {
+  const { data } = await index();
+  console.log('DATA => ', data);
 
-    return {data,counts}
-  }, {
-    watch: [searchParams.value]
-  }
-)
+  const { count } = await index({ isCountable: true });
+  console.log('COUNT => ', count);
+
+  return { data, count }
+});
+
+console.log(error);
 
 const columns = [
   {
