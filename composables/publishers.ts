@@ -1,132 +1,67 @@
 import type { Tables } from '~/types/database.types';
 
 interface GetPublishersOptions {
-  selectColumns?: string,
-  filterIds?: (number | string)[],
+  columns?: string,
+  ids?: (string | number)[],
   page?: number,
-  pageSize?: number
-};
+  size?: number
+}
 
+const TABLE_NAME = 'publishers';
 export const usePublishers = () => {
-  const supabase = useSupabaseClient();
-  const { uploadPhoto, deletePhoto } = useImages('books');
-  const TABLE_NAME = 'publishers';
+  const { uploadPhoto } = useImages('books');
 
-  const publishers = ref<Tables<'publishers'>[]>([]);
-  const publisher = ref<Tables<'publishers'>>();
-  const totalPublisherCounts = ref<number>(0);
-  const perPage = 5;
-  const isLoading = ref<boolean>(false);
+  const index = (options: GetPublishersOptions = {}) => {
 
-  const getPublishers = async(options: GetPublishersOptions = {}) => {
     const {
-      selectColumns,
-      filterIds,
-      page,
-      pageSize
+      columns = '*',
+      ids = null,
+      page = null,
+      size = null
     } = options;
 
-    try {
-      let query = supabase.from(TABLE_NAME)
-        .select(selectColumns)
-      ;
-      if (filterIds && filterIds.length > 0) {
-        query = query.in('id', filterIds);
-      }
+    let query = useTable(TABLE_NAME).select(columns, { count: 'exact' });
 
-      if (page && page > 0 && pageSize && pageSize > 0) {
-        const from = (page - 1) * pageSize;
-        const to = page * pageSize - 1;
-        query = query.range(from, to);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-
-      return data || [];
-    } catch(err) {
-      console.error(`[ERROR] getPublishers with ${JSON.stringify(options)}: `, err);
-      return [];
+    if (ids?.length) {
+      query = query.in('id', ids);
     }
+
+    if (page && size && page >= 1 && size >= 1) {
+      query = query.range((page - 1 ) * size, page * size - 1);
+    }
+
+    return query;
   }
 
-  const processPublisher = async(publisherData: Tables<'publishers'>) => {
-    try {
-      isLoading.value = true;
-      const uploadedLogo = await uploadPhoto(publisherData.logo, TABLE_NAME);
-      if (uploadedLogo) {
-        publisherData.logo = uploadedLogo;
-      }
-
-      const { data, error} = await supabase.from(TABLE_NAME).upsert(publisherData).select();
-      if (error) throw error;
-
-      isLoading.value = false;
-      return data;
-    } catch(err) {
-      isLoading.value = false;
-      console.log('[ERROR] upsertPublisher: ', err);
-      return null;
+  const insert = async (data: Tables<'publishers'>) => {
+    const logoUrl = await uploadPhoto(data.logo, 'publishers');
+    if (logoUrl) {
+      data.logo = logoUrl;
     }
+    return useTable(TABLE_NAME).insert(data);
   }
 
-  const deletePublisher = async(publisherId: number) => {
-    try {
-      const { error } = await supabase.from(TABLE_NAME).delete().eq('id', publisherId);
-      if (error) throw error;
-
-      return true;
-    } catch(err) {
-      console.log('[ERROR] deletePublisher: ', err);
-      return false;
-    }
+  const get = (id: number, columns: string = '*') => {
+    return useTable(TABLE_NAME).select(columns).eq('id', id).single();
   }
 
-  const getTotalPublisherCounts = async(options: GetPublishersOptions = {}) => {
-    try {
-      const { filterIds } = options;
-      let query = supabase.from(TABLE_NAME)
-        .select('*', { count: 'exact', head: true })
-      ;
-      if (filterIds && filterIds.length > 0) {
-        query = query.in('id', filterIds);
-      }
-
-      const { count, error } = await query;
-      if (error) throw error
-
-      return count;
-    } catch(err) {
-      console.log(`[ERROR] getTotalPublisherCounts with ${JSON.stringify(options)} `, err);
-      return 0;
+  const update = async (id: number, data: Tables<'publishers'>) => {
+    const logoUrl = await uploadPhoto(data.logo, 'publishers');
+    if (logoUrl) {
+      data.logo = logoUrl;
     }
+    return useTable(TABLE_NAME).update(data).eq('id', id);
   }
 
-  const getPublishersFilter = async() => {
-    try {
-      const { data, error: queryError } = await supabase.from(TABLE_NAME).select(`
-        id,
-        label:name
-      `);
-      if (queryError) throw queryError;
-
-      return data;
-    } catch(error) {
-      console.log('[ERROR] getAuthorsFilter: ', error);
-      return [];
-    }
+  const remove = (id: number) => {
+    return useTable(TABLE_NAME).delete().eq('id', id);
   }
 
   return {
-    isLoading,
-    publisher,
-    publishers,
-    totalPublisherCounts,
-    perPage,
-    getPublishersFilter,
-    processPublisher,
-    deletePublisher,
-    getTotalPublisherCounts,
-    getPublishers
+    index,
+    insert,
+    get,
+    update,
+    remove
   }
 }

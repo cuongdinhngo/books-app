@@ -24,8 +24,8 @@
 
   <Pagination
     v-model="page"
-    v-if="publisher?.counts > 0"
-    :totalCounts="publisher.counts"
+    v-if="publisher?.count > 0"
+    :totalCounts="publisher.count"
     :items-per-page="pageSize"
     @changePage="handlePageChange"
   />
@@ -34,47 +34,31 @@
 <script setup lang="ts">
 import type { Tables } from '~/types/database.types';
 
-const {
-  deletePublisher,
-  getTotalPublisherCounts,
-  getPublishers
-} = usePublishers();
+const { index, remove } = usePublishers();
 const selectedPublishers = ref([]);
-const page = ref(1);
-const searchParams = ref({
-  publishers: selectedPublishers.value,
-  page: page.value
-});
+const page = ref(Number(useRoute().query?.page) || 1);
 const pageSize = 5;
+const searchParams = ref({
+  ids: selectedPublishers.value,
+  page: page.value,
+  size: pageSize
+});
 
-const { data: publisher, refresh } = await useAsyncData(
-  `publisher-page:${page.value}`,
-  async() => {
-    const searchConditions = {
-      selectColumns: 'id, name, logo',
-      filterIds: searchParams.value.publishers,
-      page: searchParams.value.page,
-      pageSize
-    };
-    const data = await getPublishers(searchConditions);
-    const counts = await getTotalPublisherCounts({ filterIds: searchParams.value.publishers });
-    console.log(`useAsyncData => publisher-page:${page.value} && COUNTS: ${counts}`);
-
-    return { data, counts }
-  }, {
-    watch: [searchParams.value]
-  }
-)
+const { data: publisher, error, refresh } = await useAsyncData(
+  `publisher-page-${page.value}`,
+  () => index(searchParams.value),
+  { watch: [searchParams.value] }
+);
 
 const handleSearch = async() => {
   searchParams.value.page = 1;
-  searchParams.value.publishers = selectedPublishers.value;
+  searchParams.value.ids = selectedPublishers.value;
   refresh();
 }
 
 const handlePageChange = async(newPage) => {
-  page.value = newPage;
   searchParams.value.page = newPage;
+  page.value = newPage;
 };
 
 const columns = [
@@ -106,14 +90,18 @@ function getActionItems(publisher: Tables<'publishers'>) {
     {
       label: 'Delete',
       async onSelect() {
-        await deletePublisher(publisher.id);
-        const publisherCounts = await getTotalPublisherCounts({ filterIds: selectedPublishers.value });
-        const newPage = getNewPage(page.value, publisherCounts, pageSize);
-        if (page.value !== newPage) {
-          page.value = newPage;
-          navigateTo(`/admin/publishers?page=${newPage}#with-links`);
-        } else {
-          refresh();
+        const { error } = await remove(Number(publisher.id));
+        if (null === error) {
+          const { count } = await index();
+          if (count) {
+            const newPage = getNewPage(page.value, count, pageSize);
+            if (page.value !== newPage) {
+              page.value = newPage;
+              navigateTo(`/admin/publishers?page=${newPage}#with-links`);
+            } else {
+              refresh();
+            }
+          }
         }
       }
     }
