@@ -6,7 +6,7 @@
     class="flex-1"
   >
     <template #actions-cell="{ row }">
-      <UDropdownMenu :items="getDropdownActions(row.original)">
+      <UDropdownMenu v-if="getDropdownActions !== null" :items="getDropdownActions(row.original)">
         <UButton
           icon="i-lucide-ellipsis-vertical"
           color="neutral"
@@ -40,6 +40,30 @@
       </UBadge>
     </template>
 
+    <template #orderActions-cell="{ row }">
+      <div class="flex space-x-4">
+        <UButton
+          icon="lucide:calendar-cog"
+          size="md"
+          color="primary"
+          variant="subtle"
+          @click="navigateTo(`/admin/orders/${row.original.id}`)"
+        >
+          View details
+        </UButton>
+        <UButton
+          icon="lucide:badge-check"
+          size="md"
+          color="primary"
+          variant="subtle"
+          v-if="handleApprove !== null"
+          @click="handleApprove(row.original.id)"
+        >
+          Approve
+        </UButton>
+      </div>
+    </template>
+
   </UTable>
 </template>
 
@@ -54,8 +78,12 @@ const props = defineProps({
     required: true
   },
   getDropdownActions: {
-    type: Function,
-    required: true
+    type: [Function, null],
+    default: null
+  },
+  handleApprove: {
+    type: [Function, null],
+    default: null
   }
 });
 

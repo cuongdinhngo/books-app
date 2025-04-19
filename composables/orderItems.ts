@@ -1,42 +1,23 @@
-interface OrderItems {
-  id?: Number,
-  order_id?: Number,
-  book_item_id?: Number,
-  status?: String,
-  created_at?: String,
-  updated_at?: String
+import type { Tables } from '~/types/database.types';
+interface GetOrderItemsOptions {
+  columns?: string,
+  id?: number,
+  orderId?: number,
+  bookItemId?: number,
+  status?: string,
+  page?: number,
+  size?: number
 }
 
-export const useOrderItems = () => {
-  const supabase = useSupabaseClient();
-  const TABLE_NAME = 'order_items';
+const TABLE_NAME = 'order_items';
+export const useOrderItems = () => {  
 
-  const orderItems = useState('orderItems', () => []);
-  const totalOrderItemCounts = useState<Number|null>('totalOrderItemCounts', () => null);
-  
-  const addOrderItems = async(orderItemsData: Array<OrderItems>) => {
-    try {
-      const {error} = await supabase.from(TABLE_NAME).insert(orderItemsData);
-      if (error) throw error;
-
-      return true;
-    } catch(err) {
-      console.log('[ERROR] addOrderItems: ', err);
-      return false;
-    }
+  const addOrderItems = (data: Tables<'order_items'>[]) => {
+    return useTable(TABLE_NAME).insert(data);
   }
 
-  const updateOrderItems = async(orderItems: Array<OrderItems>) => {
-    try {
-      const {error} = await supabase.from(TABLE_NAME)
-        .upsert(orderItems);
-      if (error) throw error;
-
-      return true;
-    } catch(err) {
-      console.log('[ERROR] updateOrderItems: ', err);
-      return false;
-    }
+  const upsertOrderItems = (data: Tables<'order_items'>[]) => {
+    return useTable(TABLE_NAME).upsert(data);
   }
 
   const getOrderItemsByOrderId = async(orderId: Number) => {
@@ -73,10 +54,42 @@ export const useOrderItems = () => {
     }
   }
 
+  const getOrderItems = (options: GetOrderItemsOptions = {}) => {
+    const {
+      columns = '*',
+      id = null,
+      orderId = null,
+      bookItemId = null,
+      status = null,
+      page = null,
+      size = null
+    } = options;
+
+    let query = useTable(TABLE_NAME).select(columns, { count: 'exact' });
+
+    if (id) {
+      query = query.eq('id', id);
+    }
+    if (orderId) {
+      query = query.eq('order_id', orderId);
+    }
+    if (bookItemId) {
+      query = query.eq('book_item_id', bookItemId);
+    }
+    if (status) {
+      query = query.eq('status', status);
+    }
+    if (page && size && page >= 1 && size >= 1) {
+      query = query.range((page - 1) * size, page * size - 1);
+    }
+
+    return query;
+  }
+
   return {
-    orderItems,
+    getOrderItems,
     addOrderItems,
-    updateOrderItems,
+    upsertOrderItems,
     getOrderItemsByOrderId,
     getTotalOrderItemCounts
   }

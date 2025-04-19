@@ -1,7 +1,7 @@
 <template>
     <form class="mb-6 space-y-4 w-1/2 mx-auto" @submit.prevent="handleSearch">
     <USelectMenu
-      v-model="orderStatus"
+      v-model="selectedStatus"
       :items="statusOptions"
       value-key="id"
       multiple
@@ -17,38 +17,83 @@
     </div>
   </form>
 
-  <div v-if="isLoading" class="text-center text-stone-950">Loading books ...</div>
-
   <DataTable
-    v-if="orders && orders.length > 0"
-    :data="orders"
+    v-if="order && order.count > 0"
+    :data="order?.data"
     :columns="columns"
+    :handle-approve="handleApprove"
   />
   <h3 v-else class="justify-center flex text-stone-900">No Data</h3>
+
+  <Pagination
+    v-model="page"
+    v-if="order?.count > 0"
+    :totalCounts="order.count"
+    :items-per-page="pageSize"
+    @changePage="handlePageChange"
+  />
 </template>
 
 <script setup>
-const {
-  orders,
-  getAllOrders,
-  isLoading,
-  updateOrderStatus
-} = useOrders();
-const {
-  orderItems,
-  updateOrderItems,
-  getOrderItemsByOrderId
-} = useOrderItems();
-const { updateBulk } = useBookItems();
+const { index, update } = useOrders();
+const { getOrderItems, upsertOrderItems } = useOrderItems();
+const { upsertBookItems } = useBookItems();
 
-const orderStatus = ref('');
-const statusOptions = ref([
+const { query } = useRoute();
+const page = ref(Number(query.page) || 1);
+const pageSize = 5;
+const statusOptions = [
   {label: 'Done', id: 'done'},
   {label: 'Borrowing', id: 'borrowing'},
   {label: 'Waiting', id: 'waiting'}
-]);
+];
+const selectedStatus = ref([]);
+const searchParams = ref({
+  columns: `id, status, readers(id, fullName:full_name)`,
+  status: selectedStatus.value,
+  page: page.value,
+  size: pageSize
+});
 
-const UButton = resolveComponent('UButton')
+const { data: order, error, refresh, clear } = useAsyncData(
+  `order-page-${page.value}`,
+  () => index(searchParams.value),
+  { watch: [searchParams.value] }
+);
+
+const handleSearch = () => {
+  searchParams.value.status = selectedStatus.value;
+  refresh();
+}
+
+const handlePageChange = (newPage) => {
+  page.value = newPage;
+  searchParams.value.page = newPage;
+}
+
+const handleApprove = async(orderId) => {
+  const { data: orderItems } = await getOrderItems(orderId);
+  let orderItemsData = orderItems.map(item => ({
+    id: item.id,
+    status: 'borrowing',
+    order_id: orderId,
+    book_item_id: item.book_item_id
+  }));
+  let bookItemsData = orderItems.map(item => ({
+    id: item.book_item_id,
+    status: 'borrowed'
+  }));
+
+  Promise
+    .all([
+      update(orderId, {status: 'borrowing'}), 
+      upsertOrderItems(orderItemsData),
+      upsertBookItems(bookItemsData)
+    ])
+    .then(() => refresh())
+    .catch((error) => useToastError(error));
+}
+
 const columns = [
   {
     accessorKey: 'id',
@@ -67,49 +112,7 @@ const columns = [
   },
   {
     header: 'Actions',
-    id: 'actions',
-    cell: ({ row }) => {
-      return h('div', { class: 'flex gap-1' }, [
-        h(
-          UButton,
-          {
-            label: 'Detail',
-            color: 'primary',
-            variant: 'subtle',
-            class: 'ml-auto',
-            onClick: () => navigateTo(`/admin/orders/${row.original.id}`)
-          }
-        ),
-        h(
-          UButton,
-          {
-            label: 'Approve',
-            color: 'primary',
-            variant: 'subtle',
-            class: 'ml-auto',
-            onClick: () => handleApprove(Number(row.original.id))
-          }
-        )
-      ])
-    }
+    id: 'orderActions',
   }
 ]
-
-const handleSearch = async() => {
-  await getAllOrders(orderStatus.value);
-}
-
-const handleApprove = async(orderId) => {
-  await updateOrderStatus(orderId, {status: 'borrowing'});
-  await getOrderItemsByOrderId(orderId);
-  let orderItemsData = orderItems.value.map(item => ({id: item.id, status: 'borrowing', order_id: orderId, book_item_id: item.book_item_id}));
-  await updateOrderItems(orderItemsData);
-  let bookItemsData = orderItems.value.map(item => ({id: item.book_item_id, status: 'borrowed'}));
-  await updateBulk(bookItemsData);
-  await getAllOrders(orderStatus.value);
-}
-
-onMounted(async() => {
-  await getAllOrders();
-});
 </script>
