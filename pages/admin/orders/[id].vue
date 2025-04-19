@@ -32,14 +32,15 @@
 </template>
 
 <script setup>
-const { order, getOrderById, updateOrderStatus } = useOrders();
-const { getBookInfoByItemIds } = useBookItems();
-const { orderItems, updateOrderItems, getOrderItemsByOrderId } = useOrderItems();
-const { updateBulk } = useBookItems();
+const { update, getOrderById } = useOrders();
+const { getBooksItems } = useBookItems();
+const { upsertOrderItems, getOrderItems } = useOrderItems();
+const { upsertBookItems } = useBookItems();
 
 const route = useRoute();
 const orderId = Number(route.params.id);
 const bookItems = ref([]);
+const order = ref(null);
 
 const orderStatus = ref('');
 const statusOptions = ref([
@@ -98,13 +99,17 @@ const transformBookItemStatus = {
 };
 
 const handleUpdate = async() => {
-  await updateOrderStatus(orderId, {status: orderStatus.value});
-  await getOrderItemsByOrderId(orderId);
-  let orderItemsData = orderItems.value.map(item => ({id: item.id, status: orderStatus.value, order_id: orderId, book_item_id: item.book_item_id}));
-  await updateOrderItems(orderItemsData);
-  let bookItemsData = orderItems.value.map(item => ({id: item.book_item_id, status: transformBookItemStatus[orderStatus.value]}));
-  await updateBulk(bookItemsData);
-  await loadOrder();
+  const { data: orderItems } = await getOrderItems({orderId: orderId});
+  const combinedOrderItems = orderItems.map(item => ({id: item.id, status: orderStatus.value, order_id: orderId, book_item_id: item.book_item_id}));
+  const bookItemsData = orderItems.map(item => ({id: item.book_item_id, status: transformBookItemStatus[orderStatus.value]}));
+
+  Promise.all([
+    upsertOrderItems(combinedOrderItems),
+    update(orderId, {status: orderStatus.value}),
+    upsertBookItems(bookItemsData)
+  ])
+  .then(() => loadOrder())
+  .catch((error) => useToastError(error));
 }
 
 onMounted(async() => {
@@ -112,13 +117,15 @@ onMounted(async() => {
 });
 
 async function loadOrder() {
-  await getOrderById(orderId);
-  const orderItems = order?.value.order_items;
-  orderStatus.value = order?.value.status;
+  const { data } = await getOrderById(orderId, `id, status, readers(id, fullName:full_name), order_items(*)`);
+  order.value = data;
+  const orderItems = data.order_items;
+  orderStatus.value = data.status;
   const orderBookItems = orderItems.map(item => ({id: item.book_item_id, status: item.status}));
-  const bookItemData = await getBookInfoByItemIds(orderItems.map(item => (item.book_item_id)))
+  const bookItemIds = orderItems.map(item => (item.book_item_id));
+  const { data: bookItemsData } = await getBooksItems({ columns: `bookItemId:id, book_id, books(id,title,cover_image)`, ids: bookItemIds});
   bookItems.value = orderBookItems.map(item => {
-    const matchingData = bookItemData.find(data => data.bookItemId === item.id);
+    const matchingData = bookItemsData.find(data => data.bookItemId === item.id);
     if (matchingData) {
       return {
         ...item,

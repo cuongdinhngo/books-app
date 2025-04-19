@@ -1,3 +1,5 @@
+import type { Tables } from '~/types/database.types';
+
 interface Order {
   id?: Number,
   reader_id?: String,
@@ -7,21 +9,48 @@ interface Order {
   updated_at?: String
 }
 
-interface UseOrderOptions {
-  perPage?: Number
+interface GetOrdersOptions {
+  columns?: string,
+  id?: number,
+  readerId?: number,
+  status?: (string)[],
+  page?: number,
+  size?: number
 }
 
-export const useOrders = (options: UseOrderOptions = {}) => {
-  const { perPage = 10 } = options;
+const TABLE_NAME = 'orders';
+export const useOrders = () => {
 
-  const supabase = useSupabaseClient();
-  const isLoading = useState('isLoading', () => false);
-  const error = useState('error', () => '');
-  const TABLE_NAME = 'orders';
-  
-  const order = useState('order', () => null);
-  const orders = useState<Array<any>>('orders', () => []);
-  const totalOrderCounts = useState<Number|null>('totalOrderCounts', () => 0);
+  const index = (options: GetOrdersOptions = {}) => {
+    const {
+      columns = '*',
+      id = null,
+      readerId = null,
+      status = [],
+      page = null,
+      size = null
+    } = options;
+
+    let query = useTable(TABLE_NAME).select(columns, { count: 'exact'});
+    if (id) {
+      query = query.eq('id', id);
+    }
+    if (readerId) {
+      query = query.eq('reader_id', readerId);
+    }
+    if (status && status.length > 0) {
+      query = query.in('status', status);
+    }
+    if (page && size && page >= 1 && size >= 1) {
+      query = query.range((page - 1) * size, page * size - 1);
+    }
+
+    return query;
+  }
+
+  const update = (orderId: number, data: Tables<'orders'>) => {
+    return useTable(TABLE_NAME).update(data).eq('id', orderId);
+  }
 
   const getAllOrders = async(status?: String) => {
     try {
@@ -116,25 +145,8 @@ export const useOrders = (options: UseOrderOptions = {}) => {
     }
   }
 
-  const getOrderById = async(orderId: Number) => {
-    try {
-      const { data, error } = await supabase.from(TABLE_NAME)
-        .select(`
-          id,
-          status,
-          readers(id, fullName:full_name),
-          order_items(*)
-        `)
-        .eq('id', orderId)
-        .single()
-      ;
-      if (error) throw error;
-
-      order.value = data;
-    } catch(err) {
-      console.error('[ERRO] getOrderById: ', err);
-      order.value = null;
-    }
+  const getOrderById = async(orderId: number, columns: string = '*') => {
+    return useTable(TABLE_NAME).select(columns).eq('id', orderId).single();
   }
 
   const getOrdersByReaderId = async(readerId: Number) => {
@@ -158,15 +170,11 @@ export const useOrders = (options: UseOrderOptions = {}) => {
   }
   
   return {
-    order,
-    orders,
-    isLoading,
-    error,
-    perPage,
+    update,
+    index,
     addNewOrder,
     getNewestOrderByReader,
     getAllOrders,
-    totalOrderCounts,
     updateOrderStatus,
     getOrderById,
     getTotalOrderCounts,

@@ -44,7 +44,6 @@ export const useBookItems = () => {
     return query;
   }
 
-
   const updateBookItemStatus = async(itemId: number, data: Tables<'book_items'>) => {
     return useTable(TABLE_NAME).update(data).eq('id', itemId);
   }
@@ -65,15 +64,8 @@ export const useBookItems = () => {
     return query;
   }
 
-  const updateBulk = async(data) => {
-    try {
-      const {error} = await supabase.from('book_items').upsert(data);
-      if(error) throw error;
-      return true;
-    } catch(err) {
-      console.error('[ERROR] FAILED updateBulk: ', err);
-      return false;
-    }
+  const upsertBookItems = (data: Tables<'book_items'>[]) => {
+    return useTable(TABLE_NAME).upsert(data);
   }
 
   const getBookInfoByItemIds = async(itemIds) => {
@@ -100,6 +92,7 @@ export const useBookItems = () => {
     getBooksItems,
     updateBookItemStatus,
     deleteBookItems,
+    upsertBookItems
     // getItemsByBookId,
     // updateBookItemStatus,
     // getTotalBookItemCounts,
