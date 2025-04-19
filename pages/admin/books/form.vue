@@ -55,8 +55,7 @@
         :label="useRoute().query?.id ? 'Update' : 'Add new'"
       />
 
-      <h3 v-if="errorMessage" class="text-red-500">{{ errorMessage }}</h3>
-      <h3 v-if="successMessage" class="text-green-600">{{ successMessage }}</h3>
+      <h3 v-if="message" :class="textColor">{{ message }}</h3>
     </form>
 
     <!-- Photo Preview -->
@@ -67,17 +66,20 @@
     </div>
   </div>
   <div>
+    <h3 v-if="status !== 'success'" class="justify-center flex text-stone-900">Loading ...</h3>
+
     <DataTable
-      v-if="bookItems.length > 0"
-      :data="bookItems"
+      v-if="bookItemsList.count > 0"
+      :data="bookItemsList.data"
       :columns="columns"
+      :get-dropdown-actions="getActionItems"
     />
     <h3 v-else class="justify-center flex text-stone-900">No Book Items</h3>
 
     <Pagination
-      v-if="totalBookItems > 0"
+      v-if="bookItemsList.count > 0"
       v-model="page"
-      :totalCounts="totalBookItems"
+      :totalCounts="bookItemsList.count"
       :items-per-page="itemsPerPage"
       @changePage="handlePageChange"
     />
@@ -96,41 +98,45 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import type { Tables } from '~/types/database.types';
 
-const { processBook, getBookById, book } = useBooks();
-const { processBookAuthor } = useBooksAuthors();
-const { processBookCategory } = useBooksCategories();
-const { processBookPublisher } = useBooksPublishers();
+const { index, insert, get, update, remove } = useBooks();
+const { insertBooksAuthors, deleteBooksAuthors } = useBooksAuthors();
+const { insertBooksCategories, deleteBooksCategories } = useBooksCategories();
+const { insertBooksPublishers, deleteBooksPublishers } = useBooksPublishers();
 const {
-  bookItems,
-  getItemsByBookId,
-  insertBookItems,
-  totalBookItems,
-  itemsPerPage,
+  insertBooksItems,
+  getBooksItems,
   updateBookItemStatus,
-  deleteBookItem
+  deleteBookItems
 } = useBookItems();
 
-const page = ref(1);
-const title = ref(null);
-const selectedAuthors = ref(null);
-const selectedCategories = ref(null);
-const selectedPublishers = ref(null);
+const { query } = useRoute();
+const page = ref(Number(query.page) || 1);
+const bookId = Number(query.id);
+
+const title = ref('');
+const selectedAuthors = ref([]);
+const selectedCategories = ref([]);
+const selectedPublishers = ref([]);
 const selectedPhoto = ref(null);
-const imagePreview = ref(null);
-const quantity = ref(null);
+const imagePreview = ref('');
+const quantity = ref(0);
 const description = ref(null);
-const errorMessage = ref('');
-const successMessage = ref('');
-const oldAuthors = ref(null);
-const oldCategories = ref(null);
-const oldPublishers = ref(null);
+const textColor = ref('');
+const message = ref('');
+const oldQuantity = ref(0);
+const oldAuthors = ref([]);
+const oldCategories = ref([]);
+const oldPublishers = ref([]);
+
+const itemsPerPage = 10;
 
 const openBookItemModal = ref(false);
 const currentBookItem = ref(null);
 
-const bookStatus = ref([
+const bookStatus = [
   {
     label: 'Pending',
     id: 'pending'
@@ -147,114 +153,56 @@ const bookStatus = ref([
     label: 'Lost',
     id: 'lost'
   }
-])
+];
 const currentBookStatus = ref('');
 
-const UBadge = resolveComponent('UBadge');
-const UButton = resolveComponent('UButton');
-const UDropdownMenu = resolveComponent('UDropdownMenu');
-const columns = [
-  {
-    accessorKey: 'id',
-    header: '#ID',
-    cell: ({ row }) => `#${row.getValue('id')}`
-  },
-  {
-    accessorKey: 'status',
-    header: 'Status',
-    cell: ({ row }) => {
-      const color = {
-        open: 'success',
-        pending: 'info',
-        borrowed: 'warning',
-        lost: 'neutral'
-      }[row.getValue('status')]
-
-      return h(UBadge, { class: 'capitalize', variant: 'subtle', color }, () =>
-        row.getValue('status')
-      )
+const { data: bookItemsList, error, refresh, status } = await useAsyncData(
+  `book-items-page-${page.value}`,
+  () => {
+    if (bookId) {
+      return getBooksItems({ bookId: bookId, page: page.value, size: itemsPerPage });
+    } else {
+      return [];
     }
   },
-  {
-    header: 'Actions',
-    id: 'actions',
-    cell: ({ row }) => {
-      return h(
-        'div',
-        { class: 'text-right' },
-        h(
-          UDropdownMenu,
-          {
-            content: {
-              align: 'end'
-            },
-            items: getActionItems(row),
-            'aria-label': 'Actions dropdown'
-          },
-          () =>
-            h(UButton, {
-              icon: 'i-lucide-ellipsis-vertical',
-              color: 'neutral',
-              variant: 'ghost',
-              class: 'ml-auto text-stone-800',
-              'aria-label': 'Actions dropdown'
-            })
-        )
-      )
-    }
-  }
-]
+  { watch: [page.value] }
+);
 
-function getActionItems(row) {
-  return [
-    {
-      label: 'Update status',
-      onSelect() {
-        openBookItemModal.value = !openBookItemModal.value;
-        currentBookItem.value = row.original.id;
-        currentBookStatus.value = row.original.status;
-      }
-    },
-    {
-      label: 'Delete',
-      async onSelect() {
-        deleteBookItem(row.original.id);
-        await getItemsByBookId(useRoute().query.id, Number(useRoute().query.page));
-      }
-    }
-  ]
-}
+console.log('STATUS => ', status);
 
 const handleBookStatus = async() => {
-  await updateBookItemStatus(currentBookItem.value, {status: currentBookStatus.value});
-  await getItemsByBookId(useRoute().query.id, Number(useRoute().query.page));
+  await updateBookItemStatus(currentBookItem.value, {status: currentBookStatus.value})
+    .then(({error: updatedError}) => {
+      if (updatedError) throw updatedError;
+    })
+    .catch((error) => {
+      useToastError(error)
+    })
+  ;
   openBookItemModal.value = !openBookItemModal.value;
+  refresh();
 }
 
 const handlePageChange = async(newPage) => {
-  await getItemsByBookId(useRoute().query.id, Number(newPage));
+  page.value = newPage;
+  refresh();
 }
 
 onMounted(async() => {
-  const routeQuery = useRoute().query;
-  const bookId = routeQuery.id;
   if (bookId) {
-    await getBookById(bookId);
-    title.value = book.value.title;
-    description.value = book.value.description;
-    quantity.value = book.value.quantity;
+    const { data: book } = await get(bookId);
+    title.value = book?.title;
+    description.value = book?.description;
+    quantity.value = book?.quantity;
     selectedPhoto.value = null;
-    imagePreview.value = book.value.coverImage;
-    selectedPublishers.value = book.value.publishers.map(publisher => publisher.id);
-    selectedCategories.value = book.value.categories.map(category => category.id);
-    selectedAuthors.value = book.value.authors.map(author => author.id);
-    oldCategories.value = book.value.categories.map(category => category.id);
-    oldAuthors.value = book.value.authors.map(author => author.id);
-    oldPublishers.value = book.value.publishers.map(publisher => publisher.id);
-
-    await getItemsByBookId(bookId, Number(routeQuery.page | 1));
-
-    console.log('Total Book Items -> ', totalBookItems.value);
+    imagePreview.value = book?.coverImage;
+    selectedPublishers.value = book?.publishers.map(publisher => Number(publisher.id));
+    selectedCategories.value = book?.categories.map(category => Number(category.id));
+    selectedAuthors.value = book?.authors.map(author => Number(author.id));
+    oldCategories.value = book?.categories.map(category => Number(category.id));
+    oldAuthors.value = book?.authors.map(author => Number(author.id));
+    oldPublishers.value = book?.publishers.map(publisher => Number(publisher.id));
+    oldQuantity.value = book?.quantity;
   }
 });
 
@@ -266,63 +214,153 @@ const handleFileUpload = (file) => {
 };
 
 const submitForm = async() => {
-  let data = {
-    id: useRoute().query?.id,
+  message.value = '';
+  let book = {
     title: title.value,
-    quantity: quantity.value || null,
-    description: description.value || null
-  };
+    quantity: quantity.value,
+    description: description.value
+  } as Tables<'books'>;
+
+  if (bookId) {
+    book = {
+      ...book,
+      id: Number(query.id)
+    }
+  }
 
   if (selectedPhoto.value) {
-    data = {
-      ...data,
+    book = {
+      ...book,
       cover_image: selectedPhoto.value
     }
   }
 
-  const response = await processBook(data);
-  if (response && response?.id) {
-    const bookId = response?.id;
+  const { error } = bookId ? await update(bookId, book) : await insert(book);
+  if (null === error) {
+    const { data } = await index({ columns: 'id,title', title: title.value });
+    const bookId = Number(data?.[0].id);
 
-    if (oldAuthors.value !== selectedAuthors.value) {
-      await processBookAuthor(
-        bookId,
-        selectedAuthors.value.map(author => ({
-          book_id: bookId,
-          author_id: author,
-        })),
-        oldAuthors.value
-      );
+    if (
+      selectedAuthors.value.length > 0 &&
+      JSON.stringify(oldAuthors.value) !== JSON.stringify(selectedAuthors.value)
+    ) {
+      await deleteBooksAuthors(bookId)
+        .then(({ error: deletedError }) => {
+          if (deletedError) throw deletedError;
+
+          const booksAuthors = selectedAuthors.value.map(author => ({
+            author_id: author,
+            book_id: bookId
+          }));
+
+          return insertBooksAuthors(booksAuthors);
+        })
+        .catch((error) => {
+          useToastError(error)
+        });
     }
 
-    if (oldCategories.value !== selectedCategories.value) {
-      await processBookCategory(
-        bookId,
-        selectedCategories.value.map(category => ({
-          category_id: category,
-          book_id: bookId
-        })),
-        oldCategories.value
-      );
+    if (
+      selectedCategories.value.length > 0 &&
+      JSON.stringify(oldCategories.value) !== JSON.stringify(selectedCategories.value)
+    ) {
+      await deleteBooksCategories(bookId)
+        .then(({ error: deletedError }) => {
+          if (deletedError) throw deletedError;
+
+          const booksCategories = selectedCategories.value.map(category => ({
+            book_id: bookId,
+            category_id: category
+          }));
+
+          return insertBooksCategories(booksCategories);
+        })
+        .catch((error) => {
+          useToastError(error)
+        });
     }
 
-    if (oldPublishers.value !== selectedPublishers.value) {
-      await processBookPublisher(
-        bookId,
-        selectedPublishers.value.map(publisher => ({
-          publisher_id: publisher,
-          book_id: bookId
-        })),
-        oldCategories.value
-      );
+    if (
+      selectedPublishers.value.length > 0 &&
+      JSON.stringify(oldPublishers.value) !== JSON.stringify(selectedPublishers.value)
+    ) {
+      await deleteBooksPublishers(bookId)
+        .then(({ error: deletedError }) => {
+          if (deletedError) throw deletedError;
+
+          const booksPublishers = selectedPublishers.value.map(publisher => ({
+            book_id: bookId,
+            publisher_id: publisher
+          }));
+
+          return insertBooksPublishers(booksPublishers);
+        })
+        .catch((error) => {
+          useToastError(error)
+        });
     }
 
-    await insertBookItems(quantity.value, {book_id: bookId, status: 'pending'})
-    await getItemsByBookId(bookId);
+    if (quantity.value > 0 && oldQuantity.value !== quantity.value) {
+      const booksItemsData = Array.from({ length: book.quantity }, () => ({ book_id: bookId, status: 'pending' }));
+      await insertBooksItems(booksItemsData)
+        .then(async({ error }) => {
+          if (error) throw error;
+        })
+        .catch((error) => {
+          useToastError(error)
+        });
+    }
 
-    successMessage.value = 'New book was created succesfully!'
+    const { data: booksItemsData } = await getBooksItems({bookId: bookId});
+    bookItemsList.value = booksItemsData;
+
+    message.value = query?.id ? 'Book was updated succesfully!' : 'New Book was created succesfully!';
+    textColor.value = 'text-green-600';
+
+    useToastSuccess();
+
+    navigateTo(`/admin/books/form?id=${bookId}`);
   } else {
-    errorMessage.value = 'Creating new book was failed!'
+    console.log('[ERROR] book => ', error);
+    message.value = query?.id ? 'Book was updated failed!' : 'Creating new Book was failed!';
+    textColor.value = 'text-red-500';
   }
+}
+
+const columns = [
+  {
+    accessorKey: 'id',
+    header: '#ID',
+    cell: ({ row }) => `#${row.getValue('id')}`
+  },
+  {
+    accessorKey: 'status',
+    header: 'Status',
+    id: 'bookItemStatus'
+  },
+  {
+    header: 'Actions',
+    id: 'actions'
+  }
+]
+
+function getActionItems(bookItem) {
+  return [
+    {
+      label: 'Update status',
+      onSelect() {
+        openBookItemModal.value = !openBookItemModal.value;
+        currentBookItem.value = bookItem.id;
+        currentBookStatus.value = bookItem.status;
+      }
+    },
+    {
+      label: 'Delete',
+      async onSelect() {
+        await deleteBookItems({ ids: [bookItem.id] });
+        refresh();
+      }
+    }
+  ]
 }
 </script>

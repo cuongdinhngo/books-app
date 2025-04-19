@@ -99,7 +99,6 @@ const submitForm = async() => {
 
   const { error } = query.id ? await update(query.id, author) : await insert(author); 
   if (error) {
-    console.log('ERROR => ', error);
     message.value = query?.id ? 'Author was updated failed!' : 'Creating new Author was failed!';
     textColor.value = 'text-red-500';
   } else {

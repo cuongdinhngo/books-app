@@ -12,6 +12,7 @@
       </button>
     </div>
     <h3 v-if="message" :class="textColor">{{ message }}</h3>
+    <UButton label="Show toast" color="neutral" variant="outline" @click="showToast" />
   </form>
 </template>
 
@@ -21,6 +22,16 @@ const name = ref(null);
 const message = ref('');
 const textColor = ref('');
 const { query } = useRoute();
+const toast = useToast();
+
+function showToast() {
+  console.log('show toast ...', toast);
+  toast.add({
+    title: 'Hello!',
+    description: 'This is a test toast'
+  })
+  console.log('toast ....');
+}
 
 onMounted(async() => {
   if (query.id) {
@@ -30,20 +41,26 @@ onMounted(async() => {
 });
 
 const submitForm = async() => {
-  message.value = '';
-  let error = null;
-  if (query.id) {
-    const { error } = await update(Number(query.id), { name: name.value });
-  } else {
-    const { error } = await insert({ name: name.value });
-  }
+  toast.add({
+      title: 'Success',
+      description: 'Your action was completed successfully.',
+      color: 'success'
+    })
+  // message.value = '';
+  // let error = null;
+  // if (query.id) {
+  //   const { error } = await update(Number(query.id), { name: name.value });
+  // } else {
+  //   const { error } = await insert({ name: name.value });
+  // }
 
-  if (null === error) {
-    message.value = 'New Publisher was created succesfully!';
-    textColor.value = 'text-green-600';
-  } else {
-    message.value = 'Creating new Publisher was failed!';
-    textColor.value = 'text-red-500';
-  }
+  // if (null === error) {
+  //   message.value = 'New Publisher was created succesfully!';
+  //   textColor.value = 'text-green-600';
+
+  // } else {
+  //   message.value = 'Creating new Publisher was failed!';
+  //   textColor.value = 'text-red-500';
+  // }
 }
 </script>

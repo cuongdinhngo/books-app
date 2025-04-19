@@ -38,59 +38,82 @@
     </div>
   </form>
 
-  <div v-if="isLoading" class="text-center text-stone-950">Loading books ...</div>
-
   <DataTable
-    v-if="books.length > 0"
-    :data="books"
+    v-if="book?.data"
+    :data="book?.data"
     :columns="columns"
+    :get-dropdown-actions="getActionItems"
   />
   <h3 v-else class="justify-center flex text-stone-900">No Data</h3>
 
   <Pagination
     v-model="page"
-    v-if="totalBooks > 0"
-    :totalCounts="totalBooks"
-    :items-per-page="perPage"
+    v-if="book?.count > 0"
+    :totalCounts="book?.count"
+    :items-per-page="pageSize"
     @changePage="handlePageChange"
   />
 </template>
 
-<script setup>
-const {books, totalBooks, perPage, searchBook, isLoading} = useBooks();
+<script setup lang="ts">
+import type { Tables } from '~/types/database.types';
+const { query } = useRoute();
+const { index, remove } = useBooks();
+const { deleteBooksAuthors } = useBooksAuthors();
+const { deleteBooksCategories } = useBooksCategories();
+const { deleteBooksPublishers } = useBooksPublishers();
+const { deleteBookItems } = useBookItems();
 
-const route = useRoute();
-const page = ref(1);
-const title = ref(null);
+const page = ref(Number(query.page) || 1);
+const pageSize = 5;
+const title = ref('');
 const selectedAuthors = ref(null);
 const selectedCategories = ref(null);
 const selectedPublishers = ref(null);
+const searchParams = ref({
+  title: title.value,
+  authorIds: selectedAuthors.value,
+  categoryIds: selectedCategories.value,
+  publisherId: selectedPublishers.value,
+  page: page.value,
+  size: pageSize
+});
 
-const UAvatar = resolveComponent('UAvatar');
-const UButton = resolveComponent('UButton')
-const UDropdownMenu = resolveComponent('UDropdownMenu');
+const { data: book, error, refresh, status, clear} = await useAsyncData(
+  `books-page-${page.value}`,
+  () => index(searchParams.value),
+  { watch: [searchParams.value] }
+);
+
+console.log('ERROR => ', error.value, 'STATUS => ', status.value);
+
+const handleSearch = async() => {
+  searchParams.value = {
+    title: title.value,
+    authorIds: selectedAuthors.value,
+    categoryIds: selectedCategories.value,
+    publisherId: selectedPublishers.value,
+    page: page.value,
+    size: pageSize
+  }
+  refresh()
+}
+
+const handlePageChange = async(newPage) => {
+  page.value = newPage;
+  searchParams.value.page = newPage;
+  refresh();
+}
+
 const columns = [
   {
-    accessorKey: 'bookId',
+    accessorKey: 'id',
     header: '#',
-    cell: ({ row }) => `#${row.getValue('bookId')}`
+    cell: ({ row }) => `#${row.getValue('id')}`
   },
   {
     accessorKey: 'coverImage',
     header: 'Book',
-    cell: ({ row }) => {
-      return h('div', { class: 'flex items-center gap-3' }, [
-        h(UAvatar, {
-          src: row.original.coverImage,
-          alt: row.original.title,
-          size: '2xl',
-          ui: {root: 'rounded-none'}
-        }),
-        h('div', undefined, [
-          h('p', { class: 'font-medium text-(--ui-text-highlighted) text-stone-800' }, row.original.title),
-        ])
-      ])
-    }
   },
   {
     accessorKey: 'publishers',
@@ -110,77 +133,44 @@ const columns = [
   {
     header: 'Actions',
     id: 'actions',
-    cell: ({ row }) => {
-      return h(
-        'div',
-        { class: 'text-right' },
-        h(
-          UDropdownMenu,
-          {
-            content: {
-              align: 'end'
-            },
-            items: getActionItems(row),
-            'aria-label': 'Actions dropdown'
-          },
-          () =>
-            h(UButton, {
-              icon: 'i-lucide-ellipsis-vertical',
-              color: 'neutral',
-              variant: 'ghost',
-              class: 'ml-auto text-stone-800',
-              'aria-label': 'Actions dropdown'
-            })
-        )
-      )
-    }
   }
 ]
 
-function getActionItems(row) {
+function getActionItems(book: Tables<'books'>) {
   return [
     {
       label: 'Update information',
-      to: `/admin/books/form?id=${row.original.bookId}`,
+      to: `/admin/books/form?id=${book.id}`,
     },
     {
       label: 'Delete',
       onSelect() {
-        //delete
+        const result = window.confirm('Are you sure to want to delete this book!');
+        if (!result) {
+          return;
+        }
+        Promise
+          .all([
+            deleteBookItems({ bookId: book.id }),
+            deleteBooksAuthors(book.id),
+            deleteBooksCategories(book.id),
+            deleteBooksPublishers(book.id)
+          ])
+          .then(async() => {
+            await remove(book.id);
+            const { count, error } = await index(searchParams.value);
+            const newPage = getNewPage(page.value, count, pageSize);
+            if (newPage === page.value) {
+              refresh();
+            } else {
+              clear();
+              navigateTo(`/admin/books?page=${newPage}#with-links`);
+            }
+          })
+          .catch((error) => useToastError(error));
+        ;
       }
     }
   ]
 }
-
-const handleSearch = async() => {
-  isLoading.value = true;
-  const searchTerm = {
-    title: title.value,
-    publisherId: selectedPublishers.value,
-    authorIds: selectedAuthors.value,
-    categoryIds: selectedCategories.value
-  }
-
-  await searchBook(searchTerm);
-  isLoading.value = false;
-}
-
-const handlePageChange = async(newPage) => {
-  const searchTerm = {
-    title: title.value,
-    publisherIds: selectedPublishers.value,
-    authorIds: selectedAuthors.value,
-    categoryIds: selectedCategories.value
-  }
-
-  console.log('next page: ', newPage, searchTerm);
-
-  await searchBook(searchTerm, Number(newPage));
-}
-
-onMounted(async() => {
-  isLoading.value = true;
-  await searchBook();
-  isLoading.value = false;
-});
 </script>
