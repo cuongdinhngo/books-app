@@ -13,59 +13,10 @@ interface GetBooksOptions {
 const TABLE_NAME = 'books';
 export const useBooks = () => {
   const { uploadPhoto } = useImages('books');
-  const { totalBookItems, getTotalBookItemCounts } = useBookItems();
-
-  const getBooksByIds = async(bookIds) => {
-    try {
-      const { data, error: fetchError } = await bookModel
-        .select(`
-          id,
-          title,
-          coverImage:cover_image,
-          authors (id, name:full_name)
-        `)
-        .in('id', bookIds)
-      ;
-
-      if (fetchError) throw fetchError;
-
-      books.value = data;
-    } catch(err) {
-      console.log('[ERROR] getBookById: ', err);
-      books.value = [];
-    }
-  }
-
-  const getBookById = async(bookId, bookItemStatus = null) => {
-    try {
-      const { data, error: fetchError } = await bookModel
-        .select(`
-          bookId:id,
-          title,
-          description,
-          coverImage:cover_image,
-          quantity,
-          publishers (id, name),
-          authors (id, name:full_name),
-          categories (id, name)
-        `)
-        .eq('id', bookId)
-        .single()
-      ;
-
-      if (fetchError) throw fetchError;
-
-      await getTotalBookItemCounts(bookId, bookItemStatus);
-
-      book.value = data;
-      book.value.bookItemCounts = totalBookItems.value;
-    } catch(err) {
-      console.log('[ERROR] getBookById: ', err);
-      book.value = null;
-    }
-  }
 
   const index = (options: GetBooksOptions = {}) => {
+    console.log('BOOK INDEX => ', options);
+
     const {
       columns = [
         'id',
@@ -132,9 +83,10 @@ export const useBooks = () => {
       description,
       coverImage:cover_image,
       quantity,
-      publishers (id, name),
-      authors (id, name:full_name),
-      categories (id, name)
+      publishers(id, name),
+      authors(id, name:full_name),
+      categories(id, name),
+      book_items(id, book_id, status)
     `;
     return useTable(TABLE_NAME).select(columns).eq('id', id).single();
   }
@@ -156,8 +108,6 @@ export const useBooks = () => {
     insert,
     get,
     update,
-    remove,
-    getBookById,
-    getBooksByIds
+    remove
   }
 }

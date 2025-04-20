@@ -45,44 +45,44 @@
 </template>
 
 <script setup lang="ts">
-const { getTotalCategoryCounts } = useCategories();
-const { getTotalPublisherCounts } = usePublishers();
-const { getTotalAuthorCounts } = useAuthors();
-const { getTotalBookCounts} = useBooks();
-const { getTotalReaderCounts } = useReaders();
-const { getTotalOrderCounts } = useOrders();
-const { getTotalOrderItemCounts } = useOrderItems();
+const { index: getCatetoryCounts } = useCategories();
+const { index: getPublisherCounts } = usePublishers();
+const { index: getAuthorCounts } = useAuthors();
+const { index: getBookCounts} = useBooks();
+const { index: getReaderCounts } = useReaders();
+const { index: getOrderCounts } = useOrders();
+const { getOrderItems: getOrderItemCounts } = useOrderItems();
 
-const { data: stats, error, status } = await useAsyncData('overview-statistics', async () => {
+const { data: stats} = await useAsyncData('overview-statistics', async () => {
   const [
-    categoryCounts,
-    publisherCounts,
-    authorCounts,
-    bookCounts,
-    readerCounts,
-    orderCounts,
-    borrowedBookCounts,
-    borrowingBookCounts
+    category,
+    publisher,
+    author,
+    book,
+    reader,
+    order,
+    borrowedOrderItems,
+    borrowingOrderItems
   ] = await Promise.all([
-    getTotalCategoryCounts(),
-    getTotalPublisherCounts(),
-    getTotalAuthorCounts(),
-    getTotalBookCounts(),
-    getTotalReaderCounts(),
-    getTotalOrderCounts(),
-    getTotalOrderItemCounts(),
-    getTotalOrderItemCounts('borrowing')
+    getCatetoryCounts(),
+    getPublisherCounts(),
+    getAuthorCounts(),
+    getBookCounts(),
+    getReaderCounts(),
+    getOrderCounts(),
+    getOrderItemCounts({status:'borrowed'}),
+    getOrderItemCounts({status:'borrowing'})
   ]);
 
   return {
-    categoryCounts,
-    publisherCounts,
-    authorCounts,
-    bookCounts,
-    readerCounts,
-    orderCounts,
-    borrowedBookCounts,
-    borrowingBookCounts
+    categoryCounts: category.count,
+    publisherCounts: publisher.count,
+    authorCounts: author.count,
+    bookCounts: book.count,
+    readerCounts: reader.count,
+    orderCounts: order.count,
+    borrowedBookCounts: borrowedOrderItems.count,
+    borrowingBookCounts: borrowingOrderItems.count
   }
 });
 </script>

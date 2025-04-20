@@ -19,82 +19,102 @@
     </div>
   </form>
 
-  <div v-if="isLoading" class="text-center text-stone-950">Loading ...</div>
-
   <DataTable
-    v-if="readers?.length > 0"
-    :data="readers"
+    v-if="reader?.count > 0"
+    :data="reader.data"
     :columns="columns"
   />
   <h3 v-else class="justify-center flex text-stone-900">No Data</h3>
+
+  <Pagination
+    v-model="page"
+    v-if="reader?.count > 0"
+    :totalCounts="reader.count"
+    :items-per-page="pageSize"
+    @changePage="handlePageChange"
+  />
 </template>
 
 <script setup>
-const UButton = resolveComponent('UButton')
+const { query } = useRoute();
+const { index } = useReaders();
+const email = ref('');
+const name = ref('');
+const pageSize = 5;
+const page = ref(Number(query.page) || 1);
+const searchParams = ref({
+  columns: 'id, fullName:full_name, email',
+  page: page.value,
+  size: pageSize,
+  email: email.value,
+  fullName: name.value
+});
+
+const { data: reader, error, refresh } = await useAsyncData(
+  `reader-page-${page.value}`,
+  () => index(searchParams.value),
+  { watch: [searchParams.value] }
+);
+
+const handlePageChange = (newPage) => {
+  page.value = newPage;
+  searchParams.value.page = newPage;
+}
+
+const handleSearch = async() => {
+  searchParams.value = {
+    columns: 'id, fullName:full_name, email',
+    page: page.value,
+    size: pageSize,
+    email: email.value,
+    fullName: name.value
+  }
+
+  refresh();
+}
+
 const columns = [
   {
     accessorKey: 'id',
     header: '#ID',
-    cell: ({ row }) => `#${row.getValue('id')}`
+    cell: ({ row }) => {
+      return h(
+        'a',
+        {
+          href: `/admin/readers/${row.original.id}`,
+          class: 'text-primary-500'
+        },
+        `#${row.getValue('id')}`
+      )
+    }
   },
   {
     accessorKey: 'fullName',
     header: 'Full name',
-    cell: ({ row }) => `${row.getValue('fullName')}`
+    cell: ({ row }) => {
+      return h(
+        'a',
+        {
+          href: `/admin/readers/${row.original.id}`,
+          class: 'text-primary-500'
+        },
+        `${row.getValue('fullName')}`
+      )
+    }
   },
   {
     accessorKey: 'email',
     header: 'Email',
-    cell: ({ row }) => `${row.getValue('email')}`
-  },
-  {
-    header: 'Actions',
-    id: 'actions',
     cell: ({ row }) => {
       return h(
-        UButton,
+        'a',
         {
-          label: 'View detail',
-          color: 'primary',
-          variant: 'subtle',
-          class: 'ml-auto',
-          onClick: () => navigateTo(`/admin/readers/${row.original.id}`)
-        }
+          href: `/admin/readers/${row.original.id}`,
+          class: 'text-primary-500'
+        },
+        `${row.getValue('email')}`
       )
     }
-  }
+  },
 ]
-function getActionItems(row) {
-  return [
-    {
-      label: 'View details',
-      to: `/admin/readers/${row.original.id}`,
-    },
-    {
-      label: 'Delete',
-      onSelect() {
-        // delete
-      }
-    }
-  ]
-}
-
-const { readers, searchReaders, isLoading } = useReaders();
-const email = ref('');
-const name = ref('');
-
-const handleSearch = async() => {
-  let searchTerm = {};
-  if (name.value) {
-    searchTerm.name = name.value;
-  }
-  if (email.value) {
-    searchTerm.email = email.value;
-  }
-  await searchReaders(searchTerm);
-}
-
-onMounted(async() => {
-  await searchReaders();
-});
 </script>

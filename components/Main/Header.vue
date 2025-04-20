@@ -7,7 +7,6 @@
         placeholder="Search..."
         variant="soft"
         v-model="searchTerm"
-        
       />
     </div>
     <div class="flex items-center space-x-4">
@@ -57,7 +56,7 @@
 
 <script setup>
 const { signout } = useAuth();
-const { searchTerm } = useBooks();
+const searchTerm = useSearchTerm();
 const items = ref([
   {
     label: 'Profile',
@@ -82,12 +81,9 @@ const items = ref([
   }
 ]);
 
-const { bookCart, getBookCartFromStorage } = useBookCarts();
+const { bookCart } = useBookCarts();
 
-const bookCounts = computed(() => {
-  getBookCartFromStorage();
-  return bookCart.value.length;
-});
+const bookCounts = computed(() => bookCart.value.length);
 
-console.log('CHECKING PAGE LOADING ....');
+console.log('CHECKING MAIN PAGE LOADING ....');
 </script>

@@ -1,18 +1,7 @@
-import type { Tables } from '~/types/database.types';
-
-interface Order {
-  id?: Number,
-  reader_id?: String,
-  approved_by?: String,
-  status?: String,
-  created_at?: String,
-  updated_at?: String
-}
-
-interface GetOrdersOptions {
+import type { Tables } from '~/types/database.types';interface GetOrdersOptions {
   columns?: string,
   id?: number,
-  readerId?: number,
+  readerId?: string,
   status?: (string)[],
   page?: number,
   size?: number
@@ -31,7 +20,7 @@ export const useOrders = () => {
       size = null
     } = options;
 
-    let query = useTable(TABLE_NAME).select(columns, { count: 'exact'});
+    let query = useTable(TABLE_NAME).select(columns, { count: 'exact'}).order('created_at', { ascending: false });
     if (id) {
       query = query.eq('id', id);
     }
@@ -52,97 +41,8 @@ export const useOrders = () => {
     return useTable(TABLE_NAME).update(data).eq('id', orderId);
   }
 
-  const getAllOrders = async(status?: String) => {
-    try {
-      isLoading.value = true;
-      let query = supabase.from(TABLE_NAME)
-        .select(`
-          id,
-          status,
-          readers(id, fullName:full_name)
-        `)
-      ;
-      if (status) {
-        query = query.eq('status', status);
-      }
-      const { data, error } = await query;
-      if (error) throw error;
-
-      orders.value = data;
-      if (status) {
-        totalOrderCounts.value = data.length;
-      } else {
-        await getTotalOrderCounts();
-      }
-      isLoading.value = false;
-    } catch(err) {
-      console.error('[ERRO] addNewOrder: ', err);
-      orders.value = [];
-      isLoading.value = false;
-    }
-  }
-
-  const getTotalOrderCounts = async(status = null) => {
-    try {
-      let query = supabase.from(TABLE_NAME)
-        .select('*', { count: 'exact', head: true });
-      if (status) {
-        query = query.eq('status', status);
-      }
-
-      const { count, error } = await query;
-      if (error) throw error;
-
-      totalOrderCounts.value = count;
-      return count;
-    } catch(err) {
-      console.log('[ERROR] getTotalOrderCounts: ', err);
-      totalOrderCounts.value = 0;
-      return 0;
-    }
-  }
-
-  const addNewOrder = async(orderData: Order) => {
-    try {
-      const { error } = await supabase.from(TABLE_NAME).insert(orderData);
-      if (error) throw error;
-
-      return true;
-    } catch(err) {
-      console.error('[ERRO] addNewOrder: ', err);
-      return false;
-    }
-  }
-
-  const getNewestOrderByReader = async(readerId: String) => {
-    try {
-      const { data, error } = await supabase.from(TABLE_NAME)
-        .select()
-        .eq('reader_id', readerId)
-        .order('id', { ascending: false })
-        .limit(1)
-        .single();
-      if (error) throw error;
-      
-      return data;
-    } catch(err) {
-      console.error('[ERRO] addNewOrder: ', err);
-    }
-  }
-
-  const updateOrderStatus = async(orderId: Number, orderData: Order) => {
-    try {
-      const { error } = await supabase.from(TABLE_NAME)
-        .update(orderData)
-        .eq('id', orderId)
-      ;
-      if (error) throw error;
-
-      return true;
-    } catch(err) {
-      console.error('[ERRO] updateOrderStatus: ', err);
-      return false;
-    }
+  const insert = (data: Tables<'orders'>) => {
+    return useTable(TABLE_NAME).insert(data);
   }
 
   const getOrderById = async(orderId: number, columns: string = '*') => {
@@ -172,12 +72,8 @@ export const useOrders = () => {
   return {
     update,
     index,
-    addNewOrder,
-    getNewestOrderByReader,
-    getAllOrders,
-    updateOrderStatus,
+    insert,
     getOrderById,
-    getTotalOrderCounts,
     getOrdersByReaderId
   }
 }

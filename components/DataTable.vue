@@ -64,6 +64,19 @@
       </div>
     </template>
 
+    <template #cartActions-cell="{ row }">
+      <UButton
+          icon="lucide:trash-2"
+          size="md"
+          color="primary"
+          variant="subtle"
+          v-if="handleRemoveCartItem !== null"
+          @click="handleRemoveCartItem(Number(row.original.id))"
+        >
+          Remove
+        </UButton>
+    </template>
+
   </UTable>
 </template>
 
@@ -82,6 +95,10 @@ const props = defineProps({
     default: null
   },
   handleApprove: {
+    type: [Function, null],
+    default: null
+  },
+  handleRemoveCartItem: {
     type: [Function, null],
     default: null
   }

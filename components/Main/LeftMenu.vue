@@ -12,30 +12,29 @@
 </template>
 
 <script setup>
-const { getCategories } = useCategories();
-const { getPublishersFilter } = usePublishers();
+const { index: getCategories } = useCategories();
+const { index: getPublishers } = usePublishers();
 const items = ref([]);
 
-let categories = await getCategories({search: 'id, label:name'});
-let categoryChildren = computed(() => {
+const { data: categories } = await getCategories({ columns: 'id, label:name' });
+const categoryChildren = computed(() => {
   return categories.map(item => ({...item, to: `/?category=${item.id}`}));
 });
 const categoriesMenu = {
   label: 'Categories',
   icon: 'i-lucide-book-open',
-  children: categoryChildren
+  children: categoryChildren.value
 };
 items.value.push(categoriesMenu);
 
-let publishers = await getPublishersFilter();
-let publisherChildren = computed(() => {
+const { data: publishers } = await getPublishers({ columns: 'id, label:name' });
+const publisherChildren = computed(() => {
   return publishers.map(item => ({...item, to: `/?publisher=${item.id}`}));
 });
-const publishesrMenu = {
+const publisherMenu = {
   label: 'Publishers',
   icon: 'lucide:building-2',
-  children: publisherChildren
+  children: publisherChildren.value
 };
-
-items.value.push(publishesrMenu);
+items.value.push(publisherMenu);
 </script>

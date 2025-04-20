@@ -1,16 +1,16 @@
 <template>
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
     <BookItem
-      v-for="book in books"
-      :key="book.bookId"
-      :book="book"
+      v-for="item in book.data"
+      :key="item.id"
+      :book="item"
     />
   </div>
   <Pagination
     v-model="page"
-    v-if="totalBooks > 0"
-    :totalCounts="totalBooks"
-    :items-per-page="perPage"
+    v-if="book?.count > 0"
+    :totalCounts="book.count"
+    :items-per-page="pageSize"
     @changePage="handlePageChange"
   />
   <h3 v-else class="flex justify-center">No data</h3>
@@ -21,34 +21,32 @@ definePageMeta({
   layout: 'main'
 })
 
-const {books, totalBooks, searchBook, perPage, searchTerm} = useBooks();
-const page = ref(1);
-const route = useRoute();
-
-const handlePageChange = async(newPage) => {
-  await searchBook(null, Number(newPage));
-}
-
-function parseRoute(query) {
-  let searchQuery = {};
-  if (query.category) {
-    searchQuery = {categoryIds: [query.category]};
-  }
-  if (query.publisher) {
-    searchQuery = {publisherIds: [query.publisher]};
-  }
-
-  return searchQuery;
-}
-
-onMounted(async() => {
-  let searchQuery = parseRoute(route.query);
-  await searchBook(searchQuery);
+const searchTerm = useSearchTerm();
+const { query } = useRoute();
+const { index} = useBooks();
+const page = ref(Number(query.page) || 1);
+const pageSize = 5;
+const searchParams = ref({
+  page: page.value,
+  size: pageSize,
+  title: searchTerm.value
 });
 
+const { data: book, error, refresh, clear } = await useAsyncData(
+  `main-book-page-${page.value}`,
+  () => index(searchParams.value),
+  { watch: [searchParams.value] }
+);
+
+const handlePageChange = async(newPage) => {
+  page.value = newPage;
+  searchParams.value.page = newPage;
+}
+
 const debouncedFn = useDebounceFn(async(newSearchTerm) => {
-  console.log('watching .. ', searchTerm.value);
-  await searchBook({title: newSearchTerm});
+  page.value = 1;
+  searchParams.value.page = page.value;
+  searchParams.value.title = newSearchTerm;
 }, 500, { maxWait: 5000 })
 
 watch(
@@ -57,14 +55,4 @@ watch(
     debouncedFn(newSearchTerm);
   }
 );
-
-watch(
-  () => route.query,
-  async(newRoute) => {
-    let searchQuery = parseRoute(newRoute);
-    console.log('watching ...', searchQuery);
-    await searchBook(searchQuery);
-  }
-);
-
 </script>

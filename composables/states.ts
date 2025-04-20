@@ -1,0 +1,1 @@
+export const useSearchTerm = () => useState<string>('searchTerm', () => '');
