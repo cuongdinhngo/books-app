@@ -36,8 +36,8 @@
 
 <script setup>
 const { index, update } = useOrders();
-const { getOrderItems, upsertOrderItems } = useOrderItems();
-const { upsertBookItems } = useBookItems();
+const { index:getOrderItems, upsert:upsertOrderItems } = useOrderItems();
+const { upsert:upsertBookItems } = useBookItems();
 
 const { query } = useRoute();
 const page = ref(Number(query.page) || 1);

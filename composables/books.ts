@@ -38,7 +38,7 @@ export const useBooks = () => {
     let selectColumns = [];
     selectColumns.push(columns);
 
-    if (title) {
+    if (title && title.length >= 2) {
       query = query.ilike('title', `%${title}%`);
     }
 

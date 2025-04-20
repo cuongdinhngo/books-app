@@ -12,11 +12,11 @@ interface GetBookItemsOptions {
 const TABLE_NAME = 'book_items';
 export const useBookItems = () => {
 
-  const insertBooksItems = (data: Tables<'book_items'>[]) => {
+  const insert = (data: Tables<'book_items'>[]) => {
     return useTable(TABLE_NAME).insert(data);
   }
 
-  const getBooksItems = (options: GetBookItemsOptions = {}) => {
+  const index = (options: GetBookItemsOptions = {}) => {
     const {
       columns = '*',
       ids = [],
@@ -44,11 +44,11 @@ export const useBookItems = () => {
     return query;
   }
 
-  const updateBookItemStatus = async(itemId: number, data: Tables<'book_items'>) => {
+  const update = async(itemId: number, data: Tables<'book_items'>) => {
     return useTable(TABLE_NAME).update(data).eq('id', itemId);
   }
 
-  const deleteBookItems = (options: GetBookItemsOptions = {}) => {
+  const remove = (options: GetBookItemsOptions = {}) => {
     const {
       ids = [],
       bookId = null
@@ -64,15 +64,15 @@ export const useBookItems = () => {
     return query;
   }
 
-  const upsertBookItems = (data: Tables<'book_items'>[]) => {
+  const upsert = (data: Tables<'book_items'>[]) => {
     return useTable(TABLE_NAME).upsert(data);
   }
 
   return {
-    insertBooksItems,
-    getBooksItems,
-    updateBookItemStatus,
-    deleteBookItems,
-    upsertBookItems
+    insert,
+    index,
+    update,
+    remove,
+    upsert
   }
 }
