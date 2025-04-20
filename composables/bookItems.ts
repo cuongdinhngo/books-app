@@ -68,35 +68,11 @@ export const useBookItems = () => {
     return useTable(TABLE_NAME).upsert(data);
   }
 
-  const getBookInfoByItemIds = async(itemIds) => {
-    try {
-      const {data, error} = await supabase.from('book_items')
-        .select(`
-          bookItemId:id,
-          book_id,
-          books(id,title,cover_image)
-        `)
-        .in('id', itemIds)
-      ;
-      if(error) throw error;
-
-      return data;
-    } catch(err) {
-      console.error('[ERROR] getBookInfoByItemIds: ', err);
-      return []
-    }
-  }
-
   return {
     insertBooksItems,
     getBooksItems,
     updateBookItemStatus,
     deleteBookItems,
     upsertBookItems
-    // getItemsByBookId,
-    // updateBookItemStatus,
-    // getTotalBookItemCounts,
-    // updateBulk,
-    // getBookInfoByItemIds
   }
 }

@@ -65,7 +65,7 @@ export const useAuth = () => {
   const setAuthenticatedUser = (data) => {
     token.value = data.session.access_token;
     userId.value = data.user.id;
-    localStorage.setItem('session', data.session);
+    localStorage.setItem('session', JSON.stringify(data.session));
   }
 
   const getAuthenticatedSession = () => {

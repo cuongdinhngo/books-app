@@ -7,7 +7,6 @@
         placeholder="Search..."
         variant="soft"
       />
-        <!--         style="bacround-color: white !important; color: black !important;" -->
     </div>
     <div class="flex items-center space-x-4">
       <UDropdownMenu
