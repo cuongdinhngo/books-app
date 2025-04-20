@@ -59,28 +59,28 @@
 import type { Tables } from '~/types/database.types';
 const { query } = useRoute();
 const { index, remove } = useBooks();
-const { deleteBooksAuthors } = useBooksAuthors();
-const { deleteBooksCategories } = useBooksCategories();
-const { deleteBooksPublishers } = useBooksPublishers();
-const { deleteBookItems } = useBookItems();
+const { remove:deleteBooksAuthors } = useBooksAuthors();
+const { remove:deleteBooksCategories } = useBooksCategories();
+const { remove:deleteBooksPublishers } = useBooksPublishers();
+const { remove:deleteBookItems } = useBookItems();
 
 const page = ref(Number(query.page) || 1);
 const pageSize = 5;
 const title = ref('');
-const selectedAuthors = ref(null);
-const selectedCategories = ref(null);
-const selectedPublishers = ref(null);
+const selectedAuthors = ref([]);
+const selectedCategories = ref([]);
+const selectedPublishers = ref([]);
 const searchParams = ref({
   title: title.value,
   authorIds: selectedAuthors.value,
   categoryIds: selectedCategories.value,
-  publisherId: selectedPublishers.value,
+  publisherIds: selectedPublishers.value,
   page: page.value,
   size: pageSize
 });
 
 const { data: book, error, refresh, status, clear} = await useAsyncData(
-  `books-page-${page.value}`,
+  `books-page:${page.value}-category:${selectedCategories.value || 'all'}`,
   () => index(searchParams.value),
   { watch: [searchParams.value] }
 );
@@ -88,21 +88,19 @@ const { data: book, error, refresh, status, clear} = await useAsyncData(
 console.log('ERROR => ', error.value, 'STATUS => ', status.value);
 
 const handleSearch = async() => {
-  searchParams.value = {
-    title: title.value,
-    authorIds: selectedAuthors.value,
-    categoryIds: selectedCategories.value,
-    publisherId: selectedPublishers.value,
-    page: page.value,
-    size: pageSize
-  }
-  refresh()
+  page.value = 1;
+  searchParams.value.title = title.value;
+  searchParams.value.authorIds = selectedAuthors.value;
+  searchParams.value.categoryIds = selectedCategories.value;
+  searchParams.value.publisherIds = selectedPublishers.value;
+  searchParams.value.page = page.value;
+  useRouter().replace(`/admin/books?page=${page.value}#with-links`);
+  console.log('SEARCH PARAMS => ', searchParams.value);
 }
 
 const handlePageChange = async(newPage) => {
   page.value = newPage;
   searchParams.value.page = newPage;
-  refresh();
 }
 
 const columns = [

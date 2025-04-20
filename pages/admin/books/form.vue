@@ -102,14 +102,14 @@
 import type { Tables } from '~/types/database.types';
 
 const { index, insert, get, update, remove } = useBooks();
-const { insertBooksAuthors, deleteBooksAuthors } = useBooksAuthors();
-const { insertBooksCategories, deleteBooksCategories } = useBooksCategories();
-const { insertBooksPublishers, deleteBooksPublishers } = useBooksPublishers();
+const { insert:insertBooksAuthors, remove:deleteBooksAuthors } = useBooksAuthors();
+const { insert:insertBooksCategories, remove:deleteBooksCategories } = useBooksCategories();
+const { insert:insertBooksPublishers, remove:deleteBooksPublishers } = useBooksPublishers();
 const {
-  insertBooksItems,
-  getBooksItems,
-  updateBookItemStatus,
-  deleteBookItems
+  insert:insertBooksItems,
+  index:getBooksItems,
+  update:updateBookItemStatus,
+  remove:deleteBookItems
 } = useBookItems();
 
 const { query } = useRoute();
@@ -167,8 +167,6 @@ const { data: bookItemsList, error, refresh, status } = await useAsyncData(
   },
   { watch: [page.value] }
 );
-
-console.log('STATUS => ', status);
 
 const handleBookStatus = async() => {
   await updateBookItemStatus(currentBookItem.value, {status: currentBookStatus.value})

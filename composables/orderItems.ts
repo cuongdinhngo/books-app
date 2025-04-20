@@ -12,15 +12,15 @@ interface GetOrderItemsOptions {
 const TABLE_NAME = 'order_items';
 export const useOrderItems = () => {  
 
-  const addOrderItems = (data: Tables<'order_items'>[]) => {
+  const insert = (data: Tables<'order_items'>[]) => {
     return useTable(TABLE_NAME).insert(data);
   }
 
-  const upsertOrderItems = (data: Tables<'order_items'>[]) => {
+  const upsert = (data: Tables<'order_items'>[]) => {
     return useTable(TABLE_NAME).upsert(data);
   }
 
-  const getOrderItems = (options: GetOrderItemsOptions = {}) => {
+  const index = (options: GetOrderItemsOptions = {}) => {
     const {
       columns = '*',
       id = null,
@@ -53,8 +53,8 @@ export const useOrderItems = () => {
   }
 
   return {
-    getOrderItems,
-    addOrderItems,
-    upsertOrderItems
+    index,
+    insert,
+    upsert
   }
 }

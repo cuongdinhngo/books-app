@@ -51,7 +51,7 @@ const { index: getAuthorCounts } = useAuthors();
 const { index: getBookCounts} = useBooks();
 const { index: getReaderCounts } = useReaders();
 const { index: getOrderCounts } = useOrders();
-const { getOrderItems: getOrderItemCounts } = useOrderItems();
+const { index: getOrderItemCounts } = useOrderItems();
 
 const { data: stats} = await useAsyncData('overview-statistics', async () => {
   const [

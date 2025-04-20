@@ -45,7 +45,7 @@ export const useOrders = () => {
     return useTable(TABLE_NAME).insert(data);
   }
 
-  const getOrderById = async(orderId: number, columns: string = '*') => {
+  const get = async(orderId: number, columns: string = '*') => {
     return useTable(TABLE_NAME).select(columns).eq('id', orderId).single();
   }
 
@@ -73,7 +73,7 @@ export const useOrders = () => {
     update,
     index,
     insert,
-    getOrderById,
+    get,
     getOrdersByReaderId
   }
 }

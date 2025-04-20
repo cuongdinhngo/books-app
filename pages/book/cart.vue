@@ -28,7 +28,7 @@ const { bookCart, removeCartItem, reset: resetBookCart } = useBookCarts();
 const { index } = useBooks();
 const { userId } = useAuth();
 const { insert, index: getOrders } = useOrders();
-const { upsertOrderItems, addOrderItems } = useOrderItems();
+const { upsert:upsertOrderItems, insert:addOrderItems } = useOrderItems();
 
 const { data: book, error, refresh } = useAsyncData(
   'book-cart',

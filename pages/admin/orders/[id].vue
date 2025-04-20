@@ -32,10 +32,10 @@
 </template>
 
 <script setup>
-const { update, getOrderById } = useOrders();
-const { getBooksItems } = useBookItems();
-const { upsertOrderItems, getOrderItems } = useOrderItems();
-const { upsertBookItems } = useBookItems();
+const { update, get:getOrderById } = useOrders();
+const { index:getBooksItems } = useBookItems();
+const { upsert:upsertOrderItems, index:getOrderItems } = useOrderItems();
+const { upsert:upsertBookItems } = useBookItems();
 
 const route = useRoute();
 const orderId = Number(route.params.id);

@@ -54,6 +54,16 @@ const { data: category, error, refresh } = await useAsyncData(
   }
 );
 
+const handleSearch = async() => {
+  searchParams.value.ids = selectedCategories.value;
+  searchParams.value.page = 1;
+}
+
+const handlePageChange = async(newPage) => {
+  page.value = newPage;
+  searchParams.value.page = newPage;
+};
+
 const columns = [
   {
     accessorKey: 'id',
@@ -96,15 +106,4 @@ const getActionItems = (category: Tables<'categories'>) => {
     }
   ]
 }
-
-const handleSearch = async() => {
-  searchParams.value.ids = selectedCategories.value;
-  searchParams.value.page = 1;
-  refresh();
-}
-
-const handlePageChange = async(newPage) => {
-  page.value = newPage;
-  searchParams.value.page = newPage;
-};
 </script>
