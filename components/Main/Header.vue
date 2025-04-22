@@ -7,6 +7,7 @@
         placeholder="Search..."
         variant="soft"
         v-model="searchTerm"
+        @keyup.enter="handleSearch"
       />
     </div>
     <div class="flex items-center space-x-4">
@@ -55,10 +56,21 @@
   </header>
 </template>
 
-<script setup>
+<script setup lang="ts">
 const { signout } = useAuth();
-const searchTerm = useSearchTerm();
 const { userId } = useAuth();
+const { bookCart } = useBookCarts();
+const { updateQueryState } = useRouters();
+
+const searchTerm = ref<string>('');
+
+const bookCounts = computed(() => bookCart.value.length);
+
+function handleSearch() {
+  const newUrl = updateQueryState('search', searchTerm.value);
+  console.log('NEW URL => ', newUrl);
+}
+
 const items = ref([
   {
     label: 'Profile',
@@ -79,10 +91,4 @@ const items = ref([
     }
   }
 ]);
-
-const { bookCart } = useBookCarts();
-
-const bookCounts = computed(() => bookCart.value.length);
-
-console.log('CHECKING MAIN PAGE LOADING ....');
 </script>

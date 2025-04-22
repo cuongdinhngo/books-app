@@ -33,11 +33,12 @@
 
 <script setup lang="ts">
 import type { Tables } from '~/types/database.types'
-const route = useRoute();
+import { useRouteQuery } from '@vueuse/router';
+
 const { index, remove } = useCategories();
 const selectedCategories = ref([]);
 const pageSize = 5;
-const page = ref(Number(route.query.page) || 1);
+const page = ref(useRouteQuery('page', 1, { transform: Number }));
 const searchParams = ref({
   columns: 'id,name',
   ids: selectedCategories.value,
@@ -46,7 +47,7 @@ const searchParams = ref({
 });
 
 
-const { data: category, error, refresh } = await useAsyncData(
+const { data: category, refresh } = await useAsyncData(
   `categories-page-${page.value}`,
   () => index(searchParams.value),
   {
@@ -89,13 +90,18 @@ const getActionItems = (category: Tables<'categories'>) => {
     {
       label: 'Delete',
       async onSelect() {
+        const response = window.confirm('Are you sure to delete this category');
+        if (!response) {
+          return;
+        }
+
         const { error } = await remove(Number(category.id));
         if (null === error) {
           const { count } = await index();
           if (count) {
             const newPage = getNewPage(page.value, count, pageSize);
             if (page.value !== newPage) {
-              page.value = newPage;
+              useToastSuccess();
               navigateTo(`/admin/categories?page=${newPage}#with-links`);
             } else {
               refresh();

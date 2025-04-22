@@ -1,4 +1,6 @@
 export const useRouters = () => {
+  const { currentRoute, push } = useRouter();
+
   const adminRoutes = [
     {
       label: 'Home',
@@ -39,8 +41,6 @@ export const useRouters = () => {
       ]
     }
   ];
-
-
 
   const getRouteByLabelPath = (routes, labelPath) => {
     if (!labelPath) return null;
@@ -138,7 +138,17 @@ export const useRouters = () => {
     return breadcrumbs;
   };
 
+  const updateQueryState = (parameter: string, value: string) => {
+    push({
+      query: {
+        ...currentRoute.value.query,
+        [parameter]: value
+      }
+    });
+  }
+
   return {
+    updateQueryState,
     adminRoutes,
     getRouteByLabelPath,
     getRouteByName,
