@@ -16,21 +16,20 @@
 </template>
 
 <script setup lang="ts">
+import { useRouteQuery } from '@vueuse/router';
 definePageMeta({
   layout: 'main'
 })
 
-const searchTerm = useSearchTerm();
-const { query } = useRoute();
 const { index } = useBooks();
-const page = ref<number>(Number(query.page) || 1);
-const category = ref<number|null>(Number(query.category) || null);
-const publisher = ref<number|null>(Number(query.publisher) || null);
+const page = ref<number>(useRouteQuery('page', '1', { transform: Number }));
+const category = ref<number|null>(useRouteQuery('category'));
+const publisher = ref<number|null>(useRouteQuery('publisher'));
 const pageSize = 5;
 const searchParams = ref({
   page: page.value,
   size: pageSize,
-  title: searchTerm.value,
+  title: null,
   categoryIds: category.value ? [category.value] : [],
   publisherIds: publisher.value ? [publisher.value] : [],
 });
@@ -41,22 +40,6 @@ const { data:book, error, refresh, clear } = await useAsyncData(
   { watch: [searchParams.value] }
 );
 
-const debouncedFn = useDebounceFn(async(newSearchTerm) => {
-  page.value = 1;
-  useRouter().replace('/');
-  searchParams.value.page = page.value;
-  searchParams.value.title = newSearchTerm;
-  searchParams.value.categoryIds = [];
-  searchParams.value.publisherIds = [];
-}, 500, { maxWait: 5000 })
-
-watch(
-  () => searchTerm.value,
-  (newSearchTerm) => {
-    debouncedFn(newSearchTerm);
-  }
-);
-
 watch(
   () => useRoute().query,
   async(newQuery) => {
@@ -65,12 +48,12 @@ watch(
       page.value = Number(newQuery.page);
       searchParams.value.page = Number(newQuery.page);
     }
-    if (newQuery.category) {
-      searchParams.value.categoryIds = [Number(newQuery.category)];
+    if (newQuery.search) {
+      searchParams.value.title = newQuery.search;
     }
-    if (newQuery.publisher) {
-      searchParams.value.publisherIds = [Number(newQuery.publisher)];
-    }
+    searchParams.value.categoryIds = newQuery.category ? [Number(newQuery.category)] : [];
+    searchParams.value.publisherIds = newQuery.publisher ? [Number(newQuery.publisher)] : [];
+
   }
 );
 </script>

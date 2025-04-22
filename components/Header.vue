@@ -37,6 +37,4 @@ const items = ref([
     }
   }
 ]);
-
-console.log('CHECKING PAGE LOADING ....');
 </script>
