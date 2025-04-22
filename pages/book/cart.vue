@@ -2,8 +2,8 @@
   <h3 class="text-stone-900">Your book cart</h3>
   <h3 v-if="bookCart.length === 0" class="text-primary-900">Please enjoy your time and choose your love books</h3>
   <DataTable
-    v-if="book.count > 0"
-    :data="book.data"
+    v-if="book?.count > 0"
+    :data="book?.data"
     :columns="columns"
     :handle-remove-cart-item="handleRemove"
   />
@@ -35,9 +35,6 @@ const { data: book, error, refresh } = useAsyncData(
   () => index({ ids: bookCart.value.map(id => (Number(id))) }),
   { watch: [bookCart.value] }
 );
-
-console.log('DATA => ', book.value);
-console.log('ERROR => ', error.value)
 
 async function handleBorrow() {
   return insert({reader_id: userId.value, status: 'waiting'})

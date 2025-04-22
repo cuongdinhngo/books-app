@@ -41,26 +41,22 @@ onMounted(async() => {
 });
 
 const submitForm = async() => {
-  toast.add({
-      title: 'Success',
-      description: 'Your action was completed successfully.',
-      color: 'success'
-    })
-  // message.value = '';
-  // let error = null;
-  // if (query.id) {
-  //   const { error } = await update(Number(query.id), { name: name.value });
-  // } else {
-  //   const { error } = await insert({ name: name.value });
-  // }
+  message.value = '';
+  let error = null;
+  if (query.id) {
+    const { error } = await update(Number(query.id), { name: name.value });
+  } else {
+    const { error } = await insert({ name: name.value });
+  }
 
-  // if (null === error) {
-  //   message.value = 'New Publisher was created succesfully!';
-  //   textColor.value = 'text-green-600';
-
-  // } else {
-  //   message.value = 'Creating new Publisher was failed!';
-  //   textColor.value = 'text-red-500';
-  // }
+  if (null === error) {
+    message.value = 'New Publisher was created succesfully!';
+    textColor.value = 'text-green-600';
+    useToastSuccess();
+  } else {
+    message.value = 'Creating new Publisher was failed!';
+    textColor.value = 'text-red-500';
+    useToastError();
+  }
 }
 </script>

@@ -9,6 +9,29 @@ interface GetBookItemsOptions {
   size?: number
 }
 
+export const bookStatus = [
+  {
+    label: 'Pending',
+    id: 'pending'
+  },
+  {
+    label: 'Open',
+    id: 'open'
+  },
+  {
+    label: 'Borrowed',
+    id: 'borrowed'
+  },
+  {
+    label: 'Borrowing',
+    id: 'borrowing'
+  },
+  {
+    label: 'Lost',
+    id: 'lost'
+  }
+];
+
 const TABLE_NAME = 'book_items';
 export const useBookItems = () => {
 

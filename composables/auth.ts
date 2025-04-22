@@ -4,11 +4,18 @@ export const useAuth = () => {
 
   const token = useCookie('token');
   const userId = useCookie('userId');
-  const user = useState('user', () => null);
-  const isAuthenticated = useState('isAuthenticated', () => false);
-  const error = useState('error', () => '');
-  const userType = useState('userType', () => '');
-  const session = useState('session', () => []);
+  const user = ref(null);
+  const isAuthenticated = ref(false);
+  const error = ref('');
+  const userType = ref('');
+  const session = ref([]);
+
+  const signup = (email: string, password: string) => {
+    return authModel.signUp({
+      email: email,
+      password: password
+    });
+  }
 
   const signin = async ({ email, password }) => {
     try {
@@ -68,11 +75,6 @@ export const useAuth = () => {
     localStorage.setItem('session', JSON.stringify(data.session));
   }
 
-  const getAuthenticatedSession = () => {
-    const storedSession = localStorage.getItem('session');
-    session.value = storedSession ? JSON.stringify(storedSession) : []
-  }
-
   return {
     user,
     userId,
@@ -83,6 +85,7 @@ export const useAuth = () => {
     isAuthenticated,
     signin,
     signout,
-    getAuthenticatedSession
+    signup,
+    setAuthenticatedUser
   }
 }

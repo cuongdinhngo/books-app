@@ -37,16 +37,16 @@
           Signup
       </button>
     </div>
-    <h3 v-if="isLoading" class="text-center text-stone-900">Processing ...</h3>
-    <h3 v-if="error" class="text-center text-red-800">{{ error }}</h3>
     <p class="text-center text-sm text-gray-600">
         Already have an account. Let go to <a href="/login" class="text-blue-600 hover:underline">signin</a>
     </p>
   </form>
 </template>
 
-<script setup>
-const { createReader, isLoading, error } = useReaders();
+<script setup lang="ts">
+import type { Tables } from '~/types/database.types';
+const { insert } = useReaders();
+const { signup, setAuthenticatedUser } = useAuth();
 
 const fullName = ref('');
 const birthday = ref('');
@@ -55,17 +55,22 @@ const email = ref('');
 const password = ref('');
 
 const handleSubmit = async() => {
+  const {data:authData, error:authError} = await signup(email.value, password.value);
   const reader = {
-    fullName: fullName.value,
+    id: authData.user?.id,
+    full_name: fullName.value,
     birthday: birthday.value,
     address: address.value,
-    email: email.value,
-    password: password.value
+    email: email.value
   };
 
-  const response = await createReader(reader);
-  if (response) {
-    navigateTo('/');
-  }
+  await insert(reader)
+    .then(({ data, error:insertError}) => {
+      if (insertError) throw insertError;
+      setAuthenticatedUser(authData),
+      useToastSuccess();
+      navigateTo('/');
+    })
+    .catch((error) => useToastError(error));
 }
 </script>

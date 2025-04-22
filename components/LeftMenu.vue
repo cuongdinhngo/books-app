@@ -59,10 +59,16 @@ const items = ref([
     icon: 'lucide:shopping-cart'
   },
   {
+    label: 'Staff',
+    name: 'staff',
+    to: '/admin/staff/',
+    icon: 'lucide:shield-user'
+  },
+  {
     label: 'Readers',
     name: 'readers',
     to: '/admin/readers/',
-    icon: 'lucide:shopping-cart'
+    icon: 'lucide:users'
   },
 ]);
 </script>

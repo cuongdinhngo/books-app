@@ -75,6 +75,17 @@
       :get-dropdown-actions="getActionItems"
     />
     <h3 v-else class="justify-center flex text-stone-900">No Book Items</h3>
+    <UModal title="Update status" v-model:open="openBookItemModal">
+      <template #body>
+        <USelect
+          v-model="currentBookItemStatus"
+          :items="bookStatus"
+          value-key="id"
+          class="w-48"
+          @change="handleBookItemStatus"
+        />
+      </template>
+    </UModal>
 
     <Pagination
       v-if="bookItemsList.count > 0"
@@ -83,23 +94,12 @@
       :items-per-page="itemsPerPage"
       @changePage="handlePageChange"
     />
-
-    <UModal title="Update status" v-model:open="openBookItemModal">
-      <template #body>
-        <USelect
-          v-model="currentBookStatus"
-          :items="bookStatus"
-          value-key="id"
-          class="w-48"
-          @change="handleBookStatus"
-        />
-      </template>
-    </UModal>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { Tables } from '~/types/database.types';
+import { bookStatus } from '~/composables/bookItems';
 
 const { index, insert, get, update, remove } = useBooks();
 const { insert:insertBooksAuthors, remove:deleteBooksAuthors } = useBooksAuthors();
@@ -131,30 +131,12 @@ const oldAuthors = ref([]);
 const oldCategories = ref([]);
 const oldPublishers = ref([]);
 
-const itemsPerPage = 10;
+const itemsPerPage = 5;
 
 const openBookItemModal = ref(false);
 const currentBookItem = ref(null);
 
-const bookStatus = [
-  {
-    label: 'Pending',
-    id: 'pending'
-  },
-  {
-    label: 'Open',
-    id: 'open'
-  },
-  {
-    label: 'Borrowed',
-    id: 'borrowed'
-  },
-  {
-    label: 'Lost',
-    id: 'lost'
-  }
-];
-const currentBookStatus = ref('');
+const currentBookItemStatus = ref('');
 
 const { data: bookItemsList, error, refresh, status } = await useAsyncData(
   `book-items-page-${page.value}`,
@@ -164,12 +146,11 @@ const { data: bookItemsList, error, refresh, status } = await useAsyncData(
     } else {
       return [];
     }
-  },
-  { watch: [page.value] }
+  }
 );
 
-const handleBookStatus = async() => {
-  await updateBookItemStatus(currentBookItem.value, {status: currentBookStatus.value})
+const handleBookItemStatus = async() => {
+  await updateBookItemStatus(currentBookItem.value, {status: currentBookItemStatus.value})
     .then(({error: updatedError}) => {
       if (updatedError) throw updatedError;
     })
@@ -349,7 +330,7 @@ function getActionItems(bookItem) {
       onSelect() {
         openBookItemModal.value = !openBookItemModal.value;
         currentBookItem.value = bookItem.id;
-        currentBookStatus.value = bookItem.status;
+        currentBookItemStatus.value = bookItem.status;
       }
     },
     {

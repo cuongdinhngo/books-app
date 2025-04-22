@@ -38,7 +38,7 @@ const columns = [
       return h(
         'a',
         {
-          href: `/reader/order/${row.getValue('id')}`,
+          href: `/reader/orders/${row.getValue('id')}`,
           class: 'hover:text-primary-700 cursor-pointer'
         },
         `#${row.getValue('id')}`
@@ -52,7 +52,7 @@ const columns = [
       return h(
         'a',
         {
-          href: `/reader/order/${row.getValue('id')}`,
+          href: `/reader/orders/${row.getValue('id')}`,
           class: 'hover:text-primary-700 cursor-pointer'
         },
         capitalize(row.original.status)
@@ -83,10 +83,7 @@ const columns = [
           href: `/reader/order/${row.getValue('id')}`,
           class: 'hover:text-primary-700 cursor-pointer'
         },
-        new Date(row.getValue('created_at')).toLocaleString(
-          'en-US',
-          { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }
-        )
+        readableDateTime(row.getValue('created_at'))
       )
     }
   },

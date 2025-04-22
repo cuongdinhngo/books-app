@@ -27,14 +27,31 @@
 
     <template #coverImage-cell="{ row }">
       <div class="flex items-center gap-3">
-        <UAvatar :src="row.original.coverImage" size="xl" />
+        <UAvatar :src="row.original.coverImage" size="xl"/>
         <div>
           <p class="font-medium text-stone-800">{{ row.original.title}}</p>
         </div>
       </div>
     </template>
 
+    <template #staffName-cell="{ row }">
+      <div class="flex items-center gap-3">
+        <UAvatar :src="row.original.photo" size="xl" class="rounded-none"/>
+        <div>
+          <a :href="`/admin/staff/form?id=${row.original.id}`">
+            <p class="font-medium text-primary-500">{{ row.original.fullName }}</p>
+          </a>
+        </div>
+      </div>
+    </template>
+
     <template #bookItemStatus-cell="{ row }">
+      <UBadge class="capitalize" variant="subtle" :color="bookItemStatusColor[row.original.status]">
+        {{ row.original.status }}
+      </UBadge>
+    </template>
+
+    <template #bookItemStatusAction-cell="{ row }">
       <UBadge class="capitalize" variant="subtle" :color="bookItemStatusColor[row.original.status]">
         {{ row.original.status }}
       </UBadge>
