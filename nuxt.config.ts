@@ -4,6 +4,13 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   modules: ['@nuxt/icon', '@nuxt/ui', '@nuxtjs/supabase', '@vueuse/nuxt'],
   css: ['~/assets/css/main.css'],
+  supabase: {
+    redirectOptions: {
+      login: '/login',
+      callback: '/login',
+      exclude: ['/signup'],
+    }
+  },
   runtimeConfig: {
     public: {
       beAppUrl: process.env.BE_APP_URL,

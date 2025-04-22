@@ -31,21 +31,19 @@
         </div>
     </div>
   </div>
-
-  <DataTable
-    v-if="order.count > 0"
-    :data="order.data"
-    :columns="columns"
-  />
 </template>
 <script setup lang="ts">
-import type { Tables } from '~/types/database.types';
+definePageMeta({
+  layout: 'main'
+})
 import { useRouteParams } from '@vueuse/router';
-
 const { get, update } = useReaders();
-const { index } = useOrders();
-
 const readerId = useRouteParams('id');
+
+const { data:reader, error } = await useAsyncData(
+  `reader-${readerId.value}`,
+  () => get(readerId.value)
+);
 
 const handleUploadPhoto = async(event) => {
   const file = event.target.files[0];
@@ -53,79 +51,9 @@ const handleUploadPhoto = async(event) => {
     await update(readerId.value, { photo: file })
       .then(() => {
         useToastSuccess();
-        refreshReder();
+        window.location.reload();
       })
       .catch((error) => useToastError(error));
   }
 };
-
-
-const { data:reader, error:getReaderError, refresh:refreshReder } = await useAsyncData(
-  `reader-${readerId.value}`,
-  () => get(readerId.value)
-);
-
-const {data: order, error:getOrderError, refresh:refreshOrders} = await useAsyncData(
-  'reader-orders',
-  () => index({ readerId: readerId.value, columns: 'id, status, created_at, order_items(count)' }) 
-)
-
-const columns = [
-  {
-    accessorKey: 'id',
-    header: '#',
-    cell: ({ row }) => {
-      return h(
-        'a',
-        {
-          href: `/admin/orders/${row.getValue('id')}`,
-          class: 'hover:text-primary-700 cursor-pointer'
-        },
-        `#${row.getValue('id')}`
-      )
-    }
-  },
-  {
-    accessorKey: 'status',
-    header: 'Status',
-    cell: ({ row }) => {
-      return h(
-        'a',
-        {
-          href: `/admin/orders/${row.getValue('id')}`,
-          class: 'hover:text-primary-700 cursor-pointer'
-        },
-        capitalize(row.original.status)
-      )
-    }
-  },
-  {
-    accessorKey: 'order_items',
-    header: 'Quantity',
-    cell: ({ row }) => {
-      return h(
-        'a',
-        {
-          href: `/admin/orders/${row.getValue('id')}`,
-          class: 'hover:text-primary-700 cursor-pointer'
-        },
-        row.getValue('order_items')[0].count
-      )
-    }
-  },
-  {
-    accessorKey: 'created_at',
-    header: 'Booked at',
-    cell: ({ row }) => {
-      return h(
-        'a',
-        {
-          href: `/admin/orders/${row.getValue('id')}`,
-          class: 'hover:text-primary-700 cursor-pointer'
-        },
-        readableDateTime(row.getValue('created_at'))
-      )
-    }
-  },
-]
 </script>

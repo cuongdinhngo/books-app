@@ -23,6 +23,7 @@
         Update
       </button>
     </div>
+    <h3 v-if="isLoading" class="text-stone-900">Loading ...</h3>
   </form>
   <DataTable
     v-if="bookItems.length > 0"
@@ -31,9 +32,9 @@
   />
 </template>
 
-<script setup>
+<script setup lang="ts">
 const { update, get:getOrderById } = useOrders();
-const { index:getBooksItems } = useBookItems();
+const { index:getBooksItems, update:updateBookItemStatus } = useBookItems();
 const { upsert:upsertOrderItems, index:getOrderItems } = useOrderItems();
 const { upsert:upsertBookItems } = useBookItems();
 
@@ -41,6 +42,8 @@ const route = useRoute();
 const orderId = Number(route.params.id);
 const bookItems = ref([]);
 const order = ref(null);
+const isLoading = ref<Boolean>(true);
+
 
 const orderStatus = ref('');
 const statusOptions = ref([
@@ -48,49 +51,6 @@ const statusOptions = ref([
   {label: 'Borrowing', id: 'borrowing'},
   {label: 'Waiting', id: 'waiting'}
 ]);
-
-const UBadge = resolveComponent('UBadge');
-const UAvatar = resolveComponent('UAvatar');
-const columns = [
-  {
-    accessorKey: 'id',
-    header: '#ID',
-    cell: ({ row }) => `#${row.getValue('id')}`
-  },
-  {
-    accessorKey: 'coverImage',
-    header: 'Book',
-    cell: ({ row }) => {
-      return h('div', { class: 'flex items-center gap-3' }, [
-        h(UAvatar, {
-          src: row.original.coverImage,
-          alt: row.original.title,
-          size: '2xl',
-          ui: {root: 'rounded-none'}
-        }),
-        h('div', undefined, [
-          h('p', { class: 'font-medium text-(--ui-text-highlighted) text-stone-800' }, row.original.title),
-        ])
-      ])
-    }
-  },
-  {
-    accessorKey: 'status',
-    header: 'Status',
-    cell: ({ row }) => {
-      const color = {
-        open: 'success',
-        pending: 'info',
-        borrowed: 'warning',
-        lost: 'neutral'
-      }[row.getValue('status')]
-
-      return h(UBadge, { class: 'capitalize', variant: 'subtle', color }, () =>
-        row.getValue('status')
-      )
-    }
-  }
-]
 
 const transformBookItemStatus = {
   done: 'open',
@@ -108,12 +68,16 @@ const handleUpdate = async() => {
     update(orderId, {status: orderStatus.value}),
     upsertBookItems(bookItemsData)
   ])
-  .then(() => loadOrder())
+  .then(() => {
+    loadOrder();
+    useToastSuccess();
+  })
   .catch((error) => useToastError(error));
 }
 
 onMounted(async() => {
   await loadOrder();
+  isLoading.value = false;
 });
 
 async function loadOrder() {
@@ -137,4 +101,21 @@ async function loadOrder() {
     return item;
   });
 }
+
+const columns = [
+  {
+    accessorKey: 'id',
+    header: '#ID',
+    cell: ({ row }) => `#${row.getValue('id')}`
+  },
+  {
+    accessorKey: 'coverImage',
+    header: 'Book',
+  },
+  {
+    accessorKey: 'status',
+    header: 'Status',
+    id: 'bookItemStatus'
+  }
+]
 </script>

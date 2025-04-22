@@ -33,3 +33,10 @@ export function getNewPage(currentPage, totalItem, itemsPerPage) {
 
   return Math.min(Math.max(1, currentPage), totalPages);
 }
+
+export function readableDateTime(datetime) {
+  return new Date(datetime).toLocaleString(
+    'en-US',
+    { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }
+  )
+}

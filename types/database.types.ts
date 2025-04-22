@@ -295,6 +295,7 @@ export type Database = {
           created_at: string
           id: number
           reader_id: string
+          returned_at: string | null
           status: string | null
           updated_at: string
         }
@@ -303,6 +304,7 @@ export type Database = {
           created_at?: string
           id?: number
           reader_id?: string
+          returned_at?: string | null
           status?: string | null
           updated_at?: string
         }
@@ -311,6 +313,7 @@ export type Database = {
           created_at?: string
           id?: number
           reader_id?: string
+          returned_at?: string | null
           status?: string | null
           updated_at?: string
         }
@@ -360,6 +363,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          photo: string | null
         }
         Insert: {
           address?: string | null
@@ -368,6 +372,7 @@ export type Database = {
           email: string
           full_name: string
           id?: string
+          photo?: string | null
         }
         Update: {
           address?: string | null
@@ -376,24 +381,7 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
-        }
-        Relationships: []
-      }
-      testers: {
-        Row: {
-          created_at: string
-          id: string
-          name: string | null
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          name?: string | null
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          name?: string | null
+          photo?: string | null
         }
         Relationships: []
       }
@@ -427,7 +415,7 @@ export type Database = {
     }
     Functions: {
       get_friends_with_last_message: {
-        Args: { target_user_id: string } | Record<PropertyKey, never>
+        Args: Record<PropertyKey, never> | { target_user_id: string }
         Returns: {
           friend_id: string
           friend_full_name: string

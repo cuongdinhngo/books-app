@@ -35,6 +35,7 @@
         class="ring-0 bg-primary-800 text-lg cursor-pointer"
         @click="navigateTo('/book/cart')"
       />
+
       <UDropdownMenu
         class="bg-primary-600 border-primary-900 hover:bg-primary-700"
         :items="items"
@@ -57,19 +58,17 @@
 <script setup>
 const { signout } = useAuth();
 const searchTerm = useSearchTerm();
+const { userId } = useAuth();
 const items = ref([
   {
     label: 'Profile',
-    icon: 'i-lucide-user'
+    icon: 'i-lucide-user',
+    to: `/reader/${userId.value}`
   },
   {
     label: 'Orders',
     icon: 'lucide:notebook-pen',
     to: '/reader/orders'
-  },
-  {
-    label: 'Settings',
-    icon: 'i-lucide-cog'
   },
   {
     label: 'Logout',

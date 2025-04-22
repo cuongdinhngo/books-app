@@ -1,0 +1,115 @@
+<template>
+  <div class="mb-6 flex flex-col md:flex-row gap-6">
+    <form class="space-y-4 w-full md:w-1/2" @submit.prevent="submitForm">
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Full name</label>
+        <input
+          v-model="name"
+          type="text"
+          placeholder="Enter full name"
+          class="w-full px-4 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-stone-900">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Email</label>
+        <input
+          v-model="email"
+          type="text"
+          placeholder="Enter email"
+          class="w-full px-4 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-stone-900">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Profile photo</label>
+        <input
+          @change="handlePhoto"
+          type="file"
+          placeholder="Select profile photo"
+          class="w-full px-4 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-stone-900">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Password</label>
+        <input
+          v-model="password"
+          type="password"
+          placeholder="Enter password"
+          class="w-full px-4 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-stone-900">
+      </div>
+
+      <FormButtonDiv
+        :label="useRoute().query?.id ? 'Update' : 'Add new'"
+      />
+    </form>
+
+    <!-- Photo Preview -->
+    <div class="w-full md:w-1/2 flex items-center justify-center">
+      <FormPhotoReview
+        :image-preview="photoPreview"
+      />
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import type { Tables } from '~/types/database.types';
+import { useRouteQuery } from '@vueuse/router';
+
+const { insert, get, update } = useStaff();
+const { signup } = useAuth();
+const name = ref<string>('');
+const email = ref<string>('');
+const photo = ref<string>('');
+const photoPreview = ref<string>('');
+const password = ref<string>('');
+const staffId = useRouteQuery('id');
+
+onMounted(async() => {
+  const { data, error } = await get(staffId.value);
+  name.value = data.full_name;
+  email.value = data.email;
+  photoPreview.value = data.photo;
+});
+
+function handlePhoto(event) {
+  const file = event.target.files[0];
+  if (file && file.type.startsWith("image/")) {
+    photo.value = file;
+    photoPreview.value = URL.createObjectURL(file);
+  }
+}
+
+async function submitForm() {
+  let staff = {
+    full_name: name.value,
+    email: email.value,
+  } as Tables<'users'>;
+
+  if (photo.value) {
+    staff = {
+      ...staff,
+      photo: photo.value
+    };
+  }
+
+  if (staffId.value) {
+    await update(staffId.value, staff)
+      .then(() => useToastSuccess())
+      .catch((error) => useToastError(error));
+  } else {
+    await signup(email.value, password.value)
+    .then(async({ data, error }) => {
+      const userId = data.user?.id;
+      staff = {
+        ...staff,
+        id: userId
+      }
+      const { error:insertError } = await insert(staff);
+      if (insertError) throw insertError;
+
+      useToastSuccess();
+    })
+    .catch((error) => useToastError(error));
+  }
+}
+</script>

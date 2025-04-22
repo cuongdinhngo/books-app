@@ -22,7 +22,7 @@
     </div>
     <h3 v-if="error" class="text-center text-red-700">{{ error }}</h3>
     <p class="text-center text-sm text-gray-600">
-        Don’t have an account? <a href="#" class="text-blue-600 hover:underline">Register</a>
+        Don’t have an account? <a href="/signup" class="text-blue-600 hover:underline">Register</a>
     </p>
   </form>
 </template>

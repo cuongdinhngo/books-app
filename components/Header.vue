@@ -1,13 +1,6 @@
 <template>
   <header class="bg-primary-500 p-4 flex items-center justify-between">
     <div class="text-2xl font-bold text-white">Admin::Look Book</div>
-    <div class="w-1/2">
-      <UInput
-        icon="i-lucide-search"
-        placeholder="Search..."
-        variant="soft"
-      />
-    </div>
     <div class="flex items-center space-x-4">
       <UDropdownMenu
         class="bg-primary-600 border-primary-900 hover:bg-primary-700"
@@ -28,15 +21,12 @@
 </template>
 
 <script setup>
-const { signout } = useAuth();
+const { signout, userId } = useAuth();
 const items = ref([
   {
     label: 'Profile',
-    icon: 'i-lucide-user'
-  },
-  {
-    label: 'Settings',
-    icon: 'i-lucide-cog'
+    icon: 'i-lucide-user',
+    to: `/admin/staff/${userId.value}`
   },
   {
     label: 'Logout',

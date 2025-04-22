@@ -10,9 +10,11 @@ interface GetReadersOptions {
 }
 
 const TABLE_NAME = 'readers';
+const PHOTO_DIRECTORY = 'readers';
 export const useReaders = () => {
   const token = useCookie<String>('token');
   const readerId = useCookie<Number>('readerId');
+  const { uploadPhoto } = useImages('books');
 
   const createReader = async(readerData: Object) => {
     try {
@@ -63,9 +65,24 @@ export const useReaders = () => {
     return query;
   }
 
+  const get = (readerId: number, columns: string = '*') => {
+    return useTable(TABLE_NAME).select(columns).eq('id', readerId).single();
+  }
+
+  const update = async(readerId: number, data: Tables<'readers'>) => {
+    const photoUrl = await uploadPhoto(data.photo, PHOTO_DIRECTORY);
+    if (photoUrl) {
+      data.photo = photoUrl;
+    }
+    return useTable(TABLE_NAME).update(data).eq('id', readerId);
+  }
+
   return {
     index,
+    get,
+    update,
     token,
-    readerId
+    readerId,
+    insert
   }
 }
