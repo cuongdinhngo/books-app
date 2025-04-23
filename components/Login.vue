@@ -25,7 +25,7 @@
         Don’t have an account? <NuxtLink to="/signup" class="text-blue-600 hover:underline">Register</NuxtLink>
     </p>
     <p>Staff: thi@local.test / 1234567890</p>
-    <p>Reader: mango@local.test / 1234567890</p>
+    <p>Reader: blue@local.test / 1234567890</p>
   </form>
 </template>
 
