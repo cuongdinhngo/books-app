@@ -10,6 +10,14 @@ export default defineNuxtConfig({
   icon: {
     serverBundle: {
       collections: ['lucide']
+    },
+    clientBundle: {
+      icons: ['lucide:book-open', 'lucide:chevron-down', 'lucide:house', 'lucide:settings', 'lucide:shield-user', 'lucide:shopping-cart', 'lucide:users']
+    }
+  },
+  nitro: {
+    prerender: {
+      routes: ['/api/_nuxt_icon/lucide.json']
     }
   },
   supabase: {
