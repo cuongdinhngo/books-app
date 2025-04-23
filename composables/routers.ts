@@ -6,13 +6,13 @@ export const useRouters = () => {
       label: 'Home',
       name: 'home',
       to: '/admin/',
-      icon: 'i-lucide-house'
+      icon: 'lucide:house'
     },
     {
       label: 'Books',
       name: 'books',
       to: '/admin/books/',
-      icon: 'i-lucide-book-open',
+      icon: 'lucide:book-open',
       children: [
         {
           label: 'All Books',
@@ -22,19 +22,19 @@ export const useRouters = () => {
         },
         {
           label: 'Authors',
-          icon: 'i-lucide-file-text',
+          icon: 'lucide:file-text',
           name: 'authors',
           to: '/admin/authors'
         },
         {
           label: 'Publishers',
-          icon: 'i-lucide-swatch-book',
+          icon: 'lucide:swatch-book',
           name: 'publishers',
           to: '/admin/publishers'
         },
         {
           label: 'Categories',
-          icon: 'i-lucide-cog',
+          icon: 'lucide:cog',
           name: 'categories',
           to: '/admin/categories'
         }

@@ -22,7 +22,7 @@ const categoryChildren = computed(() => {
 });
 const categoriesMenu = {
   label: 'Categories',
-  icon: 'i-lucide-book-open',
+  icon: 'lucide:book-open',
   children: categoryChildren.value
 };
 items.value.push(categoriesMenu);
