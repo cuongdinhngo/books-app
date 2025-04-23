@@ -16,7 +16,6 @@
         {{ useRoute().query?.id ? 'Update' : 'Add new' }}
       </button>
     </div>
-    <h3 v-if="message" :class="textColor">{{ message }}</h3>
   </form>
 </template>
 
@@ -29,8 +28,6 @@ const { insert, get, update } = usePublishers();
 const name = ref<string|null>(null);
 const selectedLogo = ref<string|null>(null);
 const logoPreview = ref<string>('');
-const message = ref('');
-const textColor = ref('');
 
 onMounted(async() => {
   const publisherId = Number(query.id);
@@ -71,11 +68,10 @@ const submitForm = async() => {
 
   const { error } = query?.id ? await update(Number(query?.id), publisher) : await insert(publisher);
   if (error) {
-    message.value = query?.id ? 'Publisher was updated failed!' : 'Creating new Publisher was failed!';
-    textColor.value = 'text-red-500';
+    useToastError(error);
+    navigateTo('/admin/publishers');
   } else {
-    message.value = query?.id ? 'Publisher was updated succesfully!' : 'New Publisher was created succesfully!';
-    textColor.value = 'text-green-600';
+    useToastSuccess();
   }
 }
 </script>

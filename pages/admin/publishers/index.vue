@@ -33,10 +33,11 @@
 
 <script setup lang="ts">
 import type { Tables } from '~/types/database.types';
+import { useRouteQuery } from '@vueuse/router';
 
 const { index, remove } = usePublishers();
 const selectedPublishers = ref([]);
-const page = ref(Number(useRoute().query?.page) || 1);
+const page = ref(useRouteQuery('page', 1, {transform: Number}));
 const pageSize = 5;
 const searchParams = ref({
   ids: selectedPublishers.value,
@@ -90,13 +91,16 @@ function getActionItems(publisher: Tables<'publishers'>) {
     {
       label: 'Delete',
       async onSelect() {
+        const response = window.confirm('Are you sure to delete this publisher');
+        if (!response) return;
+
         const { error } = await remove(Number(publisher.id));
         if (null === error) {
           const { count } = await index();
           if (count) {
             const newPage = getNewPage(page.value, count, pageSize);
             if (page.value !== newPage) {
-              page.value = newPage;
+              useToastSuccess();
               navigateTo(`/admin/publishers?page=${newPage}#with-links`);
             } else {
               refresh();
