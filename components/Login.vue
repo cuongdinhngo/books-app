@@ -38,7 +38,7 @@ const handleSubmit = async() => {
     const response = await signin({email: email.value, password: password.value});
     console.log('TOKEN => ', token.value);
     if (response) {
-      if (userType.value === 'staff') navigateTo('admin/books?page=1#with-links');
+      if (userType.value === 'staff') navigateTo('/admin/books?page=1#with-links');
       else navigateTo('/');
     }
   }
