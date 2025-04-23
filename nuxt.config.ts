@@ -12,7 +12,11 @@ export default defineNuxtConfig({
       collections: ['lucide']
     },
     clientBundle: {
-      icons: ['lucide:book-open', 'lucide:chevron-down', 'lucide:house', 'lucide:settings', 'lucide:shield-user', 'lucide:shopping-cart', 'lucide:users']
+      icons: [
+        'lucide:book-open', 'lucide:chevron-down', 'lucide:house', 'lucide:settings', 'lucide:shield-user', 'lucide:shopping-cart', 'lucide:users',
+        'lucide:ellipsis-vertical', 'lucide:chevrons-left', 'lucide:chevron-right', 'lucide:file-text', 'lucide:swatch-book', 'lucide:cog',
+        'lucide:user', 'lucide:log-out', 'lucide:search', 'lucide:notebook-pen'
+      ]
     }
   },
   nitro: {

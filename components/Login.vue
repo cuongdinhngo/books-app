@@ -22,12 +22,16 @@
     </div>
     <h3 v-if="error" class="text-center text-red-700">{{ error }}</h3>
     <p class="text-center text-sm text-gray-600">
-        Don’t have an account? <a href="/signup" class="text-blue-600 hover:underline">Register</a>
+        Don’t have an account? <NuxtLink to="/signup" class="text-blue-600 hover:underline">Register</NuxtLink>
     </p>
+    <p>Staff: thi@local.test / 1234567890</p>
+    <p>Reader: mango@local.test / 1234567890</p>
   </form>
 </template>
 
 <script setup>
+import { NuxtLink } from '#components';
+
 const { signin, token, userType, error } = useAuth();
 const email = ref('');
 const password = ref('');
