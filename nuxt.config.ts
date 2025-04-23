@@ -7,18 +7,18 @@ export default defineNuxtConfig({
   app: {
     baseURL: '/books-app/',
   },
-  icon: {
-    serverBundle: {
-      collections: ['lucide']
-    },
-    clientBundle: {
-      icons: [
-        'lucide:book-open', 'lucide:chevron-down', 'lucide:house', 'lucide:settings', 'lucide:shield-user', 'lucide:shopping-cart', 'lucide:users',
-        'lucide:ellipsis-vertical', 'lucide:chevrons-left', 'lucide:chevron-right', 'lucide:file-text', 'lucide:swatch-book', 'lucide:cog',
-        'lucide:user', 'lucide:log-out', 'lucide:search', 'lucide:notebook-pen'
-      ]
-    }
-  },
+  // icon: {
+  //   serverBundle: {
+  //     collections: ['lucide']
+  //   },
+  //   clientBundle: {
+  //     icons: [
+  //       'lucide:book-open', 'lucide:chevron-down', 'lucide:house', 'lucide:settings', 'lucide:shield-user', 'lucide:shopping-cart', 'lucide:users', 'lucide:image-plus',
+  //       'lucide:ellipsis-vertical', 'lucide:chevrons-left', 'lucide:chevron-right', 'lucide:file-text', 'lucide:swatch-book', 'lucide:cog', 'lucide:chevron-up',
+  //       'lucide:user', 'lucide:log-out', 'lucide:search', 'lucide:notebook-pen', 'lucide:chevron-left', 'lucide:chevrons-right', 'lucide:building-2'
+  //     ]
+  //   }
+  // },
   nitro: {
     prerender: {
       routes: ['/api/_nuxt_icon/lucide.json']
