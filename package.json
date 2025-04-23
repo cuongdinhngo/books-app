@@ -10,7 +10,6 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@iconify-json/lucide": "^1.2.38",
     "@nuxt/icon": "^1.12.0",
     "@nuxt/ui": "^3.0.2",
     "@nuxtjs/supabase": "^1.5.0",
@@ -22,5 +21,8 @@
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",
     "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@iconify-json/lucide": "^1.2.38"
   }
 }
