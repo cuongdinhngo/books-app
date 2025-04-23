@@ -4,6 +4,9 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   modules: ['@nuxt/icon', '@nuxt/ui', '@nuxtjs/supabase', '@vueuse/nuxt'],
   css: ['~/assets/css/main.css'],
+  app: {
+    baseURL: '/books-app/',
+  },
   supabase: {
     url: process.env.SUPABASE_URL,
     key: process.env.SUPABASE_KEY,
