@@ -7,6 +7,9 @@ export default defineNuxtConfig({
   app: {
     baseURL: '/books-app/',
   },
+  icon: {
+    strategy: 'static'
+  },
   // icon: {
   //   serverBundle: {
   //     collections: ['lucide']
