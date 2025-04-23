@@ -8,7 +8,7 @@
     <template #actions-cell="{ row }">
       <UDropdownMenu v-if="getDropdownActions !== null" :items="getDropdownActions(row.original)">
         <UButton
-          icon="i-lucide-ellipsis-vertical"
+          icon="lucide:ellipsis-vertical"
           color="neutral"
           variant="ghost"
           aria-label="Actions"

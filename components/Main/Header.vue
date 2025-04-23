@@ -3,7 +3,7 @@
     <div class="text-2xl font-bold text-white"><a href="/">Look Book</a></div>
     <div class="w-1/2">
       <UInput
-        icon="i-lucide-search"
+        icon="lucide:search"
         placeholder="Search..."
         variant="soft"
         v-model="searchTerm"
@@ -74,7 +74,7 @@ function handleSearch() {
 const items = ref([
   {
     label: 'Profile',
-    icon: 'i-lucide-user',
+    icon: 'lucide:user',
     to: `/reader/${userId.value}`
   },
   {

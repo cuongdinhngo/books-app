@@ -25,7 +25,7 @@ const { signout, userId } = useAuth();
 const items = ref([
   {
     label: 'Profile',
-    icon: 'i-lucide-user',
+    icon: 'lucide:user',
     to: `/admin/staff/${userId.value}`
   },
   {
