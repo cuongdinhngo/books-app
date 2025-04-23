@@ -1,6 +1,6 @@
 <template>
   <header class="bg-primary-500 p-4 flex items-center justify-between">
-    <div class="text-2xl font-bold text-white"><a href="/">Look Book</a></div>
+    <div class="text-2xl font-bold text-white"><NuxtLink to="/">Look Book</NuxtLink></div>
     <div class="w-1/2">
       <UInput
         icon="lucide:search"

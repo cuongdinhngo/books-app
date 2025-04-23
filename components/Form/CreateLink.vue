@@ -1,11 +1,15 @@
 <template>
-  <a
-    :href="link" 
+  <NuxtLink
+    :to="link" 
     class="flex-1 bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 text-center"
-  >{{ name }}</a>
+  >
+    {{ name }}
+  </NuxtLink>
 </template>
 
 <script setup>
+import { NuxtLink } from '#components';
+
 defineProps({
   name: {
     type: String,

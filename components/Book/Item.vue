@@ -1,5 +1,5 @@
 <template>
-<a :href="`/book/${book?.id}`">
+<NuxtLink :to="`/book/${book?.id}`">
   <div class="bg-white p-4 rounded-lg shadow text-stone-900">
     <img :src="`${book?.coverImage}`" :alt="book?.title" class="w-full h-48 object-scale-down mb-2">
     <p class="font-bold">{{ book?.title }}</p>
@@ -7,10 +7,12 @@
     <p class="text-sm">Publisher: {{ book?.publishers.map(publisher => publisher.name).join(', ') || 'unknown' }}</p>
     <p class="text-sm">Categories: {{ book?.categories.map(category => category.name).join(', ') || 'unknown' }}</p>
   </div>
-</a>
+</NuxtLink>
 </template>
 
 <script setup lang="ts">
+import { NuxtLink } from '#components';
+
 const props = defineProps({
   book: {
     type: Object,

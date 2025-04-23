@@ -38,9 +38,9 @@
       <div class="flex items-center gap-3">
         <UAvatar :src="row.original.photo" size="xl" class="rounded-none"/>
         <div>
-          <a :href="`/admin/staff/form?id=${row.original.id}`">
+          <NuxtLink :to="`/admin/staff/form?id=${row.original.id}`">
             <p class="font-medium text-primary-500">{{ row.original.fullName }}</p>
-          </a>
+          </NuxtLink>
         </div>
       </div>
     </template>
@@ -98,6 +98,8 @@
 </template>
 
 <script setup lang="ts">
+import { NuxtLink } from '#components';
+
 const props = defineProps({
   data: {
     type: Object,

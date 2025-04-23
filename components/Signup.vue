@@ -38,12 +38,13 @@
       </button>
     </div>
     <p class="text-center text-sm text-gray-600">
-        Already have an account. Let go to <a href="/login" class="text-blue-600 hover:underline">signin</a>
+        Already have an account. Let go to <NuxtLink to="/login" class="text-blue-600 hover:underline">signin</NuxtLink>
     </p>
   </form>
 </template>
 
 <script setup lang="ts">
+import { NuxtLink } from '#components';
 import type { Tables } from '~/types/database.types';
 const { insert } = useReaders();
 const { signup, setAuthenticatedUser } = useAuth();
