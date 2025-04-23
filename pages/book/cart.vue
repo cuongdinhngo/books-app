@@ -11,7 +11,7 @@
     <UButton
       v-if="bookCart.length > 0"
       label="Borrow"
-      icon="i-heroicons-hand-raised"
+      icon="lucide:handshake"
       color="primary"
       size="lg"
       @click="handleBorrow"
@@ -24,6 +24,7 @@ definePageMeta({
   layout: 'main'
 })
 
+import { NuxtLink } from '#components'
 const { bookCart, removeCartItem, reset: resetBookCart } = useBookCarts();
 const { index } = useBooks();
 const { userId } = useAuth();
@@ -65,9 +66,9 @@ const columns = [
     header: '#',
     cell: ({ row }) => {
       return h(
-        'a',
+        NuxtLink,
         {
-          href: `/book/${row.getValue('id')}`,
+          to: `/book/${row.getValue('id')}`,
           class: 'hover:text-primary-700 cursor-pointer'
         },
         `#${row.getValue('id')}`
@@ -84,9 +85,9 @@ const columns = [
     header: `Authors`,
     cell: ({ row }) => {
       return h(
-        'a',
+        NuxtLink,
         {
-          href: `/book/${row.getValue('id')}`,
+          to: `/book/${row.getValue('id')}`,
           class: 'hover:text-primary-700 cursor-pointer'
         },
         `${row.getValue('authors').map(author => author.name).join(', ')}`

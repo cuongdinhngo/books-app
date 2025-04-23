@@ -54,6 +54,7 @@
 </template>
 
 <script setup>
+import { NuxtLink } from '#components'
 import { useRouteQuery } from '@vueuse/router';
 const { index } = useStaff();
 const email = ref('');
@@ -91,9 +92,9 @@ const columns = [
     header: '#ID',
     cell: ({ row }) => {
       return h(
-        'a',
+        NuxtLink,
         {
-          href: `/admin/staff/form?id=${row.original.id}`,
+          to: `/admin/staff/form?id=${row.original.id}`,
           class: 'text-primary-500'
         },
         `#${row.getValue('id')}`
@@ -110,9 +111,9 @@ const columns = [
     header: 'Email',
     cell: ({ row }) => {
       return h(
-        'a',
+        NuxtLink,
         {
-          href: `/admin/staff/form?id=${row.original.id}`,
+          to: `/admin/staff/form?id=${row.original.id}`,
           class: 'text-primary-500'
         },
         `${row.getValue('email')}`

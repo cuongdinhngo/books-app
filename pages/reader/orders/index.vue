@@ -16,6 +16,7 @@ definePageMeta({
   layout: 'main'
 })
 
+import { NuxtLink } from '#components'; '#components';
 const { index } = useOrders();
 const { userId } = useAuth();
 
@@ -36,9 +37,9 @@ const columns = [
     header: '#',
     cell: ({ row }) => {
       return h(
-        'a',
+        NuxtLink,
         {
-          href: `/reader/orders/${row.getValue('id')}`,
+          to: `/reader/orders/${row.getValue('id')}`,
           class: 'hover:text-primary-700 cursor-pointer'
         },
         `#${row.getValue('id')}`
@@ -50,9 +51,9 @@ const columns = [
     header: 'Status',
     cell: ({ row }) => {
       return h(
-        'a',
+        NuxtLink,
         {
-          href: `/reader/orders/${row.getValue('id')}`,
+          to: `/reader/orders/${row.getValue('id')}`,
           class: 'hover:text-primary-700 cursor-pointer'
         },
         capitalize(row.original.status)
@@ -64,9 +65,9 @@ const columns = [
     header: 'Quantity',
     cell: ({ row }) => {
       return h(
-        'a',
+        NuxtLink,
         {
-          href: `/reader/order/${row.getValue('id')}`,
+          to: `/reader/order/${row.getValue('id')}`,
           class: 'hover:text-primary-700 cursor-pointer'
         },
         row.getValue('order_items')[0].count
@@ -78,9 +79,9 @@ const columns = [
     header: 'Booked at',
     cell: ({ row }) => {
       return h(
-        'a',
+        NuxtLink,
         {
-          href: `/reader/order/${row.getValue('id')}`,
+          to: `/reader/order/${row.getValue('id')}`,
           class: 'hover:text-primary-700 cursor-pointer'
         },
         readableDateTime(row.getValue('created_at'))
