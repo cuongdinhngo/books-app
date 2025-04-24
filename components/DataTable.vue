@@ -5,6 +5,30 @@
     :columns="columns"
     class="flex-1"
   >
+    <template #crud-actions-cell="{ row }">
+      <div class="flex space-x-4">
+        <UButton
+          icon="lucide:clipboard-pen-line"
+          size="md"
+          color="primary"
+          variant="subtle"
+          @click="navigateTo(`${editLink}${row.original.id}`)"
+        >
+          Edit
+        </UButton>
+        <UButton
+          icon="lucide:trash-2"
+          size="md"
+          color="primary"
+          variant="subtle"
+          v-if="deleteItem"
+          @click="deleteItem(Number(row.original.id))"
+        >
+          Delete
+        </UButton>
+      </div>
+    </template>
+
     <template #actions-cell="{ row }">
       <UDropdownMenu v-if="getDropdownActions !== null" :items="getDropdownActions(row.original)">
         <UButton
@@ -18,7 +42,7 @@
     </template>
 
     <template #logo-cell="{ row }">
-      <UAvatar :src="row.original.logo" size="xl" />
+      <UAvatar :src="row.original.logo" size="xl" class="rounded-none"/>
     </template>
 
     <template #photo-cell="{ row }">
@@ -99,6 +123,7 @@
 
 <script setup lang="ts">
 import { NuxtLink } from '#components';
+import { string } from 'zod';
 
 const props = defineProps({
   data: {
@@ -109,6 +134,10 @@ const props = defineProps({
     type: Object,
     required: true
   },
+  editLink: {
+    type: string,
+    default: null
+  },
   getDropdownActions: {
     type: [Function, null],
     default: null
@@ -118,6 +147,10 @@ const props = defineProps({
     default: null
   },
   handleRemoveCartItem: {
+    type: [Function, null],
+    default: null
+  },
+  deleteItem: {
     type: [Function, null],
     default: null
   }

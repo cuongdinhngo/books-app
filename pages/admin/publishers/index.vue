@@ -11,15 +11,17 @@
       />
       <FormCreateLink
         name="Create New Publisher"
-        link="/admin/publishers/form"
+        link="/admin/publishers/create"
       />
     </div>
   </form>
 
   <DataTable
-    :data="publisher.data"
+    v-if="publisher?.data"
+    :data="publisher?.data"
     :columns="columns"
-    :get-dropdown-actions="getActionItems"
+    edit-link="/admin/publishers/"
+    :delete-item="deletePublisher"
   />
 
   <Pagination
@@ -32,8 +34,8 @@
 </template>
 
 <script setup lang="ts">
-import type { Tables } from '~/types/database.types';
 import { useRouteQuery } from '@vueuse/router';
+import DataTable from '~/components/DataTable.vue';
 
 const { index, remove } = usePublishers();
 const selectedPublishers = ref([]);
@@ -62,6 +64,29 @@ const handlePageChange = async(newPage) => {
   page.value = newPage;
 };
 
+const deletePublisher = async(publisherId: number) => {
+  const response = window.confirm('Are you sure to delete this publisher');
+  if (!response) return;
+
+  await remove(publisherId)
+    .then(async({ error }) => {
+      if (error) throw error;
+
+      useToastSuccess();
+      const { count } = await index();
+      if (count) {
+        const newPage = getNewPage(page.value, count, pageSize);
+        if (page.value !== newPage) {
+          useToastSuccess();
+          navigateTo(`/admin/publishers?page=${newPage}#with-links`);
+        } else {
+          refresh();
+        }
+      }
+    })
+    .catch((error) => useToastError(error));
+}
+
 const columns = [
   {
     accessorKey: 'id',
@@ -78,37 +103,7 @@ const columns = [
   },
   {
     header: 'Actions',
-    id: 'actions'
+    id: 'crud-actions'
   }
 ]
-
-function getActionItems(publisher: Tables<'publishers'>) {
-  return [
-    {
-      label: 'Update information',
-      to: `/admin/publishers/form?id=${publisher.id}`,
-    },
-    {
-      label: 'Delete',
-      async onSelect() {
-        const response = window.confirm('Are you sure to delete this publisher');
-        if (!response) return;
-
-        const { error } = await remove(Number(publisher.id));
-        if (null === error) {
-          const { count } = await index();
-          if (count) {
-            const newPage = getNewPage(page.value, count, pageSize);
-            if (page.value !== newPage) {
-              useToastSuccess();
-              navigateTo(`/admin/publishers?page=${newPage}#with-links`);
-            } else {
-              refresh();
-            }
-          }
-        }
-      }
-    }
-  ]
-}
 </script>

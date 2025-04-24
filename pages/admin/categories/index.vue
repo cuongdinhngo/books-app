@@ -16,35 +16,13 @@
     </div>
   </form>
 
-  <UTable
-    v-if="category?.count > 0"
-    :data="category.data"
+  <DataTable
+    v-if="category?.data"
+    :data="category?.data"
     :columns="columns"
-    class="flex-1"
-  >
-    <template #actions-cell="{ row }">
-      <div class="flex space-x-4">
-        <UButton
-          icon="lucide:clipboard-pen-line"
-          size="md"
-          color="primary"
-          variant="subtle"
-          @click="navigateTo(`/admin/categories/${row.original.id}`)"
-        >
-          Edit
-        </UButton>
-        <UButton
-          icon="lucide:trash-2"
-          size="md"
-          color="primary"
-          variant="subtle"
-          @click="deleteCategory(row.original.id)"
-        >
-          Delete
-        </UButton>
-      </div>
-    </template>
-  </UTable>
+    edit-link="/admin/categories/"
+    :delete-item="deleteCategory"
+  />
 
   <Pagination
     v-model="page"
@@ -100,20 +78,6 @@ const deleteCategory = async(categoryId) => {
       }
     })
     .catch((error) => useToastError(error));
-
-  const { error } = await remove(categoryId);
-  if (null === error) {
-    const { count } = await index();
-    if (count) {
-      const newPage = getNewPage(page.value, count, pageSize);
-      if (page.value !== newPage) {
-        useToastSuccess();
-        navigateTo(`/admin/categories?page=${newPage}#with-links`);
-      } else {
-        refresh();
-      }
-    }
-  }
 }
 
 const handleSearch = async() => {
@@ -138,39 +102,7 @@ const columns = [
   },
   {
     header: 'Actions',
-    id: 'actions'
+    id: 'crud-actions'
   }
 ]
-
-const getActionItems = (category: Tables<'categories'>) => {
-  return [
-    {
-      label: 'Update information',
-      to: `/admin/categories/${category.id}`,
-    },
-    {
-      label: 'Delete',
-      async onSelect() {
-        const response = window.confirm('Are you sure to delete this category');
-        if (!response) {
-          return;
-        }
-
-        const { error } = await remove(Number(category.id));
-        if (null === error) {
-          const { count } = await index();
-          if (count) {
-            const newPage = getNewPage(page.value, count, pageSize);
-            if (page.value !== newPage) {
-              useToastSuccess();
-              navigateTo(`/admin/categories?page=${newPage}#with-links`);
-            } else {
-              refresh();
-            }
-          }
-        }
-      }
-    }
-  ]
-}
 </script>
