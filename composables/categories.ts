@@ -12,7 +12,6 @@ const TABLE_NAME = 'categories';
 export const useCategories = () => {
 
   const index = (options: GetCategoriesOptions = {}) => {
-    console.log('SEARCH CATEGORIES => ', options);
 
     const {
       columns = '*',

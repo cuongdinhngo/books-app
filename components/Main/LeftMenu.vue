@@ -16,25 +16,30 @@ const { index: getCategories } = useCategories();
 const { index: getPublishers } = usePublishers();
 const items = ref([]);
 
-const { data: categories } = await getCategories({ columns: 'id, label:name' });
-const categoryChildren = computed(() => {
-  return categories.map(item => ({...item, to: `/?category=${item.id}`}));
-});
-const categoriesMenu = {
-  label: 'Categories',
-  icon: 'lucide:book-open',
-  children: categoryChildren.value
-};
-items.value.push(categoriesMenu);
+const { data } = await useAsyncData(
+  `lef-menu`,
+  async () => {
+    const [categories, publishers] = await Promise.all([
+      getCategories({ columns: 'id, label:name' }),
+      getPublishers({ columns: 'id, label:name' })
+    ]);
 
-const { data: publishers } = await getPublishers({ columns: 'id, label:name' });
-const publisherChildren = computed(() => {
-  return publishers.map(item => ({...item, to: `/?publisher=${item.id}`}));
-});
-const publisherMenu = {
-  label: 'Publishers',
-  icon: 'lucide:building-2',
-  children: publisherChildren.value
-};
-items.value.push(publisherMenu);
+    const categoriesMenu = {
+      label: 'Categories',
+      icon: 'lucide:book-open',
+      children: categories.data.map(item => ({...item, to: `/?category=${item.id}`}))
+    };
+
+    const publishersMenu = {
+      label: 'Publishers',
+      icon: 'lucide:building-2',
+      children: publishers.data.map(item => ({...item, to: `/?publisher=${item.id}`}))
+    };
+
+    return {categoriesMenu, publishersMenu};
+  }
+);
+
+items.value.push(data.value.categoriesMenu);
+items.value.push(data.value.publishersMenu);
 </script>
