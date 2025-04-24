@@ -11,16 +11,40 @@
       />
       <FormCreateLink
         name="Create New Categories"
-        link="/admin/categories/form"
+        link="/admin/categories/create"
       />
     </div>
   </form>
 
-  <DataTable
-    :data="category?.data"
+  <UTable
+    v-if="category?.count > 0"
+    :data="category.data"
     :columns="columns"
-    :get-dropdown-actions="getActionItems"
-  />
+    class="flex-1"
+  >
+    <template #actions-cell="{ row }">
+      <div class="flex space-x-4">
+        <UButton
+          icon="lucide:clipboard-pen-line"
+          size="md"
+          color="primary"
+          variant="subtle"
+          @click="navigateTo(`/admin/categories/${row.original.id}`)"
+        >
+          Edit
+        </UButton>
+        <UButton
+          icon="lucide:trash-2"
+          size="md"
+          color="primary"
+          variant="subtle"
+          @click="deleteCategory(row.original.id)"
+        >
+          Delete
+        </UButton>
+      </div>
+    </template>
+  </UTable>
 
   <Pagination
     v-model="page"
@@ -46,7 +70,6 @@ const searchParams = ref({
   size: pageSize
 });
 
-
 const { data: category, refresh } = await useAsyncData(
   `categories-page-${page.value}`,
   () => index(searchParams.value),
@@ -54,6 +77,44 @@ const { data: category, refresh } = await useAsyncData(
     watch: [searchParams.value]
   }
 );
+
+const deleteCategory = async(categoryId) => {
+  const response = window.confirm('Are you sure to delete this category');
+  if (!response) {
+    return;
+  }
+
+  await remove(categoryId)
+    .then(async({ error }) => {
+      if (error) throw error;
+
+      useToastSuccess();
+      const { count } = await index();
+      if (count) {
+        const newPage = getNewPage(page.value, count, pageSize);
+        if (page.value !== newPage) {
+          navigateTo(`/admin/categories?page=${newPage}#with-links`);
+        } else {
+          refresh();
+        }
+      }
+    })
+    .catch((error) => useToastError(error));
+
+  const { error } = await remove(categoryId);
+  if (null === error) {
+    const { count } = await index();
+    if (count) {
+      const newPage = getNewPage(page.value, count, pageSize);
+      if (page.value !== newPage) {
+        useToastSuccess();
+        navigateTo(`/admin/categories?page=${newPage}#with-links`);
+      } else {
+        refresh();
+      }
+    }
+  }
+}
 
 const handleSearch = async() => {
   searchParams.value.ids = selectedCategories.value;
@@ -85,7 +146,7 @@ const getActionItems = (category: Tables<'categories'>) => {
   return [
     {
       label: 'Update information',
-      to: `/admin/categories/form?id=${category.id}`,
+      to: `/admin/categories/${category.id}`,
     },
     {
       label: 'Delete',
