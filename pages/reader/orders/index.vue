@@ -81,7 +81,7 @@ const columns = [
       return h(
         NuxtLink,
         {
-          to: `/reader/order/${row.getValue('id')}`,
+          to: `/reader/orders/${row.getValue('id')}`,
           class: 'hover:text-primary-700 cursor-pointer'
         },
         readableDateTime(row.getValue('created_at'))
