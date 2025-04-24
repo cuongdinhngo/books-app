@@ -3,6 +3,7 @@ import type { Tables } from '~/types/database.types';
 interface GetPublishersOptions {
   columns?: string,
   ids?: (string | number)[],
+  name?: string,
   page?: number,
   size?: number
 }
@@ -16,6 +17,7 @@ export const usePublishers = () => {
     const {
       columns = '*',
       ids = null,
+      name = null,
       page = null,
       size = null
     } = options;
@@ -24,6 +26,10 @@ export const usePublishers = () => {
 
     if (ids?.length) {
       query = query.in('id', ids);
+    }
+
+    if (name && name.length >= 2) {
+      query = query.ilike('name', `%${name}%`);
     }
 
     if (page && size && page >= 1 && size >= 1) {

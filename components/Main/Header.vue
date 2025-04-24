@@ -2,93 +2,95 @@
   <header class="bg-primary-500 p-4 flex items-center justify-between">
     <div class="text-2xl font-bold text-white"><NuxtLink to="/">Look Book</NuxtLink></div>
     <div class="w-1/2">
-      <UInput
-        icon="lucide:search"
-        placeholder="Search..."
-        variant="soft"
-        v-model="searchTerm"
-        @keyup.enter="handleSearch"
-      />
+
+      <UModal>
+        <UButton
+          label="Search"
+          color="neutral"
+          variant="subtle"
+          icon="lucide-search"
+          class="w-100"
+        />
+
+        <template #content>
+          <UCommandPalette
+            v-model:search-term="searchTerm"
+            :loading="status === 'pending'"
+            :groups="resultGroups"
+            placeholder="Search users..."
+            class="h-80"
+            @keyup.enter="handleSearch"
+          />
+        </template>
+      </UModal>
     </div>
     <div class="flex items-center space-x-4">
-      <UChip
-        v-if="bookCounts > 0"
-        :text="bookCounts"
-        size="3xl"
-        color="neutral"
-        :ui="{
-          base: 'text-stone-900 bg-primary-50',
-        }"
-      >
-        <UButton
-          icon="lucide:shopping-cart"
-          color="neutral"
-          variant="outline"
-          class="ring-0 bg-primary-800 text-lg cursor-pointer"
-          @click="navigateTo('/book/cart')"
-        />
-      </UChip>
-      <UButton
-        v-else
-        icon="lucide:shopping-cart"
-        color="neutral"
-        variant="outline"
-        class="ring-0 bg-primary-800 text-lg cursor-pointer"
-        @click="navigateTo('/book/cart')"
-      />
-
-      <UDropdownMenu
-        class="bg-primary-600 border-primary-900 hover:bg-primary-700"
-        :items="items"
-        :content="{
-          align: 'end',
-          side: 'bottom',
-          sideOffset: 1
-        }"
-        :ui="{
-          content: 'w-40'
-        }"
-      >
-        <UButton icon="lucide:settings" color="neutral" variant="outline" class="ring-0 bg-primary-800 text-lg" />
-      </UDropdownMenu>
+      <MainRightHeader />
     </div>
 
   </header>
 </template>
 
 <script setup lang="ts">
-const { signout } = useAuth();
-const { userId } = useAuth();
-const { bookCart } = useBookCarts();
-const { updateQueryState } = useRouters();
+const { index:getBooks } = useBooks();
+const { index:getAuthors } = useAuthors();
+const { index:getCategories } = useCategories();
+const { index:getPublishers } = usePublishers();
 
 const searchTerm = ref<string>('');
-
-const bookCounts = computed(() => bookCart.value.length);
+const resultGroups = ref<Array<any>>([]);
 
 function handleSearch() {
-  const newUrl = updateQueryState('search', searchTerm.value);
-  console.log('NEW URL => ', newUrl);
-}
+  Promise.all([
+    getBooks({ title: searchTerm.value }),
+    getCategories({ name: searchTerm.value }),
+    getPublishers({ name: searchTerm.value })
+  ])
+  .then(([books, categories, publishers]) => {
+    if (books.error || categories.error || publishers.error) throw new Error("Search function is failed");
 
-const items = ref([
-  {
-    label: 'Profile',
-    icon: 'lucide:user',
-    to: `/reader/${userId.value}`
-  },
-  {
-    label: 'Orders',
-    icon: 'lucide:notebook-pen',
-    to: '/reader/orders'
-  },
-  {
-    label: 'Logout',
-    icon: 'lucide:log-out',
-    async onSelect() {
-      signout();
-      navigateTo('/login')
+    if (null === books.error && books?.count > 0) {
+      resultGroups.value.push({
+        id: 'books',
+        label: 'Books',
+        items: books.data.map(item => ({
+          id: item.id,
+          label: item.title,
+          to: `book/${item.id}`,
+          target: '_blank',
+          avatar: {
+            src: item.coverImage
+          }
+        }))
+      });
     }
-  }
-]);
+
+    if (null === categories.error && categories?.count > 0) {
+      resultGroups.value.push({
+        id: 'categories',
+        label: 'Categories',
+        items: categories.data.map(item => ({
+          id: item.id,
+          label: item.name,
+          to: `/?categories=${item.id}`,
+          target: '_blank'
+        }))
+      });
+    }
+
+    if (null === publishers.error && publishers?.count > 0) {
+      resultGroups.value.push({
+        id: 'publishers',
+        label: 'Publishers',
+        items: publishers.data.map(item => ({
+          id: item.id,
+          label: item.name,
+          to: `/?publishers=${item.id}`,
+          target: '_blank'
+        }))
+      });
+    }
+  })
+  .catch((error) => useToastError(error));
+}
 </script>

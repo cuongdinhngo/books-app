@@ -18,18 +18,13 @@ export default defineNuxtConfig({
       ]
     }
   },
-  nitro: {
-    prerender: {
-      routes: ['/api/_nuxt_icon/lucide.json']
-    }
-  },
   supabase: {
     url: process.env.SUPABASE_URL,
     key: process.env.SUPABASE_KEY,
     redirectOptions: {
       login: '/login',
       callback: '/login',
-      exclude: ['/signup'],
+      exclude: ['/signup', '/'],
     }
   },
   runtimeConfig: {
