@@ -67,7 +67,7 @@ const columns = [
       return h(
         NuxtLink,
         {
-          to: `/reader/order/${row.getValue('id')}`,
+          to: `/reader/orders/${row.getValue('id')}`,
           class: 'hover:text-primary-700 cursor-pointer'
         },
         row.getValue('order_items')[0].count
