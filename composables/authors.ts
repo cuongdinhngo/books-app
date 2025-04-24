@@ -25,7 +25,7 @@ export const useAuthors = () => {
 
     let query = useTable(TABLE_NAME).select(columns, { count: 'exact' });
 
-    if (full_name) {
+    if (full_name && full_name.length >= 2) {
       query = query.ilike('full_name', `%${full_name}%`)
     }
     if (ids?.length) {
