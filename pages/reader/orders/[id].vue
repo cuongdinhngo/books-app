@@ -7,8 +7,8 @@
         <p class="text-gray-600">Booked at: <span class="font-semibold">
           {{ order?.created_at ? readableDateTime(order?.created_at) : ''}}
         </span></p>
-        <p class="text-gray-600">Returned at: <span class="font-semibold">
-          {{ order?.returned_at ? readableDateTime(order?.returned_at) : ''}}
+        <p v-if="order?.returned_at" class="text-gray-600">Returned at: <span class="font-semibold">
+          {{ readableDateTime(order?.returned_at) }}
         </span></p>
     </div>
   </div>
