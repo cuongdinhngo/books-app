@@ -12,7 +12,7 @@
 
       <FormCreateLink
         name="Create New Author"
-        link="/admin/authors/form"
+        link="/admin/authors/create"
       />
     </div>
   </form>
@@ -20,7 +20,8 @@
   <DataTable
     :data="author?.data"
     :columns="columns"
-    :get-dropdown-actions="getActionItems"
+    editLink="/admin/authors/"
+    :delete-item="deleteAuthor"
   />
 
   <Pagination
@@ -33,15 +34,11 @@
 </template>
 
 <script setup lang="ts">
-import type { Tables } from '~/types/database.types';
+import { useRouteParams } from '@vueuse/router';
 
-const { query } = useRoute();
-const {
-  index,
-  remove
-} = useAuthors();
+const { index, remove } = useAuthors();
 const selectedAuthors = ref([]);
-const page = ref(Number(query?.page) || 1);
+const page = ref(useRouteParams('page', 1, { transform: Number }));
 const pageSize = 5;
 const searchParams = ref({
   ids: selectedAuthors.value,
@@ -72,6 +69,30 @@ const handlePageChange = async(newPage) => {
   searchParams.value.page = newPage;
 };
 
+async function deleteAuthor(authorId: number) {
+  const result = window.confirm('Are you sure to delete this author?');
+  if (!result) {
+    return;
+  }
+
+  await remove(authorId)
+    .then(async({ error }) => {
+      if (error) throw error;
+
+      const { count } = await index();
+      if (count) {
+        const newPage = getNewPage(page.value, count, pageSize);
+        if (page.value !== newPage) {
+          page.value = newPage;
+          navigateTo(`/admin/authors?page=${newPage}#with-links`);
+        } else {
+          refresh();
+        }
+      }
+    })
+    .catch((error) => useToastError(error));
+}
+
 const columns = [
   {
     accessorKey: 'id',
@@ -79,12 +100,9 @@ const columns = [
     cell: ({ row }) => `#${row.getValue('id')}`
   },
   {
-    accessorKey: 'photo',
-    header: 'Profile',
-  },
-  {
     accessorKey: 'full_name',
     header: 'Full Name',
+    id: 'author'
   },
   {
     accessorKey: 'birth_year',
@@ -98,34 +116,7 @@ const columns = [
   },
   {
     header: 'Actions',
-    id: 'actions'
+    id: 'crud-actions'
   }
 ]
-
-function getActionItems(author: Tables<'authors'>) {
-  return [
-    {
-      label: 'Update information',
-      to: `/admin/authors/form?id=${author.id}`,
-    },
-    {
-      label: 'Delete',
-      async onSelect() {
-        const { error } = await remove(Number(author.id));
-        if (null === error) {
-          const { count } = await index();
-          if (count) {
-            const newPage = getNewPage(page.value, count, pageSize);
-            if (page.value !== newPage) {
-              page.value = newPage;
-              navigateTo(`/admin/authors?page=${newPage}#with-links`);
-            } else {
-              refresh();
-            }
-          }
-        }
-      }
-    }
-  ]
-}
 </script>

@@ -15,8 +15,8 @@ export const bookStatus = [
     id: 'pending'
   },
   {
-    label: 'Open',
-    id: 'open'
+    label: 'Opening',
+    id: 'opening'
   },
   {
     label: 'Borrowed',
@@ -74,7 +74,8 @@ export const useBookItems = () => {
   const remove = (options: GetBookItemsOptions = {}) => {
     const {
       ids = [],
-      bookId = null
+      bookId = null,
+      status = null
     } = options;
     let query = useTable(TABLE_NAME).delete();
     if (ids && ids.length > 0) {
@@ -82,6 +83,9 @@ export const useBookItems = () => {
     }
     if (bookId) {
       query = query.eq('book_id', bookId);
+    }
+    if (status) {
+      query = query.eq('status', status);
     }
 
     return query;

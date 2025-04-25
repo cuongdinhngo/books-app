@@ -50,12 +50,25 @@
     </template>
 
     <template #coverImage-cell="{ row }">
-      <div class="flex items-center gap-3">
-        <UAvatar :src="row.original.coverImage" size="xl"/>
-        <div>
-          <p class="font-medium text-stone-800">{{ row.original.title}}</p>
+      <NuxtLink :to="`/admin/books/${row.original.id}`">
+        <div class="flex items-center gap-3">
+          <UAvatar :src="row.original.coverImage" size="xl" class="rounded-none"/>
+          <div>
+            <p class="font-medium text-stone-800">{{ row.original.title}}</p>
+          </div>
         </div>
-      </div>
+      </NuxtLink>
+    </template>
+
+    <template #author-cell="{ row }">
+      <NuxtLink :to="`/admin/authors/${row.original.id}`">
+        <div class="flex items-center gap-3">
+          <UAvatar :src="row.original.photo" size="xl" class="rounded-none"/>
+          <div>
+            <p class="font-medium text-stone-800">{{ row.original.full_name}}</p>
+          </div>
+        </div>
+      </NuxtLink>
     </template>
 
     <template #staffName-cell="{ row }">
