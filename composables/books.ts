@@ -11,6 +11,13 @@ interface GetBooksOptions {
 }
 
 const TABLE_NAME = 'books';
+export const BOOK_STATUS = {
+  PENDING: 'pending',
+  OPENING: 'opening',
+  BORROWING: 'borrowing',
+  LOST: 'lost'
+};
+
 export const useBooks = () => {
   const { uploadPhoto } = useImages('books');
 
@@ -34,7 +41,7 @@ export const useBooks = () => {
       page = null,
       size = null
     } = options;
-    let query = useTable(TABLE_NAME).select('*', {count: 'exact'});
+    let query = useTable(TABLE_NAME).select('*', {count: 'exact'}).order('created_at', { ascending: false });;
     let selectColumns = [];
     selectColumns.push(columns);
 
@@ -77,6 +84,7 @@ export const useBooks = () => {
   }
 
   const get = (id: number) => {
+    console.log('GET BOOK => ', id);
     const columns = `
       id,
       title,

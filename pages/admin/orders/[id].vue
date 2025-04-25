@@ -53,9 +53,9 @@ const statusOptions = ref([
 ]);
 
 const transformBookItemStatus = {
-  done: 'open',
+  done: 'opening',
   borrowing: 'borrowed',
-  waiting: 'open',
+  waiting: 'opening',
 };
 
 const handleUpdate = async() => {

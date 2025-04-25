@@ -33,7 +33,7 @@
       />
       <FormCreateLink
         name="Create New Book"
-        link="/admin/books/form"
+        link="/admin/books/create"
       />
     </div>
   </form>
@@ -42,7 +42,8 @@
     v-if="book?.data"
     :data="book?.data"
     :columns="columns"
-    :get-dropdown-actions="getActionItems"
+    :delete-item="deleteBook"
+    edit-link="/admin/books/"
   />
   <h3 v-else class="justify-center flex text-stone-900">No Data</h3>
 
@@ -57,14 +58,15 @@
 
 <script setup lang="ts">
 import type { Tables } from '~/types/database.types';
-const { query } = useRoute();
+import { useRouteParams } from '@vueuse/router';
+
 const { index, remove } = useBooks();
 const { remove:deleteBooksAuthors } = useBooksAuthors();
 const { remove:deleteBooksCategories } = useBooksCategories();
 const { remove:deleteBooksPublishers } = useBooksPublishers();
 const { remove:deleteBookItems } = useBookItems();
 
-const page = ref(Number(query.page) || 1);
+const page = ref(useRouteParams('page', 1, { transform: Number }));
 const pageSize = 5;
 const title = ref('');
 const selectedAuthors = ref([]);
@@ -103,6 +105,33 @@ const handlePageChange = async(newPage) => {
   searchParams.value.page = newPage;
 }
 
+function deleteBook(bookId: number) {
+  const result = window.confirm('Are you sure to want to delete this book!');
+  if (!result) {
+    return;
+  }
+  Promise
+    .all([
+      deleteBookItems({ bookId: bookId }),
+      deleteBooksAuthors(bookId),
+      deleteBooksCategories(bookId),
+      deleteBooksPublishers(bookId)
+    ])
+    .then(async() => {
+      await remove(bookId);
+      const { count, error } = await index(searchParams.value);
+      const newPage = getNewPage(page.value, count, pageSize);
+      if (newPage === page.value) {
+        refresh();
+      } else {
+        clear();
+        navigateTo(`/admin/books?page=${newPage}#with-links`);
+      }
+    })
+    .catch((error) => useToastError(error));
+  ;
+}
+
 const columns = [
   {
     accessorKey: 'id',
@@ -130,45 +159,7 @@ const columns = [
   },
   {
     header: 'Actions',
-    id: 'actions',
+    id: 'crud-actions',
   }
 ]
-
-function getActionItems(book: Tables<'books'>) {
-  return [
-    {
-      label: 'Update information',
-      to: `/admin/books/form?id=${book.id}`,
-    },
-    {
-      label: 'Delete',
-      onSelect() {
-        const result = window.confirm('Are you sure to want to delete this book!');
-        if (!result) {
-          return;
-        }
-        Promise
-          .all([
-            deleteBookItems({ bookId: book.id }),
-            deleteBooksAuthors(book.id),
-            deleteBooksCategories(book.id),
-            deleteBooksPublishers(book.id)
-          ])
-          .then(async() => {
-            await remove(book.id);
-            const { count, error } = await index(searchParams.value);
-            const newPage = getNewPage(page.value, count, pageSize);
-            if (newPage === page.value) {
-              refresh();
-            } else {
-              clear();
-              navigateTo(`/admin/books?page=${newPage}#with-links`);
-            }
-          })
-          .catch((error) => useToastError(error));
-        ;
-      }
-    }
-  ]
-}
 </script>

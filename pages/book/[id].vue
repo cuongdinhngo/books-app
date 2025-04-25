@@ -31,10 +31,10 @@
       <div>
         <div class="flex items-center space-x-1">
           <label class="block text-sm font-medium text-gray-400">Quantity: </label>
-          <span class="text-gray-900">{{ book?.data?.book_items.filter(item => item.status === 'open').length }}</span>
+          <span class="text-gray-900">{{ book?.data?.book_items.filter(item => item.status === 'opening').length }}</span>
         </div>
         <button
-          v-if="book?.data?.book_items.filter(item => item.status === 'open').length > 0" 
+          v-if="book?.data?.book_items.filter(item => item.status === 'opening').length > 0" 
           class="bg-primary-500 py-1.5 px-2.5 rounded-md"
           @click="handleBorrow"
         >
