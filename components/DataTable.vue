@@ -50,7 +50,7 @@
     </template>
 
     <template #coverImage-cell="{ row }">
-      <NuxtLink :to="`/admin/books/${row.original.id}`">
+      <NuxtLink :to="`${detailLink}${row.original.id}`">
         <div class="flex items-center gap-3">
           <UAvatar :src="row.original.coverImage" size="xl" class="rounded-none"/>
           <div>
@@ -136,7 +136,6 @@
 
 <script setup lang="ts">
 import { NuxtLink } from '#components';
-import { string } from 'zod';
 
 const props = defineProps({
   data: {
@@ -147,8 +146,12 @@ const props = defineProps({
     type: Object,
     required: true
   },
+  detailLink: {
+    type: String,
+    default: null
+  },
   editLink: {
-    type: string,
+    type: String,
     default: null
   },
   getDropdownActions: {

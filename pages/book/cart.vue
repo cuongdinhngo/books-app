@@ -1,11 +1,12 @@
 <template>
   <h3 class="text-stone-900">Your book cart</h3>
-  <h3 v-if="bookCart.length === 0" class="text-primary-900">Please enjoy your time and choose your love books</h3>
+  <h3 v-if="bookCart.length === 0" class="text-primary-900">Enjoy your time and choose your love books</h3>
   <DataTable
     v-if="book?.count > 0"
     :data="book?.data"
     :columns="columns"
     :handle-remove-cart-item="handleRemove"
+    detail-link="/book/"
   />
   <div class="flex justify-end mt-4">
     <UButton
@@ -24,12 +25,13 @@ definePageMeta({
   layout: 'main'
 })
 
-import { NuxtLink } from '#components'
+import { ORDER_STATUS } from '~/composables/orders';
+
 const { bookCart, removeCartItem, reset: resetBookCart } = useBookCarts();
 const { index } = useBooks();
 const { userId } = useAuth();
 const { insert, index: getOrders } = useOrders();
-const { upsert:upsertOrderItems, insert:addOrderItems } = useOrderItems();
+const { insert:addOrderItems } = useOrderItems();
 
 const { data: book, error, refresh } = useAsyncData(
   'book-cart',
@@ -38,13 +40,18 @@ const { data: book, error, refresh } = useAsyncData(
 );
 
 async function handleBorrow() {
-  return insert({reader_id: userId.value, status: 'waiting'})
-    .then(async() => {
-      const { data: newestOrder } = await getOrders({ readerId: userId.value, status: ['waiting']}).limit(1).single();
-      console.log('newestOrder =< ', newestOrder);
-      const orderItems = bookCart.value.map(id => ({ order_id: newestOrder.id, book_item_id: id, status: 'waiting' }));
-      const { error } = await addOrderItems(orderItems);
+  return insert({reader_id: userId.value, status: ORDER_STATUS.WAITING})
+    .then(async({ error }) => {
       if (error) throw error;
+
+      const { data: newestOrder, error:getOrdersError } = await getOrders({ readerId: userId.value, status: [ORDER_STATUS.WAITING]})
+        .limit(1)
+        .single();
+      if (getOrdersError) throw getOrdersError;
+
+      const orderItems = bookCart.value.map(id => ({ order_id: newestOrder.id, book_id: id, status:ORDER_STATUS.WAITING }));
+      const { error:addOrderItemsError } = await addOrderItems(orderItems);
+      if (addOrderItemsError) throw addOrderItemsError;
 
       resetBookCart();
       useToastSuccess();
@@ -55,26 +62,11 @@ async function handleBorrow() {
 }
 
 function handleRemove(bookId: number) {
-  console.log('Remove -> ', bookId);
   removeCartItem(bookId);
   refresh();
 }
 
 const columns = [
-  {
-    accessorKey: 'id',
-    header: '#',
-    cell: ({ row }) => {
-      return h(
-        NuxtLink,
-        {
-          to: `/book/${row.getValue('id')}`,
-          class: 'hover:text-primary-700 cursor-pointer'
-        },
-        `#${row.getValue('id')}`
-      )
-    }
-  },
   {
     accessorKey: 'coverImage',
     header: 'Book',
@@ -83,16 +75,7 @@ const columns = [
   {
     accessorKey: 'authors',
     header: `Authors`,
-    cell: ({ row }) => {
-      return h(
-        NuxtLink,
-        {
-          to: `/book/${row.getValue('id')}`,
-          class: 'hover:text-primary-700 cursor-pointer'
-        },
-        `${row.getValue('authors').map(author => author.name).join(', ')}`
-      )
-    }
+    cell: ({ row }) => `${row.getValue('authors').map(author => author.name).join(', ')}`
   },
   {
     header: 'Actions',

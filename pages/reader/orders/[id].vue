@@ -4,6 +4,7 @@
     <h3 class="text-lg font-semibold text-gray-800 mb-2">Borrowing Information</h3>
     <div class="space-y-2">
         <p class="text-gray-600">Status: <span class="font-semibold"> {{ order?.status }}</span></p>
+        <p class="text-gray-600">Quantity: <span class="font-semibold"> {{ order?.order_items.length }}</span></p>
         <p class="text-gray-600">Booked at: <span class="font-semibold">
           {{ order?.created_at ? readableDateTime(order?.created_at) : ''}}
         </span></p>
@@ -13,7 +14,7 @@
     </div>
   </div>
 
-  <div class="space-y-4">
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
     <BookCard
       v-for="book in bookItems"
       :key="book.id"
@@ -37,11 +38,11 @@ onMounted(async() => {
   const { data } = await get(orderId.value, `id, status, created_at, returned_at, order_items(*)`);
   order.value = data;
   const orderItems = data.order_items;
-  const orderBookItems = orderItems.map(item => ({id: item.book_item_id, status: item.status}));
-  const bookItemIds = orderItems.map(item => (item.book_item_id));
-  const { data: bookItemsData } = await getBooksItems({ columns: `bookItemId:id, book_id, books(id,title,cover_image)`, ids: bookItemIds});
+  const orderBookItems = orderItems.map(item => ({id: item.book_id, status: item.status}));
+  const bookIds = orderItems.map(item => (item.book_id));
+  const { data: bookItemsData } = await getBooksItems({ columns: `id, book_id, books(id,title,cover_image)`, bookIds: bookIds});
   bookItems.value = orderBookItems.map(item => {
-    const matchingData = bookItemsData.find(data => data.bookItemId === item.id);
+    const matchingData = bookItemsData.find(data => data.book_id === item.id);
     if (matchingData) {
       return {
         ...item,
