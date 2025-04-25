@@ -8,6 +8,12 @@ import type { Tables } from '~/types/database.types';interface GetOrdersOptions 
 }
 
 const TABLE_NAME = 'orders';
+export const ORDER_STATUS = {
+  WAITING: 'waiting',
+  BORROWING: 'borrowing',
+  DONE: 'done'
+};
+
 export const useOrders = () => {
 
   const index = (options: GetOrdersOptions = {}) => {

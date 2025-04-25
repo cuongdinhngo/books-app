@@ -1,15 +1,15 @@
 <template>
-  <div class="bg-white shadow-lg rounded-lg flex overflow-hidden p-5">
-    <!-- Left: Book Photo -->
-    <div class="w-1/3">
-      <img :src="book.coverImage" alt="Book Cover" class="object-contain w-100 h-80">
-    </div>
-    <!-- Right: Book Details -->
-    <div class="w-2/3 p-4 flex flex-col justify-between">
-      <div>
-        <h3 class="text-lg font-bold text-gray-800">{{ book.title }}</h3>
-        <p class="text-gray-600">Status: <span class="font-semibold">{{ book.status}}</span></p>
-      </div>
+  <div class="bg-white rounded-lg shadow-lg p-4 max-w-xs w-full">
+    <NuxtLink :to="`/book/${book.id}`">
+      <img
+        :src="book.coverImage"
+        alt="Book Cover"
+        class="w-full h-64 object-cover rounded-md mb-4"
+      >
+    </NuxtLink>
+    <div class="flex flex-col">
+      <h2 class="text-lg font-semibold text-gray-800 truncate">{{ book.title }}</h2>
+      <p class="text-sm text-gray-600 text-right">Status: {{book.status}}</p>
     </div>
   </div>
 </template>

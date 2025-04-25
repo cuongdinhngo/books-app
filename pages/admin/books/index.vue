@@ -44,6 +44,7 @@
     :columns="columns"
     :delete-item="deleteBook"
     edit-link="/admin/books/"
+    detail-link="/admin/books/"
   />
   <h3 v-else class="justify-center flex text-stone-900">No Data</h3>
 

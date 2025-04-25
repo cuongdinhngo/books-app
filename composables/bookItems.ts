@@ -3,7 +3,7 @@ import type { Tables } from '~/types/database.types';
 interface GetBookItemsOptions {
   columns?: string,
   ids?: (number)[],
-  bookId?: number,
+  bookIds?: (number)[],
   status?: string,
   page?: number,
   size?: number
@@ -43,7 +43,7 @@ export const useBookItems = () => {
     const {
       columns = '*',
       ids = [],
-      bookId = null,
+      bookIds = null,
       status = null,
       page = null,
       size = null
@@ -54,8 +54,8 @@ export const useBookItems = () => {
     if (ids.length > 0) {
       query = query.in('id', ids);
     }
-    if (bookId) {
-      query = query.eq('book_id', bookId);
+    if (bookIds && bookIds.length >= 1) {
+      query = query.in('book_id', bookIds);
     }
     if (status) {
       query = query.ilike('status', `%${status}%`);
