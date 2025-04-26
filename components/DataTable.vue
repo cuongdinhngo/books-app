@@ -12,6 +12,7 @@
           size="md"
           color="primary"
           variant="subtle"
+          v-if="editLink"
           @click="navigateTo(`${editLink}${row.original.id}`)"
         >
           Edit
@@ -82,14 +83,23 @@
       </div>
     </template>
 
+    <template #orderItemStatus-cell="{ row }">
+      <UBadge class="capitalize" variant="subtle" :color="orderItemStatusColor[row.original.orderItemStatus]">
+        {{ row.original.orderItemStatus }}
+      </UBadge>
+    </template>
+
     <template #bookItemStatus-cell="{ row }">
-      <UBadge class="capitalize" variant="subtle" :color="bookItemStatusColor[row.original.status]">
-        {{ row.original.status }}
+      <UBadge class="capitalize" variant="subtle" :color="bookItemStatusColor[row.original.bookItemStatus]">
+        {{
+          row.original.bookItemStatus ===  BOOK_STATUS.OPENING ? 'Available' :
+          row.original.bookItemStatus ===  BOOK_STATUS.BORROWING ?  BOOK_STATUS.BORROWING : 'Not Available'
+        }}
       </UBadge>
     </template>
 
     <template #bookItemStatusAction-cell="{ row }">
-      <UBadge class="capitalize" variant="subtle" :color="bookItemStatusColor[row.original.status]">
+      <UBadge class="capitalize" variant="subtle" :color="orderItemStatusColor[row.original.status]">
         {{ row.original.status }}
       </UBadge>
     </template>
@@ -131,11 +141,56 @@
         </UButton>
     </template>
 
+    <template #adminOrderActions-cell="{ row }">
+      <UModal
+        title="Are you sure to delete this item?"
+        :close="{
+          color: 'primary',
+          variant: 'outline',
+          class: 'rounded-full'
+        }"
+      >
+        <UButton
+          icon="lucide:trash-2"
+          label="Remove"
+          size="md"
+          color="primary"
+          variant="subtle"
+          v-if="row.original.bookItemStatus === BOOK_STATUS.PENDING "
+        />
+        <template #body>
+          <div class="flex flex-col">
+            <UTextarea placeholder="Type something..." class="w-full mb-5" v-model="deletedItemComment"/>
+            <UButton
+              icon="lucide:badge-check"
+              label="Submit"
+              size="md"
+              color="primary"
+              variant="subtle"
+              class="text-right"
+              v-if="removeUnavailableBook !== null"
+              @click="removeUnavailableBook(row.original.orderItemId)"
+            />
+          </div>
+        </template>
+      </UModal>
+      <UButton
+        icon="lucide:check-check"
+        size="md"
+        color="success"
+        variant="subtle"
+        v-if="row.original.bookItemStatus === BOOK_STATUS.OPENING"
+      >
+        Ready
+      </UButton>
+    </template>
+
   </UTable>
 </template>
 
 <script setup lang="ts">
 import { NuxtLink } from '#components';
+import { BOOK_STATUS } from '~/composables/books';
 
 const props = defineProps({
   data: {
@@ -169,13 +224,29 @@ const props = defineProps({
   deleteItem: {
     type: [Function, null],
     default: null
-  }
+  },
+  removeUnavailableBook: {
+    type: [Function, null],
+    default: null
+  },
 });
 
-const bookItemStatusColor = {
+const deletedItemComment = defineModel({
+  type: String,
+  default: null
+});
+
+const orderItemStatusColor = {
   open: 'success',
   pending: 'info',
   borrowed: 'warning',
   lost: 'neutral'
+}
+
+const bookItemStatusColor = {
+  opening: 'success',
+  pending: 'warning',
+  borrowed: 'warning',
+  lost: 'warning'
 }
 </script>

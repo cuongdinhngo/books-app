@@ -4,7 +4,7 @@ interface GetBookItemsOptions {
   columns?: string,
   ids?: (number)[],
   bookIds?: (number)[],
-  status?: string,
+  status?: (string)[],
   page?: number,
   size?: number
 }
@@ -44,7 +44,7 @@ export const useBookItems = () => {
       columns = '*',
       ids = [],
       bookIds = null,
-      status = null,
+      status = [],
       page = null,
       size = null
     } = options;
@@ -57,8 +57,8 @@ export const useBookItems = () => {
     if (bookIds && bookIds.length >= 1) {
       query = query.in('book_id', bookIds);
     }
-    if (status) {
-      query = query.ilike('status', `%${status}%`);
+    if (status && status.length >= 1) {
+      query = query.in('status', status);
     }
     if (page && size && page >= 1 && size >= 1) {
       query = query.range((page - 1) * size, page * size - 1);

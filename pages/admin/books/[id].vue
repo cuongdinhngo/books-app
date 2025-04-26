@@ -288,7 +288,7 @@ const submitForm = async() => {
     if (quantity.value < oldQuantity.value && quantity.value >= fixedCounts) {
       const removeCounts = oldQuantity.value - quantity.value;
       if (pendingCounts.value >= removeCounts) {
-        await getBookItems({ columns:'id', bookIds: [bookId.value], status: BOOK_STATUS.PENDING })
+        await getBookItems({ columns:'id', bookIds: [bookId.value], status: [BOOK_STATUS.PENDING] })
           .order('id', {ascending:true})
           .limit(removeCounts)
           .then(async({ data, error }) => {
@@ -309,7 +309,7 @@ const submitForm = async() => {
         await deleteBookItems({ bookId: bookId.value, status: BOOK_STATUS.PENDING})
           .then(async({ error }) => {
             if (error) throw error;
-            await getBookItems({ columns:'id', bookIds: [bookId.value], status: BOOK_STATUS.OPENING })
+            await getBookItems({ columns:'id', bookIds: [bookId.value], status: [BOOK_STATUS.OPENING] })
               .order('id', {ascending:true})
               .limit(openingRemove)
               .then(async({ data:openingItems , error:getOpeningItemsError }) => {

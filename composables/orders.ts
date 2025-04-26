@@ -3,6 +3,8 @@ import type { Tables } from '~/types/database.types';interface GetOrdersOptions 
   id?: number,
   readerId?: string,
   status?: (string)[],
+  from?: string,
+  to?: string,
   page?: number,
   size?: number
 }
@@ -22,6 +24,8 @@ export const useOrders = () => {
       id = null,
       readerId = null,
       status = [],
+      from = null,
+      to = null,
       page = null,
       size = null
     } = options;
@@ -35,6 +39,11 @@ export const useOrders = () => {
     }
     if (status && status.length > 0) {
       query = query.in('status', status);
+    }
+    if (from) {
+      let rangeTo = new Date().toLocaleDateString('sv-SE').split('T')[0];
+      if (to) rangeTo = to;
+      query = query.gte('created_at', from).lte('created_at', rangeTo);
     }
     if (page && size && page >= 1 && size >= 1) {
       query = query.range((page - 1) * size, page * size - 1);
