@@ -6,10 +6,19 @@ interface GetOrderItemsOptions {
   bookItemId?: number,
   status?: string,
   page?: number,
-  size?: number
+  size?: number,
+  isNotDeleted?: null
 }
 
 const TABLE_NAME = 'order_items';
+
+export const ORDER_ITEM_STATUS = {
+  WAITING: 'waiting',
+  BORROWING: 'borrowing',
+  DONE: 'done',
+  UNAVAILABLE: 'unavailable'
+}
+
 export const useOrderItems = () => {  
 
   const insert = (data: Tables<'order_items'>[]) => {
@@ -28,7 +37,8 @@ export const useOrderItems = () => {
       bookItemId = null,
       status = null,
       page = null,
-      size = null
+      size = null,
+      isNotDeleted = null
     } = options;
 
     let query = useTable(TABLE_NAME).select(columns, { count: 'exact' });
@@ -45,6 +55,9 @@ export const useOrderItems = () => {
     if (status) {
       query = query.eq('status', status);
     }
+    if (isNotDeleted) {
+      query = query.is('deleted_at', null)
+    }
     if (page && size && page >= 1 && size >= 1) {
       query = query.range((page - 1) * size, page * size - 1);
     }
@@ -52,9 +65,19 @@ export const useOrderItems = () => {
     return query;
   }
 
+  const remove = (orderItemId: number) => {
+    return useTable(TABLE_NAME).delete().eq('id', orderItemId);
+  }
+
+  const update = (orderItemId: number, data: Tables<'order_items'>) => {
+    return useTable(TABLE_NAME).update(data).eq('id', orderItemId);
+  }
+
   return {
     index,
     insert,
-    upsert
+    upsert,
+    remove,
+    update
   }
 }

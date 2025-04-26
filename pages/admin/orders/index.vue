@@ -1,5 +1,22 @@
 <template>
-    <form class="mb-6 space-y-4 w-1/2 mx-auto" @submit.prevent="handleSearch">
+  <form class="mb-6 space-y-4 w-1/2 mx-auto" @submit.prevent="handleSearch">
+    <FormInputDiv
+      v-model="orderId"
+      label-name="Order No"
+      placeholder="Enter Order's No"
+    />
+
+    <div class="flex space-x-40">
+      <div class="flex-1">
+        <label for="from-date" class="block text-sm font-medium text-gray-700">From Date</label>
+        <UInput type="date" v-model="from"/>
+      </div>
+      <div class="flex-1">
+        <label for="to-date" class="block text-sm font-medium text-gray-700">To Date</label>
+        <UInput type="date" v-model="to"/>
+      </div>
+    </div>
+
     <USelectMenu
       v-model="selectedStatus"
       :items="statusOptions"
@@ -34,23 +51,31 @@
   />
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { ORDER_STATUS } from '~/composables/orders';
+import { useRouteQuery } from '@vueuse/router';
+
 const { index, update } = useOrders();
 const { index:getOrderItems, upsert:upsertOrderItems } = useOrderItems();
 const { upsert:upsertBookItems } = useBookItems();
 
-const { query } = useRoute();
-const page = ref(Number(query.page) || 1);
+const page = useRouteQuery('page', 1 , { transform: Number });
 const pageSize = 5;
 const statusOptions = [
   {label: 'Done', id: 'done'},
   {label: 'Borrowing', id: 'borrowing'},
   {label: 'Waiting', id: 'waiting'}
 ];
-const selectedStatus = ref([]);
+const orderId = ref(null)
+const selectedStatus = ref([ORDER_STATUS.WAITING]);
+const from = ref(null);
+const to = ref(null);
 const searchParams = ref({
   columns: `id, status, readers(id, fullName:full_name)`,
   status: selectedStatus.value,
+  from: from.value,
+  to: to.value,
+  id: orderId.value,
   page: page.value,
   size: pageSize
 });
@@ -62,8 +87,10 @@ const { data: order, error, refresh, clear } = useAsyncData(
 );
 
 const handleSearch = () => {
+  searchParams.value.id = orderId.value;
   searchParams.value.status = selectedStatus.value;
-  refresh();
+  searchParams.value.from = from.value;
+  searchParams.value.to = to.value;
 }
 
 const handlePageChange = (newPage) => {
@@ -97,7 +124,7 @@ const handleApprove = async(orderId) => {
 const columns = [
   {
     accessorKey: 'id',
-    header: '#',
+    header: 'Order No.',
     cell: ({ row }) => `#${row.getValue('id')}`
   },
   {

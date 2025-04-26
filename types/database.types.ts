@@ -239,6 +239,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "messages_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "messages_sender_id_fkey"
             columns: ["sender_id"]
             isOneToOne: false
@@ -249,35 +256,44 @@ export type Database = {
       }
       order_items: {
         Row: {
-          book_item_id: number
+          book_id: number
+          book_item_id: number | null
+          comment: string | null
           created_at: string
+          deleted_at: string | null
           id: number
           order_id: number
-          status: string
+          status: string | null
           updated_at: string
         }
         Insert: {
-          book_item_id: number
+          book_id: number
+          book_item_id?: number | null
+          comment?: string | null
           created_at?: string
+          deleted_at?: string | null
           id?: number
           order_id: number
-          status: string
+          status?: string | null
           updated_at?: string
         }
         Update: {
-          book_item_id?: number
+          book_id?: number
+          book_item_id?: number | null
+          comment?: string | null
           created_at?: string
+          deleted_at?: string | null
           id?: number
           order_id?: number
-          status?: string
+          status?: string | null
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "order_items_book_item_id_fkey"
-            columns: ["book_item_id"]
+            foreignKeyName: "order_items_book_id_fkey"
+            columns: ["book_id"]
             isOneToOne: false
-            referencedRelation: "book_items"
+            referencedRelation: "books"
             referencedColumns: ["id"]
           },
           {
@@ -292,6 +308,7 @@ export type Database = {
       orders: {
         Row: {
           approved_by: string | null
+          comment: string | null
           created_at: string
           id: number
           reader_id: string
@@ -301,6 +318,7 @@ export type Database = {
         }
         Insert: {
           approved_by?: string | null
+          comment?: string | null
           created_at?: string
           id?: number
           reader_id?: string
@@ -310,6 +328,7 @@ export type Database = {
         }
         Update: {
           approved_by?: string | null
+          comment?: string | null
           created_at?: string
           id?: number
           reader_id?: string
@@ -388,21 +407,21 @@ export type Database = {
       users: {
         Row: {
           created_at: string
-          email: string
+          email: string | null
           full_name: string
           id: string
           photo: string | null
         }
         Insert: {
           created_at?: string
-          email: string
+          email?: string | null
           full_name: string
           id?: string
           photo?: string | null
         }
         Update: {
           created_at?: string
-          email?: string
+          email?: string | null
           full_name?: string
           id?: string
           photo?: string | null
