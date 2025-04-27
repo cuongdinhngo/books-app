@@ -109,6 +109,17 @@
         </button>
       </div>
     </form>
+    <USeparator icon="lucide:list" :label="`Historical Orders: ${orderItems.length}`" class="mt-5" 
+      :ui="{
+        label: 'text-primary-800 text-lg'
+      }"
+    />
+
+    <DataTable
+      v-if="orderItems.length > 0"
+      :data="orderItems"
+      :columns="columns"
+    />
   </div>
 </template>
 
@@ -116,12 +127,14 @@
 import type { Tables } from '~/types/database.types';
 import { useRouteParams } from '@vueuse/router';
 import { BOOK_STATUS } from '~/composables/books';
+import DataTable from '~/components/DataTable.vue';
 
 const { get, update } = useBooks();
 const { insert:insertBooksAuthors, remove:deleteBooksAuthors } = useBooksAuthors();
 const { insert:insertBooksCategories, remove:deleteBooksCategories } = useBooksCategories();
 const { insert:insertBooksPublishers, remove:deleteBooksPublishers } = useBooksPublishers();
 const { insert:insertBooksItems, remove:deleteBookItems, index:getBookItems } = useBookItems();
+const { index:getOrderItems} = useOrderItems();
 
 const bookId = useRouteParams('id', null, { transform: Number });
 
@@ -142,28 +155,46 @@ const pendingCounts = ref(0);
 const openingCounts = ref(0);
 const borrowingCounts = ref(0);
 const lostCounts = ref(0);
+const orderItems = ref([]);
 
-const { data:book, error, refresh } = await useAsyncData(
+const { data, error, refresh } = await useAsyncData(
   `book-${bookId.value}`,
-  () => get(bookId.value)
+  async() => {
+    const [orderItemsData, book] = await Promise.all([
+      getOrderItems({ columns: 'orderId:order_id, orderItemStatus:status, orderItemComment:comment, orders(*)', bookId:bookId.value }),
+      get(bookId.value)
+    ]);
+
+    return {orderItemsData, book}
+  }
 );
 
-title.value = book?.value.data.title;
-description.value = book?.value.data.description;
-quantity.value = book?.value.data.quantity;
+orderItems.value = data.value.orderItemsData.data.map(item => {
+  return {
+    orderId: item.orderId,
+    orderItemComment: item.orderItemComment,
+    orderItemStatus: item.orderItemStatus,
+    orderCreatedAt: item.orders.created_at,
+    orderReturnedAt: item.orders.returned_at
+  }
+});
+
+title.value = data.value.book.data.title;
+description.value = data.value.book.data.description;
+quantity.value = data.value.book.data.quantity;
 selectedPhoto.value = null;
-imagePreview.value = book?.value.data.coverImage;
+imagePreview.value = data.value.book.data.coverImage;
 
-selectedPublishers.value = book?.value.data.publishers.map(publisher => Number(publisher.id));
-selectedCategories.value = book?.value.data.categories.map(category => Number(category.id));
-selectedAuthors.value = book?.value.data.authors.map(author => Number(author.id));
+selectedPublishers.value = data.value.book.data.publishers.map(publisher => Number(publisher.id));
+selectedCategories.value = data.value.book.data.categories.map(category => Number(category.id));
+selectedAuthors.value = data.value.book.data.authors.map(author => Number(author.id));
 
-oldCategories.value = book?.value.data.categories.map(category => Number(category.id));
-oldAuthors.value = book?.value.data.authors.map(author => Number(author.id));
-oldPublishers.value = book?.value.data.publishers.map(publisher => Number(publisher.id));
-oldQuantity.value = book?.value.data.quantity;
+oldCategories.value = data.value.book.data.categories.map(category => Number(category.id));
+oldAuthors.value = data.value.book.data.authors.map(author => Number(author.id));
+oldPublishers.value = data.value.book.data.publishers.map(publisher => Number(publisher.id));
+oldQuantity.value = data.value.book.data.quantity;
 
-processItems(book?.value.data.book_items);
+processItems(data.value.book.data.book_items);
 
 const handleFileUpload = (file) => {
   if (file && file.type.startsWith("image/")) {
@@ -375,4 +406,53 @@ const submitForm = async() => {
   refresh();
   useToastSuccess();
 }
+
+const columns = [
+  {
+    accessorKey: 'orderId',
+    header: 'Order No.',
+    cell: ({ row }) => {
+      return h(
+        'a',
+        {
+          href: `/admin/orders/${row.getValue('orderId')}`,
+          class: 'hover:text-primary-700 cursor-pointer'
+        },
+        row.getValue('orderId')
+      )
+    }
+  },
+  {
+    accessorKey: 'orderItemStatus',
+    header: 'Status',
+  },
+  {
+    accessorKey: 'orderCreatedAt',
+    header: 'Ordered at',
+    cell: ({ row }) => {
+      return h(
+        'a',
+        {
+          href: `/admin/orders/${row.getValue('orderId')}`,
+          class: 'hover:text-primary-700 cursor-pointer'
+        },
+        readableDateTime(row.getValue('orderCreatedAt'))
+      )
+    }
+  },
+  {
+    accessorKey: 'orderReturnedAt',
+    header: 'Returned at',
+    cell: ({ row }) => {
+      return h(
+        'a',
+        {
+          href: `/admin/orders/${row.getValue('orderId')}`,
+          class: 'hover:text-primary-700 cursor-pointer'
+        },
+        readableDateTime(row.getValue('orderReturnedAt'))
+      )
+    }
+  },
+];
 </script>

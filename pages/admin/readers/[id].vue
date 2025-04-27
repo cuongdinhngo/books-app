@@ -2,7 +2,7 @@
   <div class="bg-white rounded-lg flex w-full">
     <!-- Left: Profile Photo -->
     <ProfilePhotoBlock
-      :data="reader?.data"
+      :data="data.reader?.data"
       :handle-upload-photo="handleUploadPhoto"
     />
     <!-- Right: Information Details -->
@@ -10,36 +10,36 @@
         <div class="space-y-4">
             <div>
                 <span class="text-gray-600">Full Name:</span>
-                <span class="font-bold text-stone-900 ml-1"> {{ reader?.data.full_name }} </span>
+                <span class="font-bold text-stone-900 ml-1"> {{ data.reader?.data.full_name }} </span>
             </div>
             <div>
                 <span class="text-gray-600">Email:</span>
-                <span class="font-bold text-stone-900 ml-1"> {{ reader?.data.email }}</span>
+                <span class="font-bold text-stone-900 ml-1"> {{ data.reader?.data.email }}</span>
             </div>
             <div>
                 <span class="text-gray-600">Birthday:</span>
-                <span class="font-bold text-stone-900 ml-1"> {{ reader?.data.birthday }}</span>
+                <span class="font-bold text-stone-900 ml-1"> {{ data.reader?.data.birthday }}</span>
             </div>
             <div>
                 <span class="text-gray-600">Address:</span>
-                <span class="font-bold text-stone-900 ml-1"> {{ reader?.data.address }}</span>
+                <span class="font-bold text-stone-900 ml-1"> {{ data.reader?.data.address }}</span>
             </div>
             <div>
                 <span class="text-gray-600">Created At:</span>
-                <span class="font-bold text-stone-900 ml-1"> {{ reader?.data.created_at ? readableDateTime(reader?.data.created_at) : null }}</span>
+                <span class="font-bold text-stone-900 ml-1"> {{ data.reader?.data.created_at ? readableDateTime(data.reader?.data.created_at) : null }}</span>
             </div>
         </div>
     </div>
   </div>
 
   <DataTable
-    v-if="order.count > 0"
-    :data="order.data"
+    v-if="data.order.count > 0"
+    :data="data.order.data"
     :columns="columns"
   />
+  <h3 v-else class="text-violet-950 justify-center">No historical orders</h3>
 </template>
 <script setup lang="ts">
-import type { Tables } from '~/types/database.types';
 import { useRouteParams } from '@vueuse/router';
 
 const { get, update } = useReaders();
@@ -59,16 +59,17 @@ const handleUploadPhoto = async(event) => {
   }
 };
 
+const {data, error, refresh} = await useAsyncData(
+  `readers-${readerId.value}`,
+  async() => {
+    const [reader, order] = await Promise.all([
+      get(readerId.value),
+      index({ readerId: readerId.value, columns: 'id, status, created_at, order_items(count)' }) 
+    ]);
 
-const { data:reader, error:getReaderError, refresh:refreshReder } = await useAsyncData(
-  `reader-${readerId.value}`,
-  () => get(readerId.value)
+    return { reader, order };
+  }
 );
-
-const {data: order, error:getOrderError, refresh:refreshOrders} = await useAsyncData(
-  'reader-orders',
-  () => index({ readerId: readerId.value, columns: 'id, status, created_at, order_items(count)' }) 
-)
 
 const columns = [
   {
