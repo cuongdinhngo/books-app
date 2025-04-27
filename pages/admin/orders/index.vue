@@ -19,7 +19,7 @@
 
     <USelectMenu
       v-model="selectedStatus"
-      :items="statusOptions"
+      :items="ORDER_STATUS_OPTIONS"
       value-key="id"
       multiple
       variant="none"
@@ -52,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-import { ORDER_STATUS } from '~/composables/orders';
+import { ORDER_STATUS, ORDER_STATUS_OPTIONS } from '~/composables/orders';
 import { useRouteQuery } from '@vueuse/router';
 
 const { index, update } = useOrders();
@@ -61,11 +61,7 @@ const { upsert:upsertBookItems } = useBookItems();
 
 const page = useRouteQuery('page', 1 , { transform: Number });
 const pageSize = 5;
-const statusOptions = [
-  {label: 'Done', id: 'done'},
-  {label: 'Borrowing', id: 'borrowing'},
-  {label: 'Waiting', id: 'waiting'}
-];
+
 const orderId = ref(null)
 const selectedStatus = ref([ORDER_STATUS.WAITING]);
 const from = ref(null);

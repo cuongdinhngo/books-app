@@ -51,7 +51,7 @@
     </template>
 
     <template #coverImage-cell="{ row }">
-      <NuxtLink :to="`${detailLink}${row.original.id}`">
+      <NuxtLink :to="`${detailLink}${row.original.bookId}`">
         <div class="flex items-center gap-3">
           <UAvatar :src="row.original.coverImage" size="xl" class="rounded-none"/>
           <div>
@@ -90,11 +90,8 @@
     </template>
 
     <template #bookItemStatus-cell="{ row }">
-      <UBadge class="capitalize" variant="subtle" :color="bookItemStatusColor[row.original.bookItemStatus]">
-        {{
-          row.original.bookItemStatus ===  BOOK_STATUS.OPENING ? 'Available' :
-          row.original.bookItemStatus ===  BOOK_STATUS.BORROWING ?  BOOK_STATUS.BORROWING : 'Not Available'
-        }}
+      <UBadge class="capitalize" variant="subtle" :color="bookItemStatusColor[row.original.orderItemStatus]">
+        {{ transformOrderItemStatus(row.original) }}
       </UBadge>
     </template>
 
@@ -120,7 +117,7 @@
           size="md"
           color="primary"
           variant="subtle"
-          v-if="handleApprove !== null"
+          v-if="handleApprove !== null && row.original.status === ORDER_STATUS.WAITING"
           @click="handleApprove(row.original.id)"
         >
           Approve
@@ -156,11 +153,11 @@
           size="md"
           color="primary"
           variant="subtle"
-          v-if="row.original.bookItemStatus === BOOK_STATUS.PENDING "
+          v-if="row.original.orderStatus === ORDER_STATUS.WAITING"
         />
         <template #body>
           <div class="flex flex-col">
-            <UTextarea placeholder="Type something..." class="w-full mb-5" v-model="deletedItemComment"/>
+            <UTextarea placeholder="Type something..." class="w-full mb-5" v-model="itemComment"/>
             <UButton
               icon="lucide:badge-check"
               label="Submit"
@@ -174,15 +171,48 @@
           </div>
         </template>
       </UModal>
-      <UButton
-        icon="lucide:check-check"
-        size="md"
-        color="success"
+
+      <UBadge
+        v-if="[ORDER_STATUS.CLOSE, ORDER_STATUS.REJECT].includes(row.original.orderStatus) || row.original.bookItemStatus === BOOK_ITEM_STATUS.LOST"
+        class="capitalize"
         variant="subtle"
-        v-if="row.original.bookItemStatus === BOOK_STATUS.OPENING"
+        color="neutral"
       >
-        Ready
-      </UButton>
+        Done
+      </UBadge>
+
+      <UModal
+        title="Is this book lost?"
+        :close="{
+          color: 'primary',
+          variant: 'outline',
+          class: 'rounded-full'
+        }"
+      >
+        <UButton
+          icon="lucide:circle-x"
+          label="Lost"
+          size="md"
+          color="primary"
+          variant="subtle"
+          v-if="row.original.orderStatus === ORDER_STATUS.BORROWING && row.original.bookItemStatus === ORDER_STATUS.BORROWING"
+        />
+        <template #body>
+          <div class="flex flex-col">
+            <UTextarea placeholder="Type something..." class="w-full mb-5" v-model="itemComment"/>
+            <UButton
+              icon="lucide:badge-check"
+              label="Submit"
+              size="md"
+              color="primary"
+              variant="subtle"
+              class="text-right"
+              v-if="markLostBook !== null"
+              @click="markLostBook(row.original.uId)"
+            />
+          </div>
+        </template>
+      </UModal>
     </template>
 
   </UTable>
@@ -191,6 +221,7 @@
 <script setup lang="ts">
 import { NuxtLink } from '#components';
 import { BOOK_STATUS } from '~/composables/books';
+import { BOOK_ITEM_STATUS } from '~/composables/bookItems';
 
 const props = defineProps({
   data: {
@@ -229,24 +260,58 @@ const props = defineProps({
     type: [Function, null],
     default: null
   },
+  markLostBook: {
+    type: [Function, null],
+    default: null
+  }
 });
 
-const deletedItemComment = defineModel({
+const itemComment = defineModel({
   type: String,
   default: null
 });
 
 const orderItemStatusColor = {
-  open: 'success',
+  openning: 'success',
   pending: 'info',
   borrowed: 'warning',
-  lost: 'neutral'
+  lost: 'neutral',
+  closed: 'neutral',
+  rejected: 'neutral',
 }
 
 const bookItemStatusColor = {
   opening: 'success',
   pending: 'warning',
   borrowed: 'warning',
-  lost: 'warning'
+  lost: 'warning',
+  rejected: 'neutral',
+  closed: 'neutral',
+}
+
+function transformOrderItemStatus(data) {
+  let status = '';
+  if (data.orderStatus === ORDER_STATUS.CLOSE || data.orderStatus === ORDER_STATUS.REJECT) {
+    return data.orderStatus;
+  }
+
+  if (
+    data.bookItemStatus ===  BOOK_STATUS.OPENING &&
+    data.orderStatus !== ORDER_STATUS.CLOSE
+  ) {
+    console.log(11);
+    status = 'Available'
+  } else if (data.bookItemStatus ===  BOOK_STATUS.BORROWING) {
+    console.log(22);
+    status = 'Not Available'
+  } else if (data.bookItemStatus ===  BOOK_ITEM_STATUS.LOST) {
+    console.log(33);
+    status = BOOK_ITEM_STATUS.LOST;
+  } else {
+    console.log(44);
+    status = data.orderItemStatus;
+  }
+
+  return status;
 }
 </script>
