@@ -299,16 +299,12 @@ function transformOrderItemStatus(data) {
     data.bookItemStatus ===  BOOK_STATUS.OPENING &&
     data.orderStatus !== ORDER_STATUS.CLOSE
   ) {
-    console.log(11);
-    status = 'Available'
-  } else if (data.bookItemStatus ===  BOOK_STATUS.BORROWING) {
-    console.log(22);
-    status = 'Not Available'
+    status = 'Available';
+  } else if (data.bookItemStatus ===  BOOK_ITEM_STATUS.BORROWING) {
+    status = BOOK_ITEM_STATUS.BORROWING;
   } else if (data.bookItemStatus ===  BOOK_ITEM_STATUS.LOST) {
-    console.log(33);
     status = BOOK_ITEM_STATUS.LOST;
   } else {
-    console.log(44);
     status = data.orderItemStatus;
   }
 

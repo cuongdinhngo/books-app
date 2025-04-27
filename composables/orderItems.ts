@@ -16,7 +16,7 @@ const TABLE_NAME = 'order_items';
 export const ORDER_ITEM_STATUS = {
   WAITING: 'waiting',
   BORROWING: 'borrowing',
-  RETURNED: 'returned',
+  CLOSED: 'closed',
   UNAVAILABLE: 'unavailable',
   LOST: 'lost'
 }
