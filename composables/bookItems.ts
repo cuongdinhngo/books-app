@@ -32,6 +32,13 @@ export const bookStatus = [
   }
 ];
 
+export const BOOK_ITEM_STATUS = {
+  PENDING: 'pending',
+  OPENING: 'opening',
+  BORROWING: 'borrowing',
+  LOST: 'lost'
+};
+
 const TABLE_NAME = 'book_items';
 export const useBookItems = () => {
 

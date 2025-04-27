@@ -53,19 +53,19 @@
 definePageMeta({
   layout: 'main'
 })
-const { get } = useBooks();
-const { params } = useRoute();
-const { bookCart, addToCart } = useBookCarts();
 
-const bookId = ref(Number(params.id));
+import { useRouteParams } from '@vueuse/router';
+
+const { bookCart, addToCart } = useBookCarts();
+const bookId = useRouteParams('id', null, { transform: Number });
 
 const handleBorrow = () => {
-  addToCart(Number(bookId.value));
-  console.log('book cart -> ', bookCart.value);
+  addToCart(bookId.value);
+  useToastSuccess();
 }
 
-const {data: book, error, clear} = useAsyncData(
+const {data: book } = useAsyncData(
   `book-${bookId.value}`,
-  () => get(bookId.value)
+  () => useBooks().get(bookId.value)
 );
 </script>

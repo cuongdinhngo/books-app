@@ -4,6 +4,7 @@
     <h3 class="text-lg font-semibold text-gray-800 mb-2">Borrowing Information</h3>
     <div class="space-y-2">
         <p class="text-gray-600">Status: <span class="font-semibold"> {{ order?.status }}</span></p>
+        <p class="text-gray-600" v-if="order?.comment">Reason: <span class="font-semibold"> {{ order?.comment }}</span></p>
         <p class="text-gray-600">Quantity: <span class="font-semibold"> {{ order?.order_items.length }}</span></p>
         <p class="text-gray-600">Booked at: <span class="font-semibold">
           {{ order?.created_at ? readableDateTime(order?.created_at) : ''}}
@@ -35,7 +36,7 @@ const order = ref(null);
 const bookItems = ref(null);
 
 onMounted(async() => {
-  const { data } = await get(orderId.value, `id, status, created_at, returned_at, order_items(*)`);
+  const { data } = await get(orderId.value, `id, status, comment, created_at, returned_at, order_items(*)`);
   order.value = data;
   const orderItems = data.order_items;
   console.log('ORDER ITEMS => ', orderItems);

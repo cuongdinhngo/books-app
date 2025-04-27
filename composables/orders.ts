@@ -13,8 +13,15 @@ const TABLE_NAME = 'orders';
 export const ORDER_STATUS = {
   WAITING: 'waiting',
   BORROWING: 'borrowing',
-  DONE: 'done'
+  CLOSE: 'closed',
+  REJECT: 'rejected'
 };
+export const ORDER_STATUS_OPTIONS = [
+  {label: 'Close', id: 'closed'},
+  {label: 'Borrowing', id: 'borrowing'},
+  {label: 'Waiting', id: 'waiting'},
+  {label: 'Reject', id: 'rejected'}
+];
 
 export const useOrders = () => {
 

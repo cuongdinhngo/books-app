@@ -15,8 +15,9 @@ const TABLE_NAME = 'order_items';
 export const ORDER_ITEM_STATUS = {
   WAITING: 'waiting',
   BORROWING: 'borrowing',
-  DONE: 'done',
-  UNAVAILABLE: 'unavailable'
+  RETURNED: 'returned',
+  UNAVAILABLE: 'unavailable',
+  LOST: 'lost'
 }
 
 export const useOrderItems = () => {  
