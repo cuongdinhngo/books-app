@@ -42,6 +42,24 @@
         </div>
     </div>
   </div>
+
+  <div class="mb-8">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">Book Stats</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+            <p class="text-sm font-medium text-gray-600">Total Book Items</p>
+            <p class="text-2xl font-semibold text-gray-900">{{ stats?.bookItemsCounts }}</p>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+            <p class="text-sm font-medium text-gray-600">Total Available Books</p>
+            <p class="text-2xl font-semibold text-gray-900">{{ stats?.availableBookCounts }}</p>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+            <p class="text-sm font-medium text-gray-600">Total Lost Books</p>
+            <p class="text-2xl font-semibold text-gray-900">{{ stats?.lostBookCounts }}</p>
+        </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -52,8 +70,9 @@ const { index: getBookCounts} = useBooks();
 const { index: getReaderCounts } = useReaders();
 const { index: getOrderCounts } = useOrders();
 const { index: getOrderItemCounts } = useOrderItems();
+const { index: getBookItemsCounts } = useBookItems();
 
-const { data: stats} = await useAsyncData('overview-statistics', async () => {
+const { data: stats, error } = await useAsyncData('overview-statistics', async () => {
   const [
     category,
     publisher,
@@ -62,7 +81,10 @@ const { data: stats} = await useAsyncData('overview-statistics', async () => {
     reader,
     order,
     borrowedOrderItems,
-    borrowingOrderItems
+    borrowingOrderItems,
+    bookItems,
+    availableBooks,
+    lostBooks
   ] = await Promise.all([
     getCatetoryCounts(),
     getPublisherCounts(),
@@ -70,8 +92,11 @@ const { data: stats} = await useAsyncData('overview-statistics', async () => {
     getBookCounts(),
     getReaderCounts(),
     getOrderCounts(),
-    getOrderItemCounts({status:'borrowed'}),
-    getOrderItemCounts({status:'borrowing'})
+    getOrderItemCounts({ status:'borrowed' }),
+    getOrderItemCounts({ status:'borrowing' }),
+    getBookItemsCounts(),
+    getBookItemsCounts({ status: ['opening'] }),
+    getBookItemsCounts({ status: ['lost'] })
   ]);
 
   return {
@@ -82,7 +107,12 @@ const { data: stats} = await useAsyncData('overview-statistics', async () => {
     readerCounts: reader.count,
     orderCounts: order.count,
     borrowedBookCounts: borrowedOrderItems.count,
-    borrowingBookCounts: borrowingOrderItems.count
+    borrowingBookCounts: borrowingOrderItems.count,
+    bookItemsCounts: bookItems.count,
+    availableBookCounts: availableBooks.count,
+    lostBookCounts: lostBooks.count
   }
 });
+
+console.error(error);
 </script>

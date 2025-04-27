@@ -51,7 +51,7 @@
     </template>
 
     <template #coverImage-cell="{ row }">
-      <NuxtLink :to="`${detailLink}${row.original.bookId}`">
+      <NuxtLink :to="`${detailLink}${row.original.id}`">
         <div class="flex items-center gap-3">
           <UAvatar :src="row.original.coverImage" size="xl" class="rounded-none"/>
           <div>

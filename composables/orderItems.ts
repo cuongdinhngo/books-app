@@ -4,6 +4,7 @@ interface GetOrderItemsOptions {
   id?: number,
   orderId?: number,
   bookItemId?: number,
+  bookId?: number,
   status?: string,
   page?: number,
   size?: number,
@@ -36,6 +37,7 @@ export const useOrderItems = () => {
       id = null,
       orderId = null,
       bookItemId = null,
+      bookId = null,
       status = null,
       page = null,
       size = null,
@@ -52,6 +54,9 @@ export const useOrderItems = () => {
     }
     if (bookItemId) {
       query = query.eq('book_item_id', bookItemId);
+    }
+    if (bookId) {
+      query = query.eq('book_id', bookId);
     }
     if (status) {
       query = query.eq('status', status);

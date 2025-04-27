@@ -24,6 +24,10 @@
           />
       </div>
     </div>
+    <div class="flex items-center space-x-1">
+      <label class="block text-sm text-gray-500">Comment:</label>
+      <UInput placeholder="Enter comment" v-model="itemComment"/>
+    </div>
     <div class="flex justify-between gap-4">
       <button type="submit" 
         class="flex-1 bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700"
@@ -41,33 +45,6 @@
     v-model="itemComment"
     :mark-lost-book="markLostBook"
   />
-
-  <UModal
-    title="Are you sure to reject this order?"
-    v-model:open="rejectModal"
-    :close="{
-      color: 'primary',
-      variant: 'outline',
-      class: 'rounded-full'
-    }"
-  >
-    <template #body>
-      <div class="flex flex-col">
-        <UTextarea placeholder="Type something..." class="w-full mb-5" v-model="orderComment"/>
-      </div>
-    </template>
-    <template #footer>
-      <UButton
-        icon="lucide:badge-check"
-        label="Submit"
-        size="md"
-        color="primary"
-        variant="subtle"
-        class="text-right"
-        @click="updateOrder"
-      />
-    </template>
-  </UModal>
 </template>
 
 <script setup lang="ts">
@@ -81,12 +58,10 @@ const { index:getBooksItems, update:updateBookItemStatus } = useBookItems();
 const { upsert:upsertOrderItems, index:getOrderItems, remove:removeOrderItem, update:markDeletedAt } = useOrderItems();
 const { upsert:upsertBookItems } = useBookItems();
 
-const orderComment = ref('');
-const rejectModal = ref(false);
 const orderId = useRouteParams('id', null, { transform: Number });
 const bookItems = ref([]);
 const order = ref(null);
-const itemComment = ref('It is not available');
+const itemComment = ref('');
 const orderStatus = ref('');
 const oldOrderStatus = ref('');
 
@@ -102,11 +77,9 @@ function getOrderSelection() {
 }
 
 const handleUpdate = async() => {
-
-
   const updateOrderData = {
     status: orderStatus.value,
-    comment: orderComment.value,
+    comment: itemComment.value,
     returned_at: orderStatus.value === ORDER_STATUS.CLOSE ? new Date().toISOString() : null
   };
 
@@ -150,26 +123,6 @@ const handleUpdate = async() => {
     useToastSuccess();
   })
   .catch((error) => useToastError(error));
-}
-
-
-async function updateOrder() {
-  console.log('ORDER COMMENT => ', orderComment.value);
-  // Promise.all([
-  //   useTable('orders').update({ status: ORDER_STATUS.REJECT, comment: orderComment.value }).eq('id', orderId.value),
-  //   useTable('order_items').update({ status: ORDER_STATUS.REJECT, comment: orderComment.value }).eq('order_id', orderId.value)
-  // ])
-  // .then(() => {
-  //   if (ORDER_STATUS.REJECT === orderStatus.value) {
-  //     rejectModal.value = !rejectModal.value;
-  //   }
-  //   if (ORDER_STATUS.DONE === orderStatus.value) {
-  //     useTable('book_items')
-  //   }
-  //   loadOrder();
-  //   useToastSuccess();
-  // })
-  // .catch((error) => useToastError(error));
 }
 
 onMounted(async() => {
@@ -271,6 +224,7 @@ async function removeUnavailableBook(orderItemId: number) {
 
       await loadOrder()
       useToastSuccess();
+      itemComment.value = '';
     })
     .catch((error) => useToastError(error));
 }

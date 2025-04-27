@@ -7,7 +7,7 @@ export const useAuth = () => {
   const user = ref(null);
   const isAuthenticated = ref(false);
   const error = ref('');
-  const userType = ref('');
+  const userType = useCookie('userType');
   const session = ref([]);
 
   const signup = (email: string, password: string) => {
@@ -58,6 +58,7 @@ export const useAuth = () => {
 
       token.value = null;
       userId.value = null;
+      userType.value = null;
       localStorage.removeItem('session');
     } catch(err) {
       console.log('[ERROR] signout: ', err);
