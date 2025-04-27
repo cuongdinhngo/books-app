@@ -63,6 +63,9 @@
 </template>
 
 <script setup lang="ts">
+import { ORDER_ITEM_STATUS } from '~/composables/orderItems';
+import { BOOK_ITEM_STATUS } from '~/composables/bookItems';
+
 const { index: getCatetoryCounts } = useCategories();
 const { index: getPublisherCounts } = usePublishers();
 const { index: getAuthorCounts } = useAuthors();
@@ -92,11 +95,11 @@ const { data: stats, error } = await useAsyncData('overview-statistics', async (
     getBookCounts(),
     getReaderCounts(),
     getOrderCounts(),
-    getOrderItemCounts({ status:'borrowed' }),
-    getOrderItemCounts({ status:'borrowing' }),
+    getOrderItemCounts({ status:ORDER_ITEM_STATUS.CLOSED }),
+    getOrderItemCounts({ status:ORDER_ITEM_STATUS.BORROWING }),
     getBookItemsCounts(),
-    getBookItemsCounts({ status: ['opening'] }),
-    getBookItemsCounts({ status: ['lost'] })
+    getBookItemsCounts({ status: [BOOK_ITEM_STATUS.OPENING] }),
+    getBookItemsCounts({ status: [BOOK_ITEM_STATUS.LOST] })
   ]);
 
   return {
