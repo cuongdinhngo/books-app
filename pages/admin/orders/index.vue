@@ -38,7 +38,6 @@
     v-if="order && order.count > 0"
     :data="order?.data"
     :columns="columns"
-    :handle-approve="handleApprove"
   />
   <h3 v-else class="justify-center flex text-stone-900">No Data</h3>
 
