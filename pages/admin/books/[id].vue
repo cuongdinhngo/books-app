@@ -127,7 +127,7 @@
 import type { Tables } from '~/types/database.types';
 import { useRouteParams } from '@vueuse/router';
 import { BOOK_STATUS } from '~/composables/books';
-import DataTable from '~/components/DataTable.vue';
+import { NuxtLink } from '#components';
 
 const { get, update } = useBooks();
 const { insert:insertBooksAuthors, remove:deleteBooksAuthors } = useBooksAuthors();
@@ -413,9 +413,9 @@ const columns = [
     header: 'Order No.',
     cell: ({ row }) => {
       return h(
-        'a',
+        NuxtLink,
         {
-          href: `/admin/orders/${row.getValue('orderId')}`,
+          to: `/admin/orders/${row.getValue('orderId')}`,
           class: 'hover:text-primary-700 cursor-pointer'
         },
         row.getValue('orderId')
@@ -431,9 +431,9 @@ const columns = [
     header: 'Ordered at',
     cell: ({ row }) => {
       return h(
-        'a',
+        NuxtLink,
         {
-          href: `/admin/orders/${row.getValue('orderId')}`,
+          to: `/admin/orders/${row.getValue('orderId')}`,
           class: 'hover:text-primary-700 cursor-pointer'
         },
         readableDateTime(row.getValue('orderCreatedAt'))
@@ -445,9 +445,9 @@ const columns = [
     header: 'Returned at',
     cell: ({ row }) => {
       return h(
-        'a',
+        NuxtLink,
         {
-          href: `/admin/orders/${row.getValue('orderId')}`,
+          to: `/admin/orders/${row.getValue('orderId')}`,
           class: 'hover:text-primary-700 cursor-pointer'
         },
         readableDateTime(row.getValue('orderReturnedAt'))
