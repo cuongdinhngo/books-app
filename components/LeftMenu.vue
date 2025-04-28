@@ -24,14 +24,31 @@ const items = ref([
     label: 'Books',
     name: 'books',
     to: '/admin/books/',
-    icon: 'lucide:book-open',
+    icon: 'lucide:book-open'
+  },
+  {
+    label: 'Orders',
+    name: 'orders',
+    to: '/admin/orders/',
+    icon: 'lucide:shopping-cart'
+  },
+  {
+    label: 'Staff',
+    name: 'staff',
+    to: '/admin/staff/',
+    icon: 'lucide:shield-user'
+  },
+  {
+    label: 'Readers',
+    name: 'readers',
+    to: '/admin/readers/',
+    icon: 'lucide:users'
+  },
+  {
+    label: 'Settings',
+    name: 'settings',
+    icon: 'lucide:cog',
     children: [
-      {
-        label: 'All Books',
-        icon: 'lucide:notebook-text',
-        name: 'books',
-        to: '/admin/books/',
-      },
       {
         label: 'Authors',
         icon: 'lucide:file-text',
@@ -51,24 +68,6 @@ const items = ref([
         to: '/admin/categories'
       }
     ]
-  },
-  {
-    label: 'Orders',
-    name: 'orders',
-    to: '/admin/orders/',
-    icon: 'lucide:shopping-cart'
-  },
-  {
-    label: 'Staff',
-    name: 'staff',
-    to: '/admin/staff/',
-    icon: 'lucide:shield-user'
-  },
-  {
-    label: 'Readers',
-    name: 'readers',
-    to: '/admin/readers/',
-    icon: 'lucide:users'
   },
 ]);
 </script>

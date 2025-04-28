@@ -17,8 +17,8 @@ export const useBookCarts = () => {
     bookCart.value = bookCart.value.filter(item => item !== bookId);
   }
 
-  const reset = () => {
-    bookCart.value = [];
+  const reset = (removeItems: Array<number>) => {
+    bookCart.value = bookCart.value.filter(item => !removeItems.includes(item));
   }
 
   return {
