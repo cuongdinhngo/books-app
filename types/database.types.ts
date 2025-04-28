@@ -310,6 +310,7 @@ export type Database = {
           approved_by: string | null
           comment: string | null
           created_at: string
+          due_date: string | null
           id: number
           reader_id: string
           returned_at: string | null
@@ -320,6 +321,7 @@ export type Database = {
           approved_by?: string | null
           comment?: string | null
           created_at?: string
+          due_date?: string | null
           id?: number
           reader_id?: string
           returned_at?: string | null
@@ -330,6 +332,7 @@ export type Database = {
           approved_by?: string | null
           comment?: string | null
           created_at?: string
+          due_date?: string | null
           id?: number
           reader_id?: string
           returned_at?: string | null

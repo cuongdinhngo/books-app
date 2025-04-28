@@ -84,7 +84,6 @@ export const useBooks = () => {
   }
 
   const get = (id: number) => {
-    console.log('GET BOOK => ', id);
     const columns = `
       id,
       title,
