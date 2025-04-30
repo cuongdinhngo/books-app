@@ -50,7 +50,7 @@
 <script setup lang="ts">
 import { useRouteParams } from '@vueuse/router';
 import { ORDER_ITEM_STATUS } from '~/composables/orderItems';
-import { ORDER_STATUS_OPTIONS } from '~/composables/orders';
+import { ORDER_STATUS_OPTIONS, BORROWING_PERIOD } from '~/composables/orders';
 import { BOOK_ITEM_STATUS } from '~/composables/bookItems';
 
 const { update, get:getOrderById } = useOrders();
@@ -77,11 +77,21 @@ function getOrderSelection() {
 }
 
 const handleUpdate = async() => {
-  const updateOrderData = {
+  let updateOrderData = {
     status: orderStatus.value,
     comment: itemComment.value,
     returned_at: orderStatus.value === ORDER_STATUS.CLOSE ? new Date().toISOString() : null
   };
+
+  if (ORDER_STATUS.BORROWING === orderStatus.value) {
+    const currentDate = new Date();
+    const dueDate = new Date();
+    dueDate.setDate(currentDate.getDate() + (bookItems.value.length * BORROWING_PERIOD));
+    updateOrderData = {
+      ...updateOrderData,
+      due_date: dueDate.toISOString()
+    };
+  }
 
   const upsertBookItemsData = bookItems.value
     .filter(item => item.bookItemStatus !== BOOK_ITEM_STATUS.LOST)

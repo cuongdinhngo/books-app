@@ -116,6 +116,4 @@ const { data: stats, error } = await useAsyncData('overview-statistics', async (
     lostBookCounts: lostBooks.count
   }
 });
-
-console.error(error);
 </script>

@@ -68,7 +68,7 @@ definePageMeta({
   layout: 'main'
 })
 
-import { ORDER_STATUS } from '~/composables/orders';
+import { ORDER_STATUS, BORROWING_PERIOD } from '~/composables/orders';
 
 const { bookCart, removeCartItem, reset: resetBookCart } = useBookCarts();
 const { index } = useBooks();
@@ -80,13 +80,6 @@ const table = useTemplateRef('table');
 const rowSelection = ref<Record<string, boolean>>({})
 const currentDate = new Date();
 const checkoutItems = ref([]);
-
-// Calculate due date (current date + 7 days)
-const dueDate = new Date();
-dueDate.setDate(currentDate.getDate() + 7);
-
-console.log(`Current date: ${currentDate.toDateString()}`);
-console.log(`Due date: ${dueDate.toISOString()}`);
 
 const { data: book, error, refresh } = useAsyncData(
   'book-cart',
@@ -101,11 +94,7 @@ async function handleBorrow() {
     return;
   }
 
-  const currentDate = new Date();
-  const dueDate = new Date();
-  dueDate.setDate(currentDate.getDate() + (checkoutItems.value.length * 7));
-
-  return insert({ reader_id: userId.value, status: ORDER_STATUS.WAITING, due_date: dueDate.toISOString() })
+  return insert({ reader_id: userId.value, status: ORDER_STATUS.WAITING })
     .then(async({ error }) => {
       if (error) throw error;
 
