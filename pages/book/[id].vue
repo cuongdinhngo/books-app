@@ -3,7 +3,7 @@
     <!-- Book Cover -->
     <div class="w-full md:w-1/3 flex justify-center">
       <img 
-        :src="book?.data.coverImage" 
+        :src="data?.book.data.coverImage"
         alt="Book Cover" 
         class="w-80 h-100 object-cover rounded-lg shadow"
       />
@@ -12,10 +12,10 @@
     <!-- Book Info -->
     <div class="w-full md:w-2/3 space-y-4">
       <div>
-        <p class="text-lg font-semibold text-gray-900">{{ book?.data.title }}</p>
+        <p class="text-lg font-semibold text-gray-900">{{ data?.book.data.title }}</p>
         <div class="flex items-center text-sm text-gray-900 mt-1">
-          <span class="text-yellow-500">{{ book?.data.averageRating || '★★★★☆' }}</span>
-          <span class="ml-2">4.2 / 5 (120 reviews)</span>
+          <span class="text-yellow-500">{{  }}</span>
+          <span class="ml-2 text-yellow-500">{{ generateRating(data?.rating.data.average_rating ?? 0) }}</span> <span class="ml-2"> {{ data?.rating.data.average_rating ?? 0 }} / 5 ({{ data?.rating.data.review_count }} reviews)</span>
         </div>
         <div class="text-sm font-medium mt-1">
           <label class="inline text-gray-600">Borrowed Counts:</label>
@@ -25,7 +25,7 @@
       <div class="text-sm font-medium">
         <label class="block text-gray-600">Authors</label>
         <ul class="text-gray-900 list-disc list-inside">
-          <li v-for="author in book?.data.authors" :key="author.id">
+          <li v-for="author in data?.book.data.authors" :key="author.id">
             {{ author.name }}
           </li>
         </ul>
@@ -33,18 +33,18 @@
       <div class="text-sm font-medium">
         <label class="block text-gray-600">Categories</label>
         <ul class="text-gray-900 list-disc list-inside">
-          <li v-for="category in book?.data.categories" :key="category.id">
+          <li v-for="category in data?.book.data.categories" :key="category.id">
             {{ category.name }}
           </li>
         </ul>
       </div>
       <div class="text-sm font-medium">
         <label class="inline text-gray-600">Quantity: </label>
-        <span class="text-gray-900"> {{ book?.data?.book_items.filter(item => item.status === 'opening').length }} </span>
+        <span class="text-gray-900"> {{ data?.book.data?.book_items.filter(item => item.status === 'opening').length }} </span>
       </div>
       <div class="flex space-x-4">
         <button
-          v-if="book?.data?.book_items.filter(item => item.status === 'opening').length > 0" 
+          v-if="data?.book.data?.book_items.filter(item => item.status === 'opening').length > 0"
           class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
           @click="handleBorrow"
         >
@@ -63,7 +63,7 @@
   <!-- Description -->
   <div class="mt-6 text-sm font-medium">
     <label class="block text-gray-600">Description</label>
-    <p class=" text-gray-900">{{ book?.data.description }}</p>
+    <p class=" text-gray-900">{{ data?.book.data.description }}</p>
   </div>
 
   <!-- Review Form -->
@@ -73,17 +73,19 @@
         <div class="space-y-2">
             <label class="block text-gray-600 font-medium mb-1 text-sm">Rating</label>
             <select
-              class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-stone-800"
+              v-model="rating"
             >
               <option value="" selected>Select rating</option>
-              <option value="5">★★★★★ (5)</option>
-              <option value="4">★★★★☆ (4)</option>
-              <option value="3">★★★☆☆ (3)</option>
-              <option value="2">★★☆☆☆ (2)</option>
-              <option value="1">★☆☆☆☆ (1)</option>
+              <option value="5">★★★★★</option>
+              <option value="4">★★★★☆</option>
+              <option value="3">★★★☆☆</option>
+              <option value="2">★★☆☆☆</option>
+              <option value="1">★☆☆☆☆</option>
             </select>
             <button
               class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+              @click="submitReview"
             >
               Submit Review
             </button>
@@ -91,10 +93,10 @@
         <div class="md:col-span-2">
             <label class="block text-gray-600 font-medium mb-1 text-sm">Review</label>
             <textarea
-              class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-stone-800"
               rows="4"
               placeholder="Write your review here"
-              disabled
+              v-model="content"
             ></textarea>
         </div>
     </div>
@@ -102,24 +104,25 @@
 
   <!-- Reader Reviews -->
   <div class="mt-6">
-    <h3 class="font-medium text-gray-800 mb-4">Reader Reviews</h3>
+    <h3
+      v-if="data?.rating.data.review_count"
+      class="font-medium text-gray-800 mb-4"
+    >
+      Reader Reviews
+    </h3>
+    <h3
+      v-else
+      class="font-medium text-gray-800 mb-4"
+    >
+      No Reader Reviews
+    </h3>
+
     <div class="space-y-4">
-      <div class="border-b pb-4">
-        <div class="flex items-center">
-            <span class="text-gray-800 font-medium">John Doe</span>
-            <span class="ml-2 text-yellow-500">★★★★★</span>
-        </div>
-          <p class="text-gray-700 mt-1 text-sm">A timeless classic! The writing is beautiful and the story is captivating.</p>
-          <p class="text-gray-400 text-sm">Posted on 2025-03-15</p>
-      </div>
-      <div class="border-b pb-4">
-        <div class="flex items-center">
-            <span class="text-gray-800 font-medium">John Doe</span>
-            <span class="ml-2 text-yellow-500">★★★★★</span>
-        </div>
-          <p class="text-gray-700 mt-1 text-sm">A timeless classic! The writing is beautiful and the story is captivating.</p>
-          <p class="text-gray-400 text-sm">Posted on 2025-03-15</p>
-      </div>
+      <BookReview
+        v-for="review in data?.reviews.data"
+        :key="review.id"
+        :review="review"
+      />
     </div>
   </div>
 </template>
@@ -131,16 +134,44 @@ definePageMeta({
 
 import { useRouteParams } from '@vueuse/router';
 
-const { bookCart, addToCart } = useBookCarts();
-const bookId = useRouteParams('id', null, { transform: Number });
+const { userId } = useAuth();
+const { addToCart } = useBookCarts();
+const { insert, index:getBookReviews } = useReviews();
+const { get:getBookDetails } = useBooks();
 
-const handleBorrow = () => {
+const supabase = useSupabaseClient();
+const bookId = useRouteParams('id', null, { transform: Number });
+const rating = ref('');
+const content = ref('');
+
+const { data, error, refresh } = await useAsyncData(
+  `book-${bookId.value}`,
+  async () => {
+    const [book, reviews, rating] = await Promise.all([
+      getBookDetails(bookId.value),
+      getBookReviews({ columns: 'id,rating,content,created_at,readers(fullName:full_name)', bookId: bookId.value }),
+      supabase.rpc('get_average_rating_by_book', { p_book_id: bookId.value }).single()
+    ])
+
+    return { book, reviews, rating}
+  }
+);
+
+async function submitReview() {
+  await insert({ rating: rating.value, content: content.value, book_id: bookId.value, reader_id: userId.value })
+    .then(({ error }) => {
+      if (error) throw error;
+
+      rating.value = '';
+      content.value = '';
+      refresh();
+      useToastSuccess();
+    })
+    .catch((error) => useToastError(error));
+}
+
+function handleBorrow() {
   addToCart(bookId.value);
   useToastSuccess();
 }
-
-const {data: book } = useAsyncData(
-  `book-${bookId.value}`,
-  () => useBooks().get(bookId.value)
-);
 </script>
