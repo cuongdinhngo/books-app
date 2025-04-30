@@ -83,8 +83,8 @@ export const useBooks = () => {
     return useTable(TABLE_NAME).insert(data);
   }
 
-  const get = (id: number) => {
-    const columns = `
+  const get = (id: number, columns: string = '') => {
+    let selectColumns = `
       id,
       title,
       description,
@@ -95,7 +95,10 @@ export const useBooks = () => {
       categories(id, name),
       book_items(id, book_id, status)
     `;
-    return useTable(TABLE_NAME).select(columns).eq('id', id).single();
+    if (columns.length > 0) {
+      selectColumns = `${selectColumns}, ${columns}`;
+    }
+    return useTable(TABLE_NAME).select(selectColumns).eq('id', id).single();
   }
 
   const update = async (id: number, data: Tables<'books'>) => {

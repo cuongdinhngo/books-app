@@ -541,6 +541,42 @@ export type Database = {
         }
         Relationships: []
       }
+      wishlists: {
+        Row: {
+          book_id: number
+          created_at: string
+          id: number
+          reader_id: string
+        }
+        Insert: {
+          book_id: number
+          created_at?: string
+          id?: number
+          reader_id?: string
+        }
+        Update: {
+          book_id?: number
+          created_at?: string
+          id?: number
+          reader_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wishlists_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wishlists_reader_id_fkey"
+            columns: ["reader_id"]
+            isOneToOne: false
+            referencedRelation: "readers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

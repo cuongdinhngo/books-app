@@ -52,7 +52,7 @@
         </button>
         <button
             class="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
-            @click="addToWishlist"
+            @click="handleWishlist"
         >
             Wishlist
         </button>
@@ -138,17 +138,19 @@ const { userId } = useAuth();
 const { addToCart } = useBookCarts();
 const { insert, index:getBookReviews } = useReviews();
 const { get:getBookDetails } = useBooks();
+const { insert:addToWishlist } = useWishlists();
 
 const supabase = useSupabaseClient();
 const bookId = useRouteParams('id', null, { transform: Number });
 const rating = ref('');
 const content = ref('');
+const wishlists = ref([]);
 
 const { data, error, refresh } = await useAsyncData(
   `book-${bookId.value}`,
   async () => {
     const [book, reviews, rating] = await Promise.all([
-      getBookDetails(bookId.value),
+      getBookDetails(bookId.value, 'wishlists(id, book_id)'),
       getBookReviews({ columns: 'id,rating,content,created_at,readers(fullName:full_name)', bookId: bookId.value }),
       supabase.rpc('get_average_rating_by_book', { p_book_id: bookId.value }).single()
     ])
@@ -156,6 +158,25 @@ const { data, error, refresh } = await useAsyncData(
     return { book, reviews, rating}
   }
 );
+
+wishlists.value = data.value?.book.data.wishlists;
+
+async function handleWishlist() {
+  const current = wishlists.value.filter(item => (item.book_id === bookId.value));
+  console.log(current)
+  if (current.length > 0) {
+    return;
+  }
+  await addToWishlist({ reader_id: userId.value, book_id: bookId.value })
+    .then(({ error }) => {
+      if (error) throw error;
+
+      wishlists.value.push({ reader_id: userId.value, book_id: bookId.value });
+      refresh();
+      useToastSuccess();
+    })
+    .catch((error) => useToastError(error));
+}
 
 async function submitReview() {
   await insert({ rating: rating.value, content: content.value, book_id: bookId.value, reader_id: userId.value })
