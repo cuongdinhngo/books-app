@@ -254,6 +254,39 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: number
+          is_read: boolean | null
+          message: string | null
+          notifiable_id: number | null
+          notifiable_type: string | null
+          reader_id: string
+          type: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          is_read?: boolean | null
+          message?: string | null
+          notifiable_id?: number | null
+          notifiable_type?: string | null
+          reader_id?: string
+          type?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          is_read?: boolean | null
+          message?: string | null
+          notifiable_id?: number | null
+          notifiable_type?: string | null
+          reader_id?: string
+          type?: string | null
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           book_id: number
@@ -436,6 +469,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_due_orders: {
+        Args: { currentdate: string }
+        Returns: {
+          approved_by: string | null
+          comment: string | null
+          created_at: string
+          due_date: string | null
+          id: number
+          reader_id: string
+          returned_at: string | null
+          status: string | null
+          updated_at: string
+        }[]
+      }
       get_friends_with_last_message: {
         Args: Record<PropertyKey, never> | { target_user_id: string }
         Returns: {
@@ -478,6 +525,10 @@ export type Database = {
           created_at: string
           is_read: boolean
         }[]
+      }
+      process_overdue_orders: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
     }
     Enums: {

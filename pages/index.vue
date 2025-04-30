@@ -40,8 +40,6 @@ const { data:book, error, refresh, clear } = await useAsyncData(
   { watch: [searchParams.value] }
 );
 
-console.error('ERROR: INDEX PAGE => ', error);
-
 watch(
   () => useRoute().query,
   async(newQuery) => {

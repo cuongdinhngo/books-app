@@ -9,6 +9,9 @@
         <p class="text-gray-600">Booked at: <span class="font-semibold">
           {{ order?.created_at ? readableDateTime(order?.created_at) : ''}}
         </span></p>
+        <p v-if="order?.due_date" class="text-gray-600">Due date: <span class="font-semibold">
+          {{ readableDateTime(order?.due_date) }}
+        </span></p>
         <p v-if="order?.returned_at" class="text-gray-600">Returned at: <span class="font-semibold">
           {{ readableDateTime(order?.returned_at) }}
         </span></p>
@@ -36,14 +39,12 @@ const order = ref(null);
 const bookItems = ref(null);
 
 onMounted(async() => {
-  const { data } = await get(orderId.value, `id, status, comment, created_at, returned_at, order_items(*)`);
+  const { data } = await get(orderId.value, `id, status, comment, created_at, returned_at, due_date, order_items(*)`);
   order.value = data;
   const orderItems = data.order_items;
-  console.log('ORDER ITEMS => ', orderItems);
   const orderBookItems = orderItems.map(item => ({id: item.book_id, status: item.status, orderItemComment: item.comment}));
   const bookIds = orderItems.map(item => (item.book_id));
   const { data: bookItemsData } = await getBooksItems({ columns: `id, book_id, books(id,title,cover_image)`, bookIds: bookIds});
-  console.log('BOOK ITEMS => ', bookItemsData);
   bookItems.value = orderBookItems.map(item => {
     const matchingData = bookItemsData.find(data => data.book_id === item.id);
     if (matchingData) {
@@ -56,7 +57,5 @@ onMounted(async() => {
 
     return item;
   });
-
-  console.log('FINAL BOOK ITEMS => ', bookItems.value);
 });
 </script>

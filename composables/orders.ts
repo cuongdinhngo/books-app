@@ -9,19 +9,23 @@ import type { Tables } from '~/types/database.types';interface GetOrdersOptions 
   size?: number
 }
 
-const TABLE_NAME = 'orders';
 export const ORDER_STATUS = {
   WAITING: 'waiting',
   BORROWING: 'borrowing',
   CLOSE: 'closed',
   REJECT: 'rejected'
 };
+
 export const ORDER_STATUS_OPTIONS = [
   {label: 'Close', id: 'closed'},
   {label: 'Borrowing', id: 'borrowing'},
   {label: 'Waiting', id: 'waiting'},
   {label: 'Reject', id: 'rejected'}
 ];
+
+export const BORROWING_PERIOD = 7;
+
+const TABLE_NAME = 'orders';
 
 export const useOrders = () => {
 
