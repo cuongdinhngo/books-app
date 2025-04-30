@@ -1,13 +1,23 @@
 <template>
   <NuxtLink :to="getLink()" @click="markNotificationAsRead">
     <div class="flex items-center gap-3 mb-2">
-      <UChip :position="!notification.is_read ? 'top-left' : ''" :color="!notification.is_read ? 'success' : ''">
+      <UChip
+        v-if="!notification.is_read"
+        position="top-left"
+        color="success"
+      >
         <UAvatar
           size="2xl"
           :src="getIcon()"
           :alt="notification.type"
         />
       </UChip>
+      <UAvatar
+        v-else
+        size="2xl"
+        :src="getIcon()"
+        :alt="notification.type"
+        />
       <div>
         <p class="font-medium text-highlighted text-sm">
           {{ message }}
@@ -22,6 +32,7 @@
 
 <script setup lang="ts">
 import { NOTIFICATION_TYPES } from '~/composables/notifications';
+import { publicAsset } from '../../utils';
 
 const props = defineProps({
   notification: {
@@ -38,14 +49,14 @@ function getIcon() {
   let icon = '';
   switch(props.notification.type) {
     case NOTIFICATION_TYPES.ORDER_OVERDUE:
-      icon = '/img/calendar_clock_icon.png';
+      icon = 'img/calendar_clock_icon.png';
       break;
     case NOTIFICATION_TYPES.WISHLIST:
-      icon = '/img/wishlist.png';
+      icon = 'img/wishlist.png';
       break;
   }
 
-  return icon;
+  return publicAsset(icon);
 }
 
 function getLink() {

@@ -61,3 +61,9 @@ export function formatTimeSince(timeAt: string): string {
   const years = Math.floor(months / 12);
   return `${years}y`;
 }
+
+export function publicAsset(path: string) {
+  const baseURL = useRuntimeConfig().app.baseURL;
+
+  return `${baseURL}${path}`;
+}
