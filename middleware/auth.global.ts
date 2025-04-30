@@ -2,23 +2,19 @@ export default defineNuxtRouteMiddleware((to, from) => {
   const auth = useAuth();
   const isAdminRoute = to.path.includes('/admin');
   const isLoginRoute = to.path === '/login';
+  const isAuthenticated = !!auth.userId.value;
 
-  if (!auth.userId.value) {
+  if (!isAuthenticated && !isLoginRoute) {
     return navigateTo('/login');
   }
   
-  if (isAdminRoute && auth.userType.value === 'staff') {
-    return;
-  }
-  
-  if (isAdminRoute && auth.userType.value !== 'staff') {
-    if (!isLoginRoute) {
-      return navigateTo('/login');
-    }
-    return;
-  }
-
-  if (isLoginRoute && auth.userType.value) {
+  if (isAuthenticated && isLoginRoute) {
     return navigateTo('/');
   }
+  
+  if (isAuthenticated && isAdminRoute) {
+    return auth.userType.value === 'staff' ? undefined : navigateTo('/');
+  }
+
+  return;
 })
