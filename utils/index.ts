@@ -67,3 +67,12 @@ export function publicAsset(path: string) {
 
   return `${baseURL}${path}`;
 }
+
+export function generateRating(length: number, char: string = '★') {
+  if (length === 0) {
+    char = '☆';
+    length = 5;
+  }
+
+  return char.repeat(length);
+}

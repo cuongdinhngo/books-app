@@ -194,6 +194,38 @@ export type Database = {
           },
         ]
       }
+      carts: {
+        Row: {
+          created_at: string
+          id: number
+          items: number[] | null
+          reader_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          items?: number[] | null
+          reader_id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          items?: number[] | null
+          reader_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carts_reader_id_fkey"
+            columns: ["reader_id"]
+            isOneToOne: false
+            referencedRelation: "readers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           created_at: string
@@ -440,6 +472,51 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          book_id: number
+          content: string
+          created_at: string
+          id: number
+          rating: number
+          reader_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          book_id: number
+          content: string
+          created_at?: string
+          id?: number
+          rating: number
+          reader_id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          book_id?: number
+          content?: string
+          created_at?: string
+          id?: number
+          rating?: number
+          reader_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_reader_id_fkey"
+            columns: ["reader_id"]
+            isOneToOne: false
+            referencedRelation: "readers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           created_at: string
@@ -469,6 +546,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_average_rating_by_book: {
+        Args: { p_book_id: number }
+        Returns: {
+          book_id: number
+          average_rating: number
+          review_count: number
+        }[]
+      }
+      get_average_ratings: {
+        Args: { bookid?: number }
+        Returns: {
+          book_id: number
+          average_rating: number
+          review_count: number
+        }[]
+      }
       get_due_orders: {
         Args: { currentdate: string }
         Returns: {
