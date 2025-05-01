@@ -14,7 +14,7 @@ export interface NotificationOptions {
 
 export const NOTIFICATION_TYPES = {
   ORDER_OVERDUE: 'order_overdue',
-  WISHLIST: 'wishlist'
+  BOOK_WISHLIST: 'book_wishlist'
 }
 
 const TABLE_NAME = 'notifications';

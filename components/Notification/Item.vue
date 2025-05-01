@@ -51,7 +51,7 @@ function getIcon() {
     case NOTIFICATION_TYPES.ORDER_OVERDUE:
       icon = 'img/calendar_clock_icon.png';
       break;
-    case NOTIFICATION_TYPES.WISHLIST:
+    case NOTIFICATION_TYPES.BOOK_WISHLIST:
       icon = 'img/wishlist.png';
       break;
   }
@@ -65,7 +65,7 @@ function getLink() {
     case 'orders':
       link = `/reader/orders/${props.notification.notifiable_id}`;
       break;
-    case 'wishlist':
+    case 'books':
       link = `/book/${props.notification.notifiable_id}`;
       break;
   }
