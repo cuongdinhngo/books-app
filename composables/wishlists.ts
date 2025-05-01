@@ -1,6 +1,7 @@
 import type { Tables } from '~/types/database.types';
 
 interface WishlistOptions {
+  columns?: string,
   id?: number,
   readerId?: number,
   bookId?: number,
@@ -13,6 +14,7 @@ const TABLE_NAME = 'wishlists';
 export const useWishlists = () => {
   const index = (options: WishlistOptions = {}) => {
     const {
+      columns = '*',
       id = null,
       readerId = null,
       bookId = null,
@@ -20,7 +22,7 @@ export const useWishlists = () => {
       size = null
     } = options;
 
-    let query = useTable(TABLE_NAME).select('*', { count:'exact' }).order('created_at', { ascending: false });
+    let query = useTable(TABLE_NAME).select(columns, { count:'exact' }).order('created_at', { ascending: false });
     if (id) {
       query = query.eq('id', id);
     }

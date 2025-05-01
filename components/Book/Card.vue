@@ -10,7 +10,7 @@
     <div class="flex flex-col">
       <h2 class="text-lg font-semibold text-gray-800 truncate">{{ book.title }}</h2>
       <p class="text-sm text-gray-600 text-right">Status: {{book.status}}</p>
-      <p class="text-sm text-gray-600 text-right" v-if="book.status === ORDER_ITEM_STATUS.UNAVAILABLE">Reason: {{book.orderItemComment}}</p>
+      <p class="text-sm text-gray-600 text-right" v-if="book.status === ORDER_ITEM_STATUS.UNAVAILABLE && book.orderItemComment">Reason: {{book.orderItemComment}}</p>
     </div>
   </div>
 </template>

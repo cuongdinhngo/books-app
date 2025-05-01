@@ -43,19 +43,21 @@
         <span class="text-gray-900"> {{ data?.book.data?.book_items.filter(item => item.status === 'opening').length }} </span>
       </div>
       <div class="flex space-x-4">
-        <button
+        <UButton
           v-if="data?.book.data?.book_items.filter(item => item.status === 'opening').length > 0"
+          icon="lucide:shopping-cart"
           class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
           @click="handleBorrow"
         >
             Borrow
-        </button>
-        <button
-            class="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
-            @click="handleWishlist"
+        </UButton>
+        <UButton
+          icon="lucide:book-heart"
+          class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          @click="handleWishlist"
         >
             Wishlist
-        </button>
+        </UButton>
       </div>
     </div>
   </div>
