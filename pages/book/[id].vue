@@ -19,7 +19,7 @@
         </div>
         <div class="text-sm font-medium mt-1">
           <label class="inline text-gray-600">Borrowed Counts:</label>
-          <span class="text-gray-900 ml-2">25</span>
+          <span class="text-gray-900 ml-2">{{ data?.borrowedCounts.count }}</span>
         </div>
       </div>
       <div class="text-sm font-medium">
@@ -69,7 +69,10 @@
   </div>
 
   <!-- Review Form -->
-  <div class="mt-6">
+  <div
+    class="mt-6"
+    v-if="isSubmittedReview.value"
+  >
     <h3 class="font-medium text-gray-800 mb-4">Submit a Review</h3>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="space-y-2">
@@ -141,6 +144,7 @@ const { addToCart } = useBookCarts();
 const { insert, index:getBookReviews } = useReviews();
 const { get:getBookDetails } = useBooks();
 const { insert:addToWishlist } = useWishlists();
+const { index:getBorrowedBookCounts } = useOrderItems();
 
 const supabase = useSupabaseClient();
 const bookId = useRouteParams('id', null, { transform: Number });
@@ -151,15 +155,24 @@ const wishlists = ref([]);
 const { data, error, refresh } = await useAsyncData(
   `book-${bookId.value}`,
   async () => {
-    const [book, reviews, rating] = await Promise.all([
+    const [book, reviews, rating, borrowedCounts] = await Promise.all([
       getBookDetails(bookId.value, 'wishlists(id, book_id)'),
-      getBookReviews({ columns: 'id,rating,content,created_at,readers(fullName:full_name)', bookId: bookId.value }),
-      supabase.rpc('get_average_rating_by_book', { p_book_id: bookId.value }).single()
+      getBookReviews({ columns: 'id,rating,content,created_at,readers(id,fullName:full_name)', bookId: bookId.value }),
+      supabase.rpc('get_average_rating_by_book', { p_book_id: bookId.value }).single(),
+      getBorrowedBookCounts({ bookId: bookId.value, isHead: true })
     ])
 
-    return { book, reviews, rating}
+    return { book, reviews, rating, borrowedCounts}
   }
 );
+
+console.log('DATA => ', data);
+const isSubmittedReview = computed(() => {
+  const reviews = data.value?.reviews.data?.find(item => (item.readers.id === userId.value));
+  return reviews ? Object.keys(reviews).length > 0 : false;
+});
+
+console.log('isSubmittedReview => ', isSubmittedReview.value);
 
 wishlists.value = data.value?.book.data.wishlists;
 

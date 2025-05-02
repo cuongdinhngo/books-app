@@ -8,7 +8,8 @@ interface GetOrderItemsOptions {
   status?: string,
   page?: number,
   size?: number,
-  isNotDeleted?: null
+  isNotDeleted?: null,
+  isHead?: boolean
 }
 
 const TABLE_NAME = 'order_items';
@@ -41,10 +42,11 @@ export const useOrderItems = () => {
       status = null,
       page = null,
       size = null,
-      isNotDeleted = null
+      isNotDeleted = null,
+      isHead = false
     } = options;
 
-    let query = useTable(TABLE_NAME).select(columns, { count: 'exact' });
+    let query = useTable(TABLE_NAME).select(columns, { count: 'exact', head: isHead });
 
     if (id) {
       query = query.eq('id', id);

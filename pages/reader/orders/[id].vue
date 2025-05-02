@@ -3,7 +3,16 @@
   <div class="p-4">
     <h3 class="text-lg font-semibold text-gray-800 mb-2">Borrowing Information</h3>
     <div class="space-y-2">
-        <p class="text-gray-600">Status: <span class="font-semibold"> {{ order?.status }}</span></p>
+        <p class="text-gray-600">
+          Status: <span class="font-semibold"> {{ order?.status }}</span>
+          <UBadge
+            v-if="order?.status === ORDER_ITEM_STATUS.BORROWING && new Date().toDateString > order?.due_date"
+            color="warning" variant="solid"
+            class="ml-4"
+          >
+            Overdue
+          </UBadge>
+        </p>
         <p class="text-gray-600" v-if="order?.comment">Reason: <span class="font-semibold"> {{ order?.comment }}</span></p>
         <p class="text-gray-600">Quantity: <span class="font-semibold"> {{ order?.order_items.length }}</span></p>
         <p class="text-gray-600">Booked at: <span class="font-semibold">
@@ -57,5 +66,7 @@ onMounted(async() => {
 
     return item;
   });
+console.log('BOOK ITEMS => ', bookItems.value);
+
 });
 </script>
