@@ -37,12 +37,10 @@ const email = ref('');
 const password = ref('');
 
 const handleSubmit = async() => {
-  console.log('handleSubmit ....');
   if (email.value.trim() && password.value.trim()) {
     const response = await signin({email: email.value, password: password.value});
-    console.log('TOKEN => ', token.value);
     if (response) {
-      if (userType.value === 'staff') navigateTo('/admin/books?page=1#with-links');
+      if (userType.value === 'staff') navigateTo('/admin/');
       else navigateTo('/');
     }
   }
