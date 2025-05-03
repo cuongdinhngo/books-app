@@ -388,7 +388,7 @@ export type Database = {
           id?: number
           new_due_date?: string | null
           order_id: number
-          reader_id?: string
+          reader_id: string
           request_note?: string | null
         }
         Update: {
@@ -414,6 +414,13 @@ export type Database = {
             columns: ["reader_id"]
             isOneToOne: false
             referencedRelation: "readers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_renews_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -644,6 +651,16 @@ export type Database = {
           book_id: number
           average_rating: number
           review_count: number
+        }[]
+      }
+      get_average_ratings_with_book_details: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          book_id: number
+          book_title: string
+          book_image: string
+          average_rating: number
+          rating_count: number
         }[]
       }
       get_due_orders: {
