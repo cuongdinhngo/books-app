@@ -5,6 +5,7 @@
         <label class="block text-sm font-medium text-gray-700">Full name</label>
         <input
           v-model="name"
+          variant="subtle"
           type="text"
           placeholder="Enter full name"
           class="w-full px-4 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-stone-900">
@@ -14,6 +15,7 @@
         <label class="block text-sm font-medium text-gray-700">Email</label>
         <input
           v-model="email"
+          variant="subtle"
           type="text"
           placeholder="Enter email"
           class="w-full px-4 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-stone-900">
@@ -23,6 +25,7 @@
         <label class="block text-sm font-medium text-gray-700">Profile photo</label>
         <input
           @change="handlePhoto"
+          variant="subtle"
           type="file"
           placeholder="Select profile photo"
           class="w-full px-4 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-stone-900">
@@ -32,6 +35,7 @@
         <label class="block text-sm font-medium text-gray-700">Password</label>
         <input
           v-model="password"
+          variant="subtle"
           type="password"
           placeholder="Enter password"
           class="w-full px-4 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-stone-900">

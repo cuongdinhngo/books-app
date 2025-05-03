@@ -1,23 +1,34 @@
 <template>
-  <form class="mb-6 space-y-4 w-1/2 mx-auto" @submit.prevent="handleSearch">
-    <FormInputDiv
-      v-model="name"
-      label-name="Name"
-      placeholder="Search by name"
-    />
-
-    <FormInputDiv
-      v-model="email"
-      label-name="Email"
-      placeholder="Search by email"
-    />
-
-    <div class="flex justify-between gap-4">
-      <FormSearchButton
-        button-name="Search"
-      />
+  <div class="mb-6 space-y-4 w-1/2 mx-auto">
+    <div class="space-y-4">
+      <div class="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
+        <div class="flex-1">
+          <label for="email" class="block text-sm font-medium text-gray-800 mb-1">Email</label>
+          <input
+            v-model="email"
+            type="email" id="email" name="email" placeholder="Enter email"
+            class="w-full px-4 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-stone-800"
+          />
+        </div>
+        <div class="flex-1">
+          <label for="name" class="block text-sm font-medium text-gray-600 mb-1">Name</label>
+          <input
+            v-model="name"
+            type="text" id="name" name="name" placeholder="Enter name"
+            class="w-full px-4 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-stone-800"
+          />
+        </div>
+      </div>
+      <div class="flex justify-end space-x-3">
+        <button
+          @click="handleSearch"
+          class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          Search
+        </button>
+      </div>
     </div>
-  </form>
+  </div>
 
   <DataTable
     v-if="reader?.count > 0"
@@ -43,7 +54,7 @@ const name = ref('');
 const pageSize = 5;
 const page = ref(Number(query.page) || 1);
 const searchParams = ref({
-  columns: 'id, fullName:full_name, email',
+  columns: 'id, fullName:full_name, email, photo',
   page: page.value,
   size: pageSize,
   email: email.value,
@@ -63,7 +74,7 @@ const handlePageChange = (newPage) => {
 
 const handleSearch = async() => {
   searchParams.value = {
-    columns: 'id, fullName:full_name, email',
+    columns: 'id, fullName:full_name, email, photo',
     page: page.value,
     size: pageSize,
     email: email.value,
@@ -75,32 +86,9 @@ const handleSearch = async() => {
 
 const columns = [
   {
-    accessorKey: 'id',
-    header: '#ID',
-    cell: ({ row }) => {
-      return h(
-        'a',
-        {
-          href: `/admin/readers/${row.original.id}`,
-          class: 'text-primary-500'
-        },
-        `#${row.getValue('id')}`
-      )
-    }
-  },
-  {
     accessorKey: 'fullName',
     header: 'Full name',
-    cell: ({ row }) => {
-      return h(
-        'a',
-        {
-          href: `/admin/readers/${row.original.id}`,
-          class: 'text-primary-500'
-        },
-        `${row.getValue('fullName')}`
-      )
-    }
+    id: 'readerName'
   },
   {
     accessorKey: 'email',

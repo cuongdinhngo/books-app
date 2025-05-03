@@ -9,11 +9,11 @@
     <div class="flex space-x-40">
       <div class="flex-1">
         <label for="from-date" class="block text-sm font-medium text-gray-700">From Date</label>
-        <UInput type="date" v-model="from"/>
+        <UInput type="date" v-model="from" variant="subtle" class="w-full"/>
       </div>
       <div class="flex-1">
         <label for="to-date" class="block text-sm font-medium text-gray-700">To Date</label>
-        <UInput type="date" v-model="to"/>
+        <UInput type="date" v-model="to" variant="subtle" class="w-full"/>
       </div>
     </div>
 

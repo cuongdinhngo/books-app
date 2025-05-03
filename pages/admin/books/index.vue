@@ -1,30 +1,42 @@
 <template>
   <form class="mb-6 space-y-4 w-1/2 mx-auto" @submit.prevent="handleSearch">
-    <FormInputDiv
-      v-model="title"
-      label-name="Title"
-      placeholder="Enter book's titlte"
-    />
-
-    <div>
-      <label class="block text-sm font-medium text-gray-700">Publisher</label>
-      <FilterPublisher
-        v-model="selectedPublishers"
-      />
+    <div class="flex items-center space-x-4">
+      <input
+        v-model="title"
+        type="text"
+        placeholder="Search by book title"
+        class="flex-1 p-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400 text-stone-800"
+      >
+      <button
+          type="button"
+          @click="showAdvancedSearch = !showAdvancedSearch"
+          class="text-blue-500 font-medium hover:text-blue-800 focus:outline-none"
+      >
+          {{ showAdvancedSearch ? 'Hide Advanced Search' : 'Advanced Search' }}
+      </button>
     </div>
 
-    <div>
-      <label class="block text-sm font-medium text-gray-700">Category</label>
-      <FilterCategory
-        v-model="selectedCategories"
-      />
-    </div>
+    <div v-if="showAdvancedSearch">
+      <div class="my-2">
+        <label class="block text-sm font-medium text-gray-700">Publisher</label>
+        <FilterPublisher
+          v-model="selectedPublishers"
+        />
+      </div>
 
-    <div>
-      <label class="block text-sm font-medium text-gray-700">Author</label>
-      <FilterAuthor
-        v-model="selectedAuthors"
-      />
+      <div class="my-2">
+        <label class="block text-sm font-medium text-gray-700">Category</label>
+        <FilterCategory
+          v-model="selectedCategories"
+        />
+      </div>
+
+      <div class="my-2">
+        <label class="block text-sm font-medium text-gray-700">Author</label>
+        <FilterAuthor
+          v-model="selectedAuthors"
+        />
+      </div>
     </div>
 
     <div class="flex justify-between gap-4">
@@ -73,6 +85,7 @@ const title = ref('');
 const selectedAuthors = ref([]);
 const selectedCategories = ref([]);
 const selectedPublishers = ref([]);
+const showAdvancedSearch = ref(false);
 const searchParams = ref({
   title: title.value,
   authorIds: selectedAuthors.value,

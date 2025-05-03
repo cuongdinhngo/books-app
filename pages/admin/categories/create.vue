@@ -2,7 +2,7 @@
   <form class="mb-6 space-y-4 w-1/2 mx-auto" @submit.prevent="submitForm">
     <div>
       <label class="block text-sm font-medium text-gray-700">Category name</label>
-      <UInput v-model="name" placeholder="Category's name"/>
+      <UInput v-model="name" placeholder="Category's name" variant="subtle"/>
     </div>
     <div class="flex justify-between gap-4">
       <button type="submit" 

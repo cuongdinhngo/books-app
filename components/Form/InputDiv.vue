@@ -1,12 +1,13 @@
 <template>
   <div>
     <label class="block text-sm font-medium text-gray-700">{{ labelName }}</label>
-    <UInput
+    <input
+      class="text-sm w-full border p-1 border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400 text-stone-900"
       v-model="inputModel"
       :placeholder="placeholder"
       :type="type"
       @change="handleFileChange"
-    />
+    >
   </div>
 </template>
 
