@@ -19,7 +19,7 @@
         <NuxtLink :to="`/reader/orders/${row.original.id}`" class="hover:text-primary-700 cursor-pointer">
           {{ capitalize(row.original.status) }}
           <UBadge
-            v-if="row.getValue('status') === ORDER_ITEM_STATUS.BORROWING && new Date().toDateString > row.original.due_date"
+            v-if="row.getValue('status') === ORDER_ITEM_STATUS.BORROWING && new Date() > new Date(row.original.due_date)"
             color="warning" variant="solid"
           >
             Overdue
@@ -35,13 +35,13 @@
 
       <template #createdAt-cell="{ row }">
         <NuxtLink :to="`/reader/orders/${row.original.id}`" class="hover:text-primary-700 cursor-pointer">
-          {{ readableDateTime(row.getValue('createdAt')) }}
+          {{ useDateFormat(row.getValue('createdAt'), 'MMMM Do, YYYY') }}
         </NuxtLink>
       </template>
 
       <template #dueDate-cell="{ row }">
         <NuxtLink :to="`/reader/orders/${row.original.id}`" class="hover:text-primary-700 cursor-pointer">
-          {{ readableDateTime(row.getValue('dueDate')) }}
+          {{ row.getValue('dueDate') ? useDateFormat(row.getValue('dueDate'), 'MMMM Do, YYYY') : ''}}
         </NuxtLink>
       </template>
     </UTable>

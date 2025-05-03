@@ -26,7 +26,7 @@
   </div>
 
   <div class="mb-8">
-    <h2 class="text-xl font-bold text-gray-900 mb-4">Borrowing Stats</h2>
+    <h2 class="text-xl font-bold text-gray-900 mb-4">Orders Stats</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
             <p class="text-sm font-medium text-gray-600">Total Orders</p>
@@ -39,6 +39,10 @@
         <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
             <p class="text-sm font-medium text-gray-600">Total Borrowing Books</p>
             <p class="text-2xl font-semibold text-gray-900">{{ stats?.borrowingBookCounts }}</p>
+        </div>
+        <div class="bg-yellow-200 p-4 rounded-lg shadow-sm">
+            <p class="text-sm font-medium text-gray-600">Overdue Orders</p>
+            <p class="text-2xl font-semibold text-gray-900">{{ stats?.overdueOrderCounts }}</p>
         </div>
     </div>
   </div>
@@ -87,7 +91,8 @@ const { data: stats, error } = await useAsyncData('overview-statistics', async (
     borrowingOrderItems,
     bookItems,
     availableBooks,
-    lostBooks
+    lostBooks,
+    overdueOrders
   ] = await Promise.all([
     getCatetoryCounts(),
     getPublisherCounts(),
@@ -99,8 +104,11 @@ const { data: stats, error } = await useAsyncData('overview-statistics', async (
     getOrderItemCounts({ status:ORDER_ITEM_STATUS.BORROWING }),
     getBookItemsCounts(),
     getBookItemsCounts({ status: [BOOK_ITEM_STATUS.OPENING] }),
-    getBookItemsCounts({ status: [BOOK_ITEM_STATUS.LOST] })
+    getBookItemsCounts({ status: [BOOK_ITEM_STATUS.LOST] }),
+    getOrderCounts({ status: [ORDER_ITEM_STATUS.BORROWING], isHead: false, isOverdue: true })
   ]);
+
+  console.log('ORDER OVERDUE => ', overdueOrders);
 
   return {
     categoryCounts: category.count,
@@ -113,7 +121,8 @@ const { data: stats, error } = await useAsyncData('overview-statistics', async (
     borrowingBookCounts: borrowingOrderItems.count,
     bookItemsCounts: bookItems.count,
     availableBookCounts: availableBooks.count,
-    lostBookCounts: lostBooks.count
+    lostBookCounts: lostBooks.count,
+    overdueOrderCounts: overdueOrders.count
   }
 });
 </script>

@@ -48,11 +48,15 @@ const message = computed(() => props.notification.message.replace('#{orderId}', 
 function getIcon() {
   let icon = '';
   switch(props.notification.type) {
+    case NOTIFICATION_TYPES.REQUEST_EXTEND_DUE_DATE:
     case NOTIFICATION_TYPES.ORDER_OVERDUE:
       icon = 'img/calendar_clock_icon.png';
       break;
     case NOTIFICATION_TYPES.BOOK_WISHLIST:
       icon = 'img/wishlist.png';
+      break;
+    case NOTIFICATION_TYPES.APPROVED_EXTEND_DUE_DATE:
+      icon = 'img/check.png';
       break;
   }
 
@@ -61,12 +65,16 @@ function getIcon() {
 
 function getLink() {
   let link = '';
-  switch(props.notification.notifiable_type) {
-    case 'orders':
+  switch(props.notification.type) {
+    case NOTIFICATION_TYPES.APPROVED_EXTEND_DUE_DATE:
+    case NOTIFICATION_TYPES.ORDER_OVERDUE:
       link = `/reader/orders/${props.notification.notifiable_id}`;
       break;
-    case 'books':
+    case NOTIFICATION_TYPES.BOOK_WISHLIST:
       link = `/book/${props.notification.notifiable_id}`;
+      break;
+    case NOTIFICATION_TYPES.REQUEST_EXTEND_DUE_DATE:
+      link = `/admin/orders/${props.notification.notifiable_id}`;
       break;
   }
 

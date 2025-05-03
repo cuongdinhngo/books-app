@@ -294,7 +294,7 @@ export type Database = {
           message: string | null
           notifiable_id: number | null
           notifiable_type: string | null
-          reader_id: string
+          reader_id: string | null
           type: string | null
         }
         Insert: {
@@ -304,7 +304,7 @@ export type Database = {
           message?: string | null
           notifiable_id?: number | null
           notifiable_type?: string | null
-          reader_id?: string
+          reader_id?: string | null
           type?: string | null
         }
         Update: {
@@ -314,7 +314,7 @@ export type Database = {
           message?: string | null
           notifiable_id?: number | null
           notifiable_type?: string | null
-          reader_id?: string
+          reader_id?: string | null
           type?: string | null
         }
         Relationships: []
@@ -366,6 +366,54 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_renews: {
+        Row: {
+          approved_by: string | null
+          comment: string | null
+          created_at: string
+          id: number
+          new_due_date: string | null
+          order_id: number
+          reader_id: string
+          request_note: string | null
+        }
+        Insert: {
+          approved_by?: string | null
+          comment?: string | null
+          created_at?: string
+          id?: number
+          new_due_date?: string | null
+          order_id: number
+          reader_id?: string
+          request_note?: string | null
+        }
+        Update: {
+          approved_by?: string | null
+          comment?: string | null
+          created_at?: string
+          id?: number
+          new_due_date?: string | null
+          order_id?: number
+          reader_id?: string
+          request_note?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_renew_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_renew_reader_id_fkey"
+            columns: ["reader_id"]
+            isOneToOne: false
+            referencedRelation: "readers"
             referencedColumns: ["id"]
           },
         ]
@@ -654,6 +702,10 @@ export type Database = {
           created_at: string
           is_read: boolean
         }[]
+      }
+      notify_wishlist_availability: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       process_overdue_orders: {
         Args: Record<PropertyKey, never>

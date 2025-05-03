@@ -121,7 +121,7 @@ const bookCounts = computed(() => bookCart.value.length);
 
 const { data:notifications, error } = await useAsyncData(
   `reader-${userId.value}-notifications`,
-  () => getNotifications()
+  () => getNotifications({ readerId: userId.value })
 );
 
 const unreadNotificaitons = computed(() => notifications.value.data.filter(item => !item.is_read));
