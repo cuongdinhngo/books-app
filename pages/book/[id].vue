@@ -71,7 +71,7 @@
   <!-- Review Form -->
   <div
     class="mt-6"
-    v-if="isSubmittedReview.value"
+    v-if="isSubmittedReview === false"
   >
     <h3 class="font-medium text-gray-800 mb-4">Submit a Review</h3>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -167,6 +167,7 @@ const { data, error, refresh } = await useAsyncData(
 );
 
 const isSubmittedReview = computed(() => {
+  console.log('COMPUTED => ', data.value?.reviews);
   const reviews = data.value?.reviews.data?.find(item => (item.readers.id === userId.value));
   return reviews ? Object.keys(reviews).length > 0 : false;
 });
