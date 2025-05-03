@@ -1,16 +1,26 @@
 <template>
-  <h3 class="text-stone-900">Order's Details</h3>
   <form class="mb-6 space-y-4 w-1/2 mx-auto" @submit.prevent="handleUpdate">
     <div class="flex items-center space-x-1">
       <label class="block text-sm text-gray-500">Reader:</label>
       <NuxtLink :to="`/admin/readers/${order?.readers.id}`">
-        <span class="text-gray-900">{{ order?.readers.fullName }}</span>
+        <div class="flex items-center gap-3 hover:text-primary-500">
+          <UAvatar :src="order?.readers.photo" size="xl" class="rounded-none"/>
+          <div>
+            <p class="font-medium text-stone-800 hover:text-primary-500">{{ order?.readers.fullName }}</p>
+          </div>
+        </div>
       </NuxtLink>
     </div>
     <div class="flex items-center space-x-4">
       <div class="flex items-center space-x-2">
           <label for="current-status" class="text-sm font-medium text-gray-500">Status:</label>
           <span id="current-status" class="text-sm text-gray-900">{{ order ? capitalize(order?.orderStatus) : '' }}</span>
+          <UBadge
+            v-if="new Date() > new Date(order?.due_date) && order?.orderStatus === ORDER_STATUS.BORROWING"
+            variant="solid" color="warning"
+          >
+            Overdue
+          </UBadge>
       </div>
       <div class="flex items-center space-x-2">
           <label for="new-status" class="text-sm font-medium text-gray-500 whitespace-nowrap">Change to:</label>
@@ -24,10 +34,23 @@
           />
       </div>
     </div>
+
+    <div class="flex items-center space-x-1">
+      <label class="block text-sm text-gray-500">Booked at:</label>
+      <span class="text-sm text-gray-900">{{ useDateFormat(order?.created_at, 'MMMM Do, YYYY') }}</span>
+    </div>
+
+    <div class="flex items-center space-x-1">
+      <label class="block text-sm text-gray-500">Due date:</label>
+      <span class="text-sm text-gray-900">{{ useDateFormat(order?.due_date, 'MMMM Do, YYYY') }}</span>
+      <UButton label="Extend due date" color="neutral" variant="subtle" @click="openDueDateModal = !openDueDateModal"/>
+    </div>
+
     <div class="flex items-center space-x-1">
       <label class="block text-sm text-gray-500">Comment:</label>
-      <UInput placeholder="Enter comment" v-model="itemComment"/>
+      <UInput placeholder="Enter comment" v-model="itemComment" class="w-full"/>
     </div>
+
     <div class="flex justify-between gap-4">
       <button type="submit" 
         class="flex-1 bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700"
@@ -36,15 +59,58 @@
       </button>
     </div>
   </form>
-  <DataTable
-    v-if="bookItems.length > 0"
-    :data="bookItems"
-    :columns="columns"
-    detail-link="/admin/books/"
-    :remove-unavailable-book="removeUnavailableBook"
-    v-model="itemComment"
-    :mark-lost-book="markLostBook"
-  />
+
+  <!-- Extend Due date Modal -->
+  <UModal
+    v-model:open="openDueDateModal"
+    title="Extend due date"
+  >
+    <template #body>
+      <div class="flex flex-col">
+        <UInput v-model="orderRenewComment" placeholder="Enter note" class="mb-5"/>
+        <UInput v-model="orderRenewDueDate" placeholder="Enter extended date" type="date"/>
+      </div>
+    </template>
+
+    <template #footer>
+      <UButton label="Cancel" color="neutral" variant="outline" @click="openDueDateModal = false" />
+      <UButton label="Submit" color="neutral" @click="handleRenew"/>
+    </template>
+  </UModal>
+
+  <!-- Tabs Navigation -->
+  <div class="flex border-b border-gray-200">
+    <button
+      v-for="tab in tabs"
+      :key="tab.id"
+      @click="activeTab = tab.id"
+      :class="[
+        'px-4 py-2 text-gray-600 font-medium border-b-2 focus:outline-none',
+        activeTab === tab.id ? 'border-blue-500 text-blue-600' : 'border-transparent hover:border-blue-500'
+      ]"
+    >
+      {{ tab.name }}
+    </button>
+  </div>
+
+  <!-- Tab Content -->
+  <div class="mt-6">
+    <div v-if="activeTab === 'details'" class="tab-content">
+      <DataTable
+        v-if="bookItems.length > 0"
+        :data="bookItems"
+        :columns="columns"
+        detail-link="/admin/books/"
+        :remove-unavailable-book="removeUnavailableBook"
+        v-model="itemComment"
+        :mark-lost-book="markLostBook"
+      />
+    </div>
+
+    <div v-if="activeTab === 'dueDate'" class="tab-content">
+      <OrderDueDate />
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -53,7 +119,9 @@ import { ORDER_ITEM_STATUS } from '~/composables/orderItems';
 import { ORDER_STATUS_OPTIONS, BORROWING_PERIOD } from '~/composables/orders';
 import { BOOK_ITEM_STATUS } from '~/composables/bookItems';
 
+const { userId } = useAuth();
 const { update, get:getOrderById } = useOrders();
+const { insert:renewDueDate } = useOrderRenews();
 const { index:getBooksItems, update:updateBookItemStatus } = useBookItems();
 const { upsert:upsertOrderItems, index:getOrderItems, remove:removeOrderItem, update:markDeletedAt } = useOrderItems();
 const { upsert:upsertBookItems } = useBookItems();
@@ -64,6 +132,15 @@ const order = ref(null);
 const itemComment = ref('');
 const orderStatus = ref('');
 const oldOrderStatus = ref('');
+const openDueDateModal = ref(false);
+const orderRenewComment = ref('');
+const orderRenewDueDate = ref('');
+
+const tabs = [
+  { id: 'details', name: 'Details' },
+  { id: 'dueDate', name: 'Extend due dates' }
+];
+const activeTab = ref('details');
 
 const transformBookItemStatus = {
   closed: 'opening',
@@ -73,7 +150,27 @@ const transformBookItemStatus = {
 };
 
 function getOrderSelection() {
-  return ORDER_STATUS_OPTIONS.filter(option => option.id !== oldOrderStatus.value);
+  return ORDER_STATUS_OPTIONS.filter(option => option.id !== oldOrderStatus.value && option.id !== ORDER_STATUS.OVERDUE && option.id !== ORDER_STATUS.WAITING);
+}
+
+async function handleRenew() {
+  await renewDueDate({
+      order_id: order?.value.id,
+      reader_id: order?.value.readers.id,
+      new_due_date: orderRenewDueDate.value,
+      comment: orderRenewComment.value,
+      approved_by: userId.value
+    })
+  .then(async({ error }) => {
+    if (error) throw error;
+
+    const {error:updateOrderError } = await update(order.value.id, { due_date: orderRenewDueDate.value });
+    if (updateOrderError) throw updateOrderError;
+
+    await loadOrder();
+    useToastSuccess();
+  })
+  .catch((error) => useToastError(error));
 }
 
 const handleUpdate = async() => {
@@ -140,8 +237,9 @@ onMounted(async() => {
 });
 
 async function loadOrder() {
-  const { data } = await getOrderById(orderId.value, `id, orderStatus:status, readers(id, fullName:full_name), order_items(*)`);
+  const { data } = await getOrderById(orderId.value, `id, orderStatus:status, due_date, created_at, readers(id, fullName:full_name, photo), order_items(*)`);
   order.value = data;
+  console.log('ORDER => ', order.value);
   orderStatus.value = data.orderStatus;
   oldOrderStatus.value = data.orderStatus;
 

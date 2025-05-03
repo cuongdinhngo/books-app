@@ -5,6 +5,8 @@ import type { Tables } from '~/types/database.types';interface GetOrdersOptions 
   status?: (string)[],
   from?: string,
   to?: string,
+  isOverdue?: boolean,
+  isHead?: boolean,
   page?: number,
   size?: number
 }
@@ -13,40 +15,54 @@ export const ORDER_STATUS = {
   WAITING: 'waiting',
   BORROWING: 'borrowing',
   CLOSE: 'closed',
-  REJECT: 'rejected'
+  REJECT: 'rejected',
+  OVERDUE: 'overdue'
 };
 
 export const ORDER_STATUS_OPTIONS = [
   {label: 'Close', id: 'closed'},
   {label: 'Borrowing', id: 'borrowing'},
   {label: 'Waiting', id: 'waiting'},
-  {label: 'Reject', id: 'rejected'}
+  {label: 'Reject', id: 'rejected'},
+  {label: 'Overdue', id: 'overdue'},
 ];
 
 export const BORROWING_PERIOD = 7;
 
 const TABLE_NAME = 'orders';
+const RENEW_TABLE_NAME = 'order_renews';
 
 export const useOrders = () => {
 
   const index = (options: GetOrdersOptions = {}) => {
-    const {
+    let {
       columns = '*',
       id = null,
       readerId = null,
       status = [],
       from = null,
       to = null,
+      isOverdue = false,
+      isHead = false,
       page = null,
       size = null
     } = options;
 
-    let query = useTable(TABLE_NAME).select(columns, { count: 'exact'}).order('created_at', { ascending: false });
+    if (status.includes(ORDER_STATUS.OVERDUE)) {
+      isOverdue = true;
+      status = status.filter(value => value !== ORDER_STATUS.OVERDUE);
+    }
+    let query = useTable(TABLE_NAME).select(columns, { count: 'exact', head: isHead }).order('created_at', { ascending: false });
     if (id) {
       query = query.eq('id', id);
     }
     if (readerId) {
       query = query.eq('reader_id', readerId);
+    }
+    //overdue filter requires that status must be borrowing
+    if (isOverdue) {
+      status = [ORDER_STATUS.BORROWING];
+      query = query.lt('due_date', new Date().toISOString());
     }
     if (status && status.length > 0) {
       query = query.in('status', status);
@@ -94,12 +110,17 @@ export const useOrders = () => {
       return [];
     }
   }
+
+  const renew = (data: Tables<'order_renews'>) => {
+    return useTable(RENEW_TABLE_NAME).insert(data);
+  }
   
   return {
     update,
     index,
     insert,
     get,
-    getOrdersByReaderId
+    getOrdersByReaderId,
+    renew
   }
 }

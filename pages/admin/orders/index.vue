@@ -34,11 +34,68 @@
     </div>
   </form>
 
-  <DataTable
+  <!-- ORDER DATATABLE -->
+  <UTable
     v-if="order && order.count > 0"
     :data="order?.data"
     :columns="columns"
-  />
+    class="flex-1"
+  >
+    <template #id-cell="{ row }">
+      <NuxtLink :to="`/admin/orders/${row.getValue('status')}`" class="hover:text-primary-500">
+        #{{ row.getValue('id') }}
+      </NuxtLink>
+    </template>
+
+    <template #readers-cell="{ row }">
+      <NuxtLink :to="`/admin/readers/${row.getValue('readers').id}`">
+        <div class="flex items-center gap-3 hover:text-primary-500">
+          <UAvatar :src="row.getValue('readers').photo" size="xl" class="rounded-none"/>
+          <div>
+            <p class="font-medium text-stone-800 hover:text-primary-500">{{ capitalize(row.getValue('readers').fullName) }}</p>
+          </div>
+        </div>
+      </NuxtLink>
+    </template>
+
+    <template #status-cell="{ row }">
+      <NuxtLink :to="`/admin/orders/${row.getValue('id')}`" class="hover:text-primary-500">
+        {{ capitalize(row.getValue('status')) }}
+        <UBadge
+          v-if="new Date() > new Date(row.original.due_date) && row.original.status === ORDER_STATUS.BORROWING"
+          variant="solid" color="warning"
+        >
+          Overdue
+        </UBadge>
+      </NuxtLink>
+    </template>
+
+    <template #createdAt-cell="{ row }">
+      <NuxtLink :to="`/admin/orders/${row.getValue('id')}`" class="hover:text-primary-500">
+        {{ useDateFormat(row.original.created_at, 'MMMM Do, YYYY') }}
+      </NuxtLink>
+    </template>
+
+    <template #dueDate-cell="{ row }">
+      <NuxtLink :to="`/admin/orders/${row.getValue('id')}`" class="hover:text-primary-500">
+        {{ useDateFormat(row.original.due_date, 'MMMM Do, YYYY') }}
+      </NuxtLink>
+    </template>
+
+    <template #orderActions-cell="{ row }">
+      <div class="flex space-x-4">
+        <UButton
+          icon="lucide:calendar-cog"
+          size="md"
+          color="primary"
+          variant="subtle"
+          @click="navigateTo(`/admin/orders/${row.original.id}`)"
+        >
+          View details
+        </UButton>
+      </div>
+    </template>
+  </UTable>
   <h3 v-else class="justify-center flex text-stone-900">No Data</h3>
 
   <Pagination
@@ -53,6 +110,7 @@
 <script setup lang="ts">
 import { ORDER_STATUS, ORDER_STATUS_OPTIONS } from '~/composables/orders';
 import { useRouteQuery } from '@vueuse/router';
+import { id } from '@nuxt/ui/runtime/locale/index.js';
 
 const { index, update } = useOrders();
 const { index:getOrderItems, upsert:upsertOrderItems } = useOrderItems();
@@ -62,11 +120,11 @@ const page = useRouteQuery('page', 1 , { transform: Number });
 const pageSize = 5;
 
 const orderId = ref(null)
-const selectedStatus = ref([ORDER_STATUS.WAITING]);
+const selectedStatus = ref([ORDER_STATUS.WAITING, ORDER_STATUS.BORROWING]);
 const from = ref(null);
 const to = ref(null);
 const searchParams = ref({
-  columns: `id, status, readers(id, fullName:full_name)`,
+  columns: `id, status, due_date, created_at, readers(id, fullName:full_name, photo)`,
   status: selectedStatus.value,
   from: from.value,
   to: to.value,
@@ -80,6 +138,8 @@ const { data: order, error, refresh, clear } = useAsyncData(
   () => index(searchParams.value),
   { watch: [searchParams.value] }
 );
+
+console.log('DATA => ', order);
 
 const handleSearch = () => {
   searchParams.value.id = orderId.value;
@@ -120,17 +180,24 @@ const columns = [
   {
     accessorKey: 'id',
     header: 'Order No.',
-    cell: ({ row }) => `#${row.getValue('id')}`
   },
   {
     accessorKey: 'readers',
     header: `Reader`,
-    cell: ({ row }) => `${row.getValue('readers').fullName}`
   },
   {
     accessorKey: 'status',
     header: `Status`,
-    cell: ({ row }) => `${row.getValue('status')}`
+  },
+  {
+    accessorKey: 'created_at',
+    header: `Booked at`,
+    id: 'createdAt'
+  },
+  {
+    accessorKey: 'due_date',
+    header: `Due date`,
+    id: 'dueDate'
   },
   {
     header: 'Actions',
