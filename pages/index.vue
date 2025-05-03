@@ -5,7 +5,11 @@
     loop
     arrows
     :items="data.data"
-    :ui="{ item: 'basis-1/4' }"
+    :ui="{
+      item: 'basis-1/4',
+      next: 'end-0',
+      prev: 'start-0'
+    }"
     class="p-5 bg-primary-50"
   >
     <BookRatingItem
