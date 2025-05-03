@@ -2,66 +2,33 @@
   <div class="mb-8">
     <h2 class="text-xl font-bold text-gray-900 mb-4">Overview</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
-            <p class="text-sm font-medium text-gray-600">Total Categories</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ data?.total_categories }}</p>
-        </div>
-        <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
-            <p class="text-sm font-medium text-gray-600">Total Publishers</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ data?.total_publishers }}</p>
-        </div>
-        <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
-            <p class="text-sm font-medium text-gray-600">Total Authors</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ data?.total_authors }}</p>
-        </div>
-        <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
-            <p class="text-sm font-medium text-gray-600">Total Books</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ data?.total_books }}</p>
-        </div>
-        <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
-            <p class="text-sm font-medium text-gray-600">Total Readers</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ data?.total_readers }}</p>
-        </div>
+      <AdminCard
+        v-for="item in overviewCards"
+        :key="item.id"
+        :card="item"
+      />
     </div>
   </div>
 
   <div class="mb-8">
     <h2 class="text-xl font-bold text-gray-900 mb-4">Orders Stats</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
-            <p class="text-sm font-medium text-gray-600">Total Orders</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ data?.total_orders }}</p>
-        </div>
-        <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
-            <p class="text-sm font-medium text-gray-600">Total Borrowed Books</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ data?.borrowed_orders }}</p>
-        </div>
-        <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
-            <p class="text-sm font-medium text-gray-600">Total Borrowing Books</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ data?.borrowing_orders }}</p>
-        </div>
-        <div class="bg-yellow-200 p-4 rounded-lg shadow-sm">
-            <p class="text-sm font-medium text-gray-600">Overdue Orders</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ data?.overdue_orders }}</p>
-        </div>
+      <AdminCard
+        v-for="item in orderStats"
+        :key="item.id"
+        :card="item"
+      />
     </div>
   </div>
 
   <div class="mb-8">
     <h2 class="text-xl font-bold text-gray-900 mb-4">Book Stats</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
-            <p class="text-sm font-medium text-gray-600">Total Book Items</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ data?.total_book_items }}</p>
-        </div>
-        <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
-            <p class="text-sm font-medium text-gray-600">Total Available Books</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ data?.available_books }}</p>
-        </div>
-        <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
-            <p class="text-sm font-medium text-gray-600">Total Lost Books</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ data?.lost_books }}</p>
-        </div>
+      <AdminCard
+        v-for="item in bookStats"
+        :key="item.id"
+        :card="item"
+      />
     </div>
   </div>
 
@@ -70,7 +37,7 @@
     v-slot="{ item }"
     loop
     arrows
-    :items="topOrderBooks"
+    :items="data.topOrders.data"
     :ui="{
       item: 'basis-1/4',
       next: 'end-0',
@@ -85,7 +52,127 @@
 </template>
 
 <script setup lang="ts">
-const { data, error:dashboardError } = await useSupabaseClient().rpc('get_admin_dashboard_counts');
+const supabase = useSupabaseClient();
+let overviewCards = [
+  {
+    id: 'total_categories',
+    link: '/admin/categories',
+    label: 'Total Categories',
+    count: 0
+  },
+  {
+    id: 'total_publishers',
+    link: '/admin/publishers',
+    label: 'Total Publishers',
+    count: 0
+  },
+  {
+    id: 'total_authors',
+    link: '/admin/authors',
+    label: 'Total Authors',
+    count: 0
+  },
+  {
+    id: 'total_books',
+    link: '/admin/books',
+    label: 'Total Books',
+    count: 0
+  },
+  {
+    id: 'total_readers',
+    link: '/admin/readers',
+    label: 'Total Readers',
+    count: 0
+  },
+];
 
-const { data:topOrderBooks , error:topOrderError } = await useSupabaseClient().rpc('get_top_ordered_books', { limit_count: 5 });
+let orderStats = [
+  {
+    id: 'total_orders',
+    link: '/admin/orders',
+    label: 'Total Orders',
+    count: 0
+  },
+  {
+    id: 'borrowed_orders',
+    link: '/admin/orders',
+    label: 'Total Borrowed Orders',
+    count: 0
+  },
+  {
+    id: 'borrowing_orders',
+    link: '/admin/orders',
+    label: 'Total Open Orders',
+    count: 0
+  },
+  {
+    id: 'overdue_orders',
+    link: '/admin/orders',
+    label: 'Total Overdue Orders',
+    count: 0,
+    class: 'bg-yellow-100 p-4 rounded-lg shadow-sm hover:bg-primary-50'
+  },
+];
+
+let bookStats = [
+  {
+    id: 'total_book_items',
+    link: '/admin/books',
+    label: 'Total Book Items',
+    count: 0
+  },
+  {
+    id: 'available_books',
+    link: '/admin/books',
+    label: 'Total Available Books',
+    count: 0
+  },
+  {
+    id: 'lost_books',
+    link: '/admin/books',
+    label: 'Total Lost Books',
+    count: 0
+  },
+]
+const { data, error:dashboardError } = await useAsyncData(
+  'admin-dashboard',
+  async() => {
+    const[statistics, topOrders] = await Promise.all([
+      supabase.rpc('get_admin_dashboard_counts'),
+      supabase.rpc('get_top_ordered_books', { limit_count: 5 })
+    ]);
+
+    return {statistics, topOrders};
+  }
+);
+
+overviewCards = overviewCards.map(card => {
+  if (data.value?.statistics.data.hasOwnProperty(card.id)) {
+    return {
+      ...card,
+      count: data.value?.statistics.data[card.id]
+    };
+  }
+  return card;
+});
+
+orderStats = orderStats.map(card => {
+  if (data.value?.statistics.data.hasOwnProperty(card.id)) {
+    return {
+      ...card,
+      count: data.value?.statistics.data[card.id]
+    };
+  }
+  return card;
+});
+
+bookStats = bookStats.map(card => {
+  if (data.value?.statistics.data.hasOwnProperty(card.id)) {
+    return {
+      ...card,
+      count: data.value?.statistics.data[card.id]
+    };
+  }
+  return card;
+});
 </script>
