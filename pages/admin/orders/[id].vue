@@ -43,12 +43,17 @@
     <div class="flex items-center space-x-1">
       <label class="block text-sm text-gray-500">Due date:</label>
       <span class="text-sm text-gray-900">{{ useDateFormat(order?.due_date, 'MMMM Do, YYYY') }}</span>
-      <UButton label="Extend due date" color="neutral" variant="subtle" @click="openDueDateModal = !openDueDateModal"/>
+      <UButton
+        label="Extend due date"
+        color="neutral"
+        variant="subtle"
+        @click="openDueDateModal = !openDueDateModal"
+      />
     </div>
 
     <div class="flex items-center space-x-1">
       <label class="block text-sm text-gray-500">Comment:</label>
-      <UInput placeholder="Enter comment" v-model="itemComment" class="w-full"/>
+      <UInput placeholder="Enter comment" v-model="itemComment" class="w-full" variant="subtle"/>
     </div>
 
     <div class="flex justify-between gap-4">

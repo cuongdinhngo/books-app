@@ -1,6 +1,12 @@
 <template>
-  <h3 class="text-stone-800 font-bold mb-1">Top Ratings</h3>
+  <h3
+    class="text-stone-800 font-bold mb-1"
+    v-if="hasQuery === false"
+  >
+    Top Ratings
+  </h3>
   <UCarousel
+    v-if="hasQuery === false"
     v-slot="{ item }"
     loop
     arrows
@@ -17,7 +23,12 @@
     />
   </UCarousel>
 
-  <h3 class="text-stone-800 font-bold my-1">New Books</h3>
+  <h3
+    v-if="hasQuery === false"
+    class="text-stone-800 font-bold my-1"
+  >
+    New Books
+  </h3>
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 my-5">
     <BookItem
       v-for="item in book.data"
@@ -41,6 +52,8 @@ definePageMeta({
 })
 
 const { index, getTopRatings } = useBooks();
+
+const hasQuery = computed(() => Object.keys(useRoute().query).length > 0);
 const page = ref<number>(useRouteQuery('page', '1', { transform: Number }));
 const category = ref<number|null>(useRouteQuery('category'));
 const publisher = ref<number|null>(useRouteQuery('publisher'));
@@ -53,51 +66,6 @@ const searchParams = ref({
   publisherIds: publisher.value ? [publisher.value] : [],
 });
 
-const items = [
-  {
-    "book_id": 33,
-    "book_title": "The Godfather",
-    "book_image": "https://feizrojtanowvxiiashl.supabase.co/storage/v1/object/public/books/books/cd6d319e-6a6f-441c-94b4-bcdabcedf07f.png",
-    "average_rating": 4,
-    "rating_count": 2
-  },
-  {
-    "book_id": 33,
-    "book_title": "The Godfather",
-    "book_image": "https://feizrojtanowvxiiashl.supabase.co/storage/v1/object/public/books/books/cd6d319e-6a6f-441c-94b4-bcdabcedf07f.png",
-    "average_rating": 4,
-    "rating_count": 2
-  },
-  {
-    "book_id": 33,
-    "book_title": "The Godfather",
-    "book_image": "https://feizrojtanowvxiiashl.supabase.co/storage/v1/object/public/books/books/cd6d319e-6a6f-441c-94b4-bcdabcedf07f.png",
-    "average_rating": 4,
-    "rating_count": 2
-  },
-  {
-    "book_id": 33,
-    "book_title": "The Godfather",
-    "book_image": "https://feizrojtanowvxiiashl.supabase.co/storage/v1/object/public/books/books/cd6d319e-6a6f-441c-94b4-bcdabcedf07f.png",
-    "average_rating": 4,
-    "rating_count": 2
-  },
-  {
-    "book_id": 33,
-    "book_title": "The Godfather",
-    "book_image": "https://feizrojtanowvxiiashl.supabase.co/storage/v1/object/public/books/books/cd6d319e-6a6f-441c-94b4-bcdabcedf07f.png",
-    "average_rating": 4,
-    "rating_count": 2
-  },
-  {
-    "book_id": 33,
-    "book_title": "The Godfather",
-    "book_image": "https://feizrojtanowvxiiashl.supabase.co/storage/v1/object/public/books/books/cd6d319e-6a6f-441c-94b4-bcdabcedf07f.png",
-    "average_rating": 4,
-    "rating_count": 2
-  }
-];
-
 const { data:book, error, refresh, clear } = await useAsyncData(
   `main-book-page:${page.value || 0}-category:${category.value || 'all'}-publisher:${publisher.value || 'all'}`,
   () => index(searchParams.value),
@@ -108,8 +76,6 @@ const { data, error:ratingError } = await useAsyncData(
   `top-rating-books`,
   () => getTopRatings()
 );
-
-console.log('DATA => ', data);
 
 watch(
   () => useRoute().query,
