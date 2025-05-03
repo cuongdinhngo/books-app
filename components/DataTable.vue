@@ -83,6 +83,17 @@
       </div>
     </template>
 
+    <template #readerName-cell="{ row }">
+      <div class="flex items-center gap-3">
+        <UAvatar :src="row.original.photo" size="xl" class="rounded-none"/>
+        <div>
+          <NuxtLink :to="`/admin/readers/${row.original.id}`">
+            <p class="font-medium text-primary-500">{{ row.original.fullName }}</p>
+          </NuxtLink>
+        </div>
+      </div>
+    </template>
+
     <template #orderItemStatus-cell="{ row }">
       <UBadge class="capitalize" variant="subtle" :color="orderItemStatusColor[row.original.orderItemStatus]">
         {{ row.original.orderItemStatus }}

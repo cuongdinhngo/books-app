@@ -3,11 +3,11 @@
     <form class="space-y-4 w-full md:w-2/3" @submit.prevent="submitForm">
       <div>
         <label class="block text-sm font-medium text-gray-700">Publisher name</label>
-        <UInput v-model="name" placeholder="Publisher's name"/>
+        <UInput v-model="name" placeholder="Publisher's name" variant="subtle"/>
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700">Logo</label>
-        <UInput type="file" @change="handleFileUpload"/>
+        <UInput type="file" @change="handleFileUpload" variant="subtle"/>
       </div>
       <div class="flex justify-between gap-4">
         <button type="submit" 

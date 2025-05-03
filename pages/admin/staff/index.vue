@@ -1,6 +1,5 @@
 <template>
   <div class="mb-6 space-y-4 w-1/2 mx-auto">
-    <h2 class="text-xl font-semibold text-gray-800 mb-6">Search Users</h2>
     <div class="space-y-4">
       <div class="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
         <div class="flex-1">
@@ -87,20 +86,6 @@ const searchUsers = async() => {
 }
 
 const columns = [
-  {
-    accessorKey: 'id',
-    header: '#ID',
-    cell: ({ row }) => {
-      return h(
-        NuxtLink,
-        {
-          to: `/admin/staff/form?id=${row.original.id}`,
-          class: 'text-primary-500'
-        },
-        `#${row.getValue('id')}`
-      )
-    }
-  },
   {
     accessorKey: 'fullName',
     header: 'Full name',

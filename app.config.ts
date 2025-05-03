@@ -18,6 +18,27 @@ export default defineAppConfig({
         th: 'text-stone-900',
         td: 'text-stone-900',
       }
+    },
+    input: {
+      variants: {
+        variant: {
+          subtle: 'bg-white text-stone-900 ring-gray-300'
+        }
+      }
+    },
+    inputNumber: {
+      variants: {
+        variant: {
+          subtle: 'bg-white text-stone-900 ring-gray-300'
+        }
+      }
+    },
+    textarea: {
+      variants: {
+        variant: {
+          subtle: 'bg-white text-stone-900 ring-gray-300'
+        }
+      }
     }
   }
 })

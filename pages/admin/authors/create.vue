@@ -3,19 +3,19 @@
     <form class="space-y-4 w-full md:w-2/3" @submit.prevent="submitForm">
       <div>
         <label class="block text-sm font-medium text-gray-700">Author name</label>
-        <UInput v-model="fullName" placeholder="Author's fullname"/>
+        <UInput v-model="fullName" placeholder="Author's fullname" variant="subtle"/>
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700">Photo</label>
-        <UInput type="file" @change="handleFileUpload" v-model="photoInput"/>
+        <UInput type="file" @change="handleFileUpload" v-model="photoInput" variant="subtle"/>
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700">Birth year</label>
-        <UInput v-model="birthYear"/>
+        <UInput v-model="birthYear" variant="subtle"/>
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700">Death year</label>
-        <UInput v-model="deathYear" />
+        <UInput v-model="deathYear" variant="subtle"/>
       </div>
       <div class="flex justify-between gap-4">
         <button type="submit" 
