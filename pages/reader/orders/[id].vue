@@ -4,6 +4,7 @@
     <div class="flex justify-between items-center mb-2">
       <h3 class="text-lg font-semibold text-gray-800">Borrowing Information</h3>
       <button
+        v-if="order?.status === ORDER_STATUS.BORROWING"
         @click="openDueDateModal = !openDueDateModal"
         class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
