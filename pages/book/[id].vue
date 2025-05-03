@@ -166,13 +166,10 @@ const { data, error, refresh } = await useAsyncData(
   }
 );
 
-console.log('DATA => ', data);
 const isSubmittedReview = computed(() => {
   const reviews = data.value?.reviews.data?.find(item => (item.readers.id === userId.value));
   return reviews ? Object.keys(reviews).length > 0 : false;
 });
-
-console.log('isSubmittedReview => ', isSubmittedReview.value);
 
 wishlists.value = data.value?.book.data.wishlists;
 

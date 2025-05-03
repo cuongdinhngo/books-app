@@ -2,6 +2,7 @@
   <h3 class="text-stone-900">Your book cart</h3>
   <h3 v-if="bookCart.length === 0" class="text-primary-900">Enjoy your time and choose your love books</h3>
   <UTable
+    v-if="bookCart.length > 0"
     ref="table"
     v-model:row-selection="rowSelection"
     :data="book?.data"
@@ -46,7 +47,10 @@
     </template>
   </UTable>
 
-  <div class="px-4 py-3.5 border-t border-accented text-sm text-muted text-stone-800">
+  <div
+    v-if="bookCart.length > 0"
+    class="px-4 py-3.5 border-t border-accented text-sm text-muted text-stone-800"
+  >
     {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
     {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} row(s) selected.
   </div>

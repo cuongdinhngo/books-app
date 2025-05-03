@@ -19,6 +19,7 @@ export const BOOK_STATUS = {
 };
 
 export const useBooks = () => {
+  const supabase = useSupabaseClient();
   const { uploadPhoto } = useImages('books');
 
   const index = (options: GetBooksOptions = {}) => {
@@ -113,11 +114,16 @@ export const useBooks = () => {
     return useTable(TABLE_NAME).delete().eq('id', id);
   }
 
+  const getTopRatings = () => {
+    return supabase.rpc('get_average_ratings_with_book_details');
+  }
+
   return {
     index,
     insert,
     get,
     update,
-    remove
+    remove,
+    getTopRatings
   }
 }

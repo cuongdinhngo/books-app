@@ -68,11 +68,12 @@ export function publicAsset(path: string) {
   return `${baseURL}${path}`;
 }
 
-export function generateRating(length: number, char: string = '★') {
-  if (length === 0) {
-    char = '☆';
-    length = 5;
-  }
+export function generateRating(length: number, filledChar: string = '★', emptyChar: string = '☆') {
+  if (length < 0) length = 0;
+  if (length > 5) length = 5;
 
-  return char.repeat(length);
+  const filled = filledChar.repeat(length);
+  const empty = emptyChar.repeat(5 - length);
+
+  return filled + empty;
 }

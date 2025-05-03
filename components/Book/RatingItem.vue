@@ -1,0 +1,21 @@
+<template>
+  <NuxtLink :to="`/book/${book?.book_id}`">
+    <div class="bg-white p-4 rounded-lg shadow text-stone-900">
+      <img :src="`${book?.book_image}`" :alt="book?.book_title" class="w-full h-48 object-scale-down mb-2">
+      <p class="font-bold">{{ book?.book_title }}</p>
+      <p class="text-sm text-gray-600">Rating: 
+        <span class="text-yellow-400">{{ generateRating(book.average_rating) }}</span>
+      </p>
+      <p class="text-sm">Total reviews: {{ book.rating_count }}</p>
+    </div>
+  </NuxtLink>
+</template>
+
+<script setup lang="ts">
+const props = defineProps({
+  book: {
+    type: Object,
+    required: true
+  }
+});
+</script>
