@@ -11,7 +11,7 @@
       />
       <FormCreateLink
         name="Create New Publisher"
-        link="/admin/publishers/create"
+        :to="{ name: 'admin-publishers-create'}"
       />
     </div>
   </form>
@@ -20,7 +20,7 @@
     v-if="publisher?.data"
     :data="publisher?.data"
     :columns="columns"
-    edit-link="/admin/publishers/"
+    edit-link="admin-publishers-id"
     :delete-item="deletePublisher"
   />
 

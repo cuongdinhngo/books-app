@@ -2,7 +2,7 @@
   <form class="mb-6 space-y-4 w-1/2 mx-auto" @submit.prevent="handleUpdate">
     <div class="flex items-center space-x-1">
       <label class="block text-sm text-gray-500">Reader:</label>
-      <NuxtLink :to="`/admin/readers/${order?.readers.id}`">
+      <NuxtLink :to="{ name: 'admin-readers-id', params: { id: order?.readers.id }}">
         <div class="flex items-center gap-3 hover:text-primary-500">
           <UAvatar :src="order?.readers.photo" size="xl" class="rounded-none"/>
           <div>
@@ -105,7 +105,6 @@
         v-if="bookItems.length > 0"
         :data="bookItems"
         :columns="columns"
-        detail-link="/admin/books/"
         :remove-unavailable-book="removeUnavailableBook"
         v-model="itemComment"
         :mark-lost-book="markLostBook"

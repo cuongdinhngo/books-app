@@ -76,7 +76,7 @@ const items = ref([
   {
     label: 'Profile',
     icon: 'lucide:user',
-    to: `/admin/staff/${userId.value}`
+    to: { name: 'admin-staff-id', params: { id: userId.value }}
   },
   {
     label: 'Logout',

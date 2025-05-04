@@ -26,21 +26,39 @@
         >
           Search
         </button>
-        <button
-          @click="navigateTo(`/admin/staff/form`)"
+        <UButton
+          :to="{ name: 'admin-staff-form' }"
           class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
         >
           Create New
-        </button>
+        </UButton>
       </div>
     </div>
   </div>
 
-  <DataTable
+  <UTable
     v-if="staff?.count > 0"
     :data="staff.data"
     :columns="columns"
-  />
+    class="flex-1"
+  >
+    <template #staffName-cell="{ row }">
+      <div class="flex items-center gap-3">
+        <UAvatar :src="row.original.photo" size="xl" class="rounded-none"/>
+        <div>
+          <NuxtLink :to="{ name: 'admin-staff-id', params: { id: row.original.id }}">
+            <p class="font-medium text-primary-500">{{ row.original.fullName }}</p>
+          </NuxtLink>
+        </div>
+      </div>
+    </template>
+
+    <template #staffEmail-cell="{ row }">
+      <NuxtLink :to="{ name: 'admin-staff-id', params: { id: row.original.id }}" class="font-medium text-primary-500">
+        {{ row.original.email }}
+      </NuxtLink>
+    </template>
+  </UTable>
   <h3 v-else class="justify-center flex text-stone-900">No Data</h3>
 
   <Pagination
@@ -94,16 +112,7 @@ const columns = [
   {
     accessorKey: 'email',
     header: 'Email',
-    cell: ({ row }) => {
-      return h(
-        NuxtLink,
-        {
-          to: `/admin/staff/form?id=${row.original.id}`,
-          class: 'text-primary-500'
-        },
-        `${row.getValue('email')}`
-      )
-    }
+    id: 'staffEmail'
   },
 ]
 </script>

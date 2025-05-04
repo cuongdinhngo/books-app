@@ -12,36 +12,35 @@
 </template>
 
 <script setup>
-const { adminRoutes, getRouteByName } = useRouters();
 const items = ref([
   {
     label: 'Home',
     name: 'home',
-    to: '/admin/',
+    to: { name: 'admin'},
     icon: 'lucide:house'
   },
   {
     label: 'Books',
     name: 'books',
-    to: '/admin/books/',
+    to: { name: 'admin-books'},
     icon: 'lucide:book-open'
   },
   {
     label: 'Orders',
     name: 'orders',
-    to: '/admin/orders/',
+    to: { name: 'admin-orders' },
     icon: 'lucide:shopping-cart'
   },
   {
     label: 'Staff',
     name: 'staff',
-    to: '/admin/staff/',
+    to: { name: 'admin-staff' },
     icon: 'lucide:shield-user'
   },
   {
     label: 'Readers',
     name: 'readers',
-    to: '/admin/readers/',
+    to: { name: 'admin-readers' },
     icon: 'lucide:users'
   },
   {
@@ -53,19 +52,19 @@ const items = ref([
         label: 'Authors',
         icon: 'lucide:file-text',
         name: 'authors',
-        to: '/admin/authors'
+        to: { name: 'admin-authors' }
       },
       {
         label: 'Publishers',
         icon: 'lucide:swatch-book',
         name: 'publishers',
-        to: '/admin/publishers'
+        to: { name: 'admin-publishers' }
       },
       {
         label: 'Categories',
         icon: 'lucide:cog',
         name: 'categories',
-        to: '/admin/categories'
+        to: { name: 'admin-categories' }
       }
     ]
   },

@@ -56,31 +56,31 @@ const supabase = useSupabaseClient();
 let overviewCards = [
   {
     id: 'total_categories',
-    link: '/admin/categories',
+    to: { name: "admin-categories" },
     label: 'Total Categories',
     count: 0
   },
   {
     id: 'total_publishers',
-    link: '/admin/publishers',
+    to: { name: "admin-publishers" },
     label: 'Total Publishers',
     count: 0
   },
   {
     id: 'total_authors',
-    link: '/admin/authors',
+    to: { name: "admin-authors" },
     label: 'Total Authors',
     count: 0
   },
   {
     id: 'total_books',
-    link: '/admin/books',
+    to: { name: "admin-books" },
     label: 'Total Books',
     count: 0
   },
   {
     id: 'total_readers',
-    link: '/admin/readers',
+    to: { name: "admin-readers" },
     label: 'Total Readers',
     count: 0
   },
@@ -89,25 +89,25 @@ let overviewCards = [
 let orderStats = [
   {
     id: 'total_orders',
-    link: '/admin/orders',
+    to: { name: "admin-orders" },
     label: 'Total Orders',
     count: 0
   },
   {
     id: 'borrowed_orders',
-    link: '/admin/orders',
+    to: { name: "admin-orders", query: { status: ORDER_STATUS.CLOSE } },
     label: 'Total Borrowed Orders',
     count: 0
   },
   {
     id: 'borrowing_orders',
-    link: '/admin/orders',
+    to: { name: "admin-orders", query: { status: ORDER_STATUS.BORROWING } },
     label: 'Total Open Orders',
     count: 0
   },
   {
     id: 'overdue_orders',
-    link: '/admin/orders',
+    to: { name: "admin-orders", query: { status: ORDER_STATUS.OVERDUE } },
     label: 'Total Overdue Orders',
     count: 0,
     class: 'bg-yellow-100 p-4 rounded-lg shadow-sm hover:bg-primary-50'
@@ -117,19 +117,19 @@ let orderStats = [
 let bookStats = [
   {
     id: 'total_book_items',
-    link: '/admin/books',
+    to: { name: "admin-books" },
     label: 'Total Book Items',
     count: 0
   },
   {
     id: 'available_books',
-    link: '/admin/books',
+    to: { name: "admin-books" },
     label: 'Total Available Books',
     count: 0
   },
   {
     id: 'lost_books',
-    link: '/admin/books',
+    to: { name: "admin-books" },
     label: 'Total Lost Books',
     count: 0
   },
