@@ -6,6 +6,7 @@ interface GetBooksOptions {
   authorIds?: (number)[],
   publisherIds?: (number)[],
   categoryIds?: (number)[],
+  status?: (string)[],
   page?: number,
   size?: number
 }
@@ -23,7 +24,7 @@ export const useBooks = () => {
   const { uploadPhoto } = useImages('books');
 
   const index = (options: GetBooksOptions = {}) => {
-    console.log('BOOK INDEX => ', options);
+    console.log('BOOK OPTIONS => ', options);
 
     const {
       columns = [
@@ -39,6 +40,7 @@ export const useBooks = () => {
       authorIds = [],
       publisherIds = [],
       categoryIds = [],
+      status = null,
       page = null,
       size = null
     } = options;
@@ -69,9 +71,16 @@ export const useBooks = () => {
       query = query.in('books_categories.category_id', categoryIds);
     }
 
+    if (status && status.length > 0) {
+      selectColumns.push('book_items!inner(status)');
+      query = query.in('book_items.status', status);
+    }
+
     if (page && size && page >= 1 && size >= 1) {
       query = query.range((page - 1) * size, page * size - 1);
     }
+
+    console.log('SELECTED COLUMNS => ', selectColumns.toString());
 
     return query.select(selectColumns.toString());
   }

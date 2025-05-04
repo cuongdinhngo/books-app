@@ -123,13 +123,13 @@ let bookStats = [
   },
   {
     id: 'available_books',
-    to: { name: "admin-books" },
+    to: { name: "admin-books", query: { status: BOOK_ITEM_STATUS.OPENING } },
     label: 'Total Available Books',
     count: 0
   },
   {
     id: 'lost_books',
-    to: { name: "admin-books" },
+    to: { name: "admin-books", query: { status: BOOK_ITEM_STATUS.LOST } },
     label: 'Total Lost Books',
     count: 0
   },

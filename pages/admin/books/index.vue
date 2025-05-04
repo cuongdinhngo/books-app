@@ -70,13 +70,14 @@
 
 <script setup lang="ts">
 import type { Tables } from '~/types/database.types';
-import { useRouteParams } from '@vueuse/router';
+import { useRouteParams, useRouteQuery } from '@vueuse/router';
 
 const { index, remove } = useBooks();
 const { remove:deleteBooksAuthors } = useBooksAuthors();
 const { remove:deleteBooksCategories } = useBooksCategories();
 const { remove:deleteBooksPublishers } = useBooksPublishers();
 const { remove:deleteBookItems } = useBookItems();
+const {query} = useRoute();
 
 const page = ref(useRouteParams('page', 1, { transform: Number }));
 const pageSize = 5;
@@ -85,22 +86,29 @@ const selectedAuthors = ref([]);
 const selectedCategories = ref([]);
 const selectedPublishers = ref([]);
 const showAdvancedSearch = ref(false);
+const bookItemStatus = ref([]);
+const statusQuery = useRouteQuery('status', null).value;
+if (statusQuery) {
+  bookItemStatus.value = Array.isArray(statusQuery) ? statusQuery : [statusQuery];
+} else {
+  bookItemStatus.value = [];
+}
+
 const searchParams = ref({
   title: title.value,
   authorIds: selectedAuthors.value,
   categoryIds: selectedCategories.value,
   publisherIds: selectedPublishers.value,
+  status: bookItemStatus.value,
   page: page.value,
   size: pageSize
 });
 
 const { data: book, error, refresh, status, clear} = await useAsyncData(
-  `books-page:${page.value}-category:${selectedCategories.value || 'all'}`,
+  `books-query:${JSON.stringify(query)}`,
   () => index(searchParams.value),
   { watch: [searchParams.value] }
 );
-
-console.log('ERROR => ', error.value, 'STATUS => ', status.value);
 
 const handleSearch = async() => {
   page.value = 1;
