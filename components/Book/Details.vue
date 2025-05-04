@@ -44,6 +44,7 @@
               v-model="quantity"
               orientation="vertical"
               placeholder="Enter quantity"
+              variant="subtle"
               :min="0"
               @change="updateItemStatus"
             />
@@ -66,6 +67,7 @@
           :rows="5"
           autoresize
           class="w-full"
+          variant="subtle"
         />
       </div>
 
