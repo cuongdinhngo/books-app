@@ -15,7 +15,6 @@
         <template #content>
           <UCommandPalette
             v-model:search-term="searchTerm"
-            :loading="status === 'pending'"
             :groups="resultGroups"
             placeholder="Search users..."
             class="h-80"

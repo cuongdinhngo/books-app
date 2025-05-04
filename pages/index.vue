@@ -53,7 +53,10 @@ definePageMeta({
 
 const { index, getTopRatings } = useBooks();
 
-const hasQuery = computed(() => Object.keys(useRoute().query).length > 0);
+const hasQuery = computed(() => {
+  const currentQueries = Object.keys(useRoute().query);
+  return currentQueries.filter(query => ['category', 'publisher'].includes(query)).length > 0;
+});
 const page = ref<number>(useRouteQuery('page', '1', { transform: Number }));
 const category = ref<number|null>(useRouteQuery('category'));
 const publisher = ref<number|null>(useRouteQuery('publisher'));
