@@ -164,19 +164,9 @@ const columns = [
     header: 'Book',
   },
   {
-    accessorKey: 'publishers',
-    header: `Publishers`,
-    cell: ({ row }) => `${row.getValue('publishers').map(publisher => publisher.name).join(', ')}`
-  },
-  {
     accessorKey: 'authors',
     header: `Authors`,
     cell: ({ row }) => `${row.getValue('authors').map(author => author.name).join(', ')}`
-  },
-  {
-    accessorKey: 'categories',
-    header: `Categories`,
-    cell: ({ row }) => `${row.getValue('categories').map(category => category.name).join(', ')}`
   },
   {
     header: 'Actions',

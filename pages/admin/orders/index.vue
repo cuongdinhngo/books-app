@@ -78,7 +78,7 @@
 
     <template #dueDate-cell="{ row }">
       <NuxtLink :to="{ name: 'admin-orders-id', params: { id: row.getValue('id') } }" class="hover:text-primary-500">
-        {{ useDateFormat(row.original.due_date, 'MMMM Do, YYYY') }}
+        {{ row.original.due_date ? useDateFormat(row.original.due_date, 'MMMM Do, YYYY') : '' }}
       </NuxtLink>
     </template>
 

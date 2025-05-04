@@ -39,25 +39,25 @@
     class="flex-1"
   >
     <template #id-cell="{ row }">
-      <NuxtLink :to="{ name: 'admin-readers-id', params: { id: row.original.id }}" class="font-medium text-primary-500">
+      <NuxtLink :to="{ name: 'admin-orders-id', params: { id: row.original.id }}" class="font-medium text-primary-500">
         #{{ row.original.id }}
       </NuxtLink>
     </template>
 
     <template #status-cell="{ row }">
-      <NuxtLink :to="{ name: 'admin-readers-id', params: { id: row.original.id }}" class="font-medium text-primary-500">
+      <NuxtLink :to="{ name: 'admin-orders-id', params: { id: row.original.id }}" class="font-medium text-primary-500">
         {{ capitalize(row.original.status) }}
       </NuxtLink>
     </template>
 
     <template #quantity-cell="{ row }">
-      <NuxtLink :to="{ name: 'admin-readers-id', params: { id: row.original.id }}" class="font-medium text-primary-500">
+      <NuxtLink :to="{ name: 'admin-orders-id', params: { id: row.original.id }}" class="font-medium text-primary-500">
         {{ row.original.order_items[0].count }}
       </NuxtLink>
     </template>
 
     <template #bookedAt-cell="{ row }">
-      <NuxtLink :to="{ name: 'admin-readers-id', params: { id: row.original.id }}" class="font-medium text-primary-500">
+      <NuxtLink :to="{ name: 'admin-orders-id', params: { id: row.original.id }}" class="font-medium text-primary-500">
         {{ useDateFormat(row.original.created_at, 'MMMM Do, YYYY') }}
       </NuxtLink>
     </template>
