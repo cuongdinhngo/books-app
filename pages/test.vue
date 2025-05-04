@@ -1,7 +1,5 @@
 <template>
-  <div>
-    {{ $route.params.id }}
-  </div>
+  <UButton to="/">Home</UButton>
 </template>
 
 <script lang="ts" setup>

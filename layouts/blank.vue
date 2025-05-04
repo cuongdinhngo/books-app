@@ -1,7 +1,7 @@
 <template>
-  <div>
-    {{ $route.params.id }}
-  </div>
+  <UApp>
+    <NuxtPage />
+  </UApp>
 </template>
 
 <script lang="ts" setup>
