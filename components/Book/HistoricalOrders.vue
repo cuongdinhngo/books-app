@@ -7,7 +7,7 @@
       class="flex-1"
     >
       <template #orderId-cell="{ row }">
-        <NuxtLink :to="`/admin/orders/${row.original.orderId}`" class="hover:text-primary-700 cursor-pointer">
+        <NuxtLink :to="{ name: 'admin-orders-id', params: { id: row.original.orderId }}" class="hover:text-primary-700 cursor-pointer">
           {{ row.original.orderId }}
         </NuxtLink>
       </template>
@@ -19,13 +19,13 @@
       </template>
 
       <template #orderCreatedAt-cell="{ row }">
-        <NuxtLink :to="`/admin/orders/${row.original.orderId}`" class="hover:text-primary-700 cursor-pointer">
+        <NuxtLink :to="{ name: 'admin-orders-id', params: { id: row.original.orderId }}" class="hover:text-primary-700 cursor-pointer">
           {{ row.original.orderCreatedAt }}
         </NuxtLink>
       </template>
 
       <template #orderReturnedAt-cell="{ row }">
-        <NuxtLink :to="`/admin/orders/${row.original.orderId}`" class="hover:text-primary-700 cursor-pointer">
+        <NuxtLink :to="{ name: 'admin-orders-id', params: { id: row.original.orderId }}" class="hover:text-primary-700 cursor-pointer">
           {{ row.original.orderReturnedAt }}
         </NuxtLink>
       </template>

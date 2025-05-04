@@ -13,7 +13,7 @@
           color="primary"
           variant="subtle"
           v-if="editLink"
-          @click="navigateTo(`${editLink}${row.original.id}`)"
+          :to="{ name: editLink, params: { id: row.original.id}}"
         >
           Edit
         </UButton>
@@ -51,7 +51,7 @@
     </template>
 
     <template #coverImage-cell="{ row }">
-      <NuxtLink :to="`${detailLink}${row.original.id}`">
+      <NuxtLink :to="{ name: 'admin-books-id', params: { id: row.original. id }}">
         <div class="flex items-center gap-3">
           <UAvatar :src="row.original.coverImage" size="xl" class="rounded-none"/>
           <div>
@@ -62,7 +62,7 @@
     </template>
 
     <template #author-cell="{ row }">
-      <NuxtLink :to="`/admin/authors/${row.original.id}`">
+      <NuxtLink :to="{ name: 'admin-authors-id', params: { id: row.original.id}}">
         <div class="flex items-center gap-3">
           <UAvatar :src="row.original.photo" size="xl" class="rounded-none"/>
           <div>
@@ -72,22 +72,11 @@
       </NuxtLink>
     </template>
 
-    <template #staffName-cell="{ row }">
-      <div class="flex items-center gap-3">
-        <UAvatar :src="row.original.photo" size="xl" class="rounded-none"/>
-        <div>
-          <NuxtLink :to="`/admin/staff/form?id=${row.original.id}`">
-            <p class="font-medium text-primary-500">{{ row.original.fullName }}</p>
-          </NuxtLink>
-        </div>
-      </div>
-    </template>
-
     <template #readerName-cell="{ row }">
       <div class="flex items-center gap-3">
         <UAvatar :src="row.original.photo" size="xl" class="rounded-none"/>
         <div>
-          <NuxtLink :to="`/admin/readers/${row.original.id}`">
+          <NuxtLink :to="{ name: 'admin-readers', params: { id: row.original.id }}">
             <p class="font-medium text-primary-500">{{ row.original.fullName }}</p>
           </NuxtLink>
         </div>
@@ -119,7 +108,7 @@
           size="md"
           color="primary"
           variant="subtle"
-          @click="navigateTo(`/admin/orders/${row.original.id}`)"
+          :to="router.replace({name: 'admin-orders', params: { id: row.original.id }})"
         >
           View details
         </UButton>
@@ -230,10 +219,6 @@
 </template>
 
 <script setup lang="ts">
-import { NuxtLink } from '#components';
-import { BOOK_STATUS } from '~/composables/books';
-import { BOOK_ITEM_STATUS } from '~/composables/bookItems';
-
 const props = defineProps({
   data: {
     type: Object,
@@ -276,6 +261,8 @@ const props = defineProps({
     default: null
   }
 });
+
+const router = useRouter();
 
 const itemComment = defineModel({
   type: String,

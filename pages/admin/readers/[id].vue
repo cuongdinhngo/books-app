@@ -32,11 +32,37 @@
     </div>
   </div>
 
-  <DataTable
+  <UTable
     v-if="data.order.count > 0"
     :data="data.order.data"
     :columns="columns"
-  />
+    class="flex-1"
+  >
+    <template #id-cell="{ row }">
+      <NuxtLink :to="{ name: 'admin-readers-id', params: { id: row.original.id }}" class="font-medium text-primary-500">
+        #{{ row.original.id }}
+      </NuxtLink>
+    </template>
+
+    <template #status-cell="{ row }">
+      <NuxtLink :to="{ name: 'admin-readers-id', params: { id: row.original.id }}" class="font-medium text-primary-500">
+        {{ capitalize(row.original.status) }}
+      </NuxtLink>
+    </template>
+
+    <template #quantity-cell="{ row }">
+      <NuxtLink :to="{ name: 'admin-readers-id', params: { id: row.original.id }}" class="font-medium text-primary-500">
+        {{ row.original.order_items[0].count }}
+      </NuxtLink>
+    </template>
+
+    <template #bookedAt-cell="{ row }">
+      <NuxtLink :to="{ name: 'admin-readers-id', params: { id: row.original.id }}" class="font-medium text-primary-500">
+        {{ useDateFormat(row.original.created_at, 'MMMM Do, YYYY') }}
+      </NuxtLink>
+    </template>
+
+  </UTable>
   <h3 v-else class="text-violet-950 justify-center">No historical orders</h3>
 </template>
 <script setup lang="ts">
@@ -74,59 +100,21 @@ const {data, error, refresh} = await useAsyncData(
 const columns = [
   {
     accessorKey: 'id',
-    header: '#',
-    cell: ({ row }) => {
-      return h(
-        'a',
-        {
-          href: `/admin/orders/${row.getValue('id')}`,
-          class: 'hover:text-primary-700 cursor-pointer'
-        },
-        `#${row.getValue('id')}`
-      )
-    }
+    header: '#'
   },
   {
     accessorKey: 'status',
-    header: 'Status',
-    cell: ({ row }) => {
-      return h(
-        'a',
-        {
-          href: `/admin/orders/${row.getValue('id')}`,
-          class: 'hover:text-primary-700 cursor-pointer'
-        },
-        capitalize(row.original.status)
-      )
-    }
+    header: 'Status'
   },
   {
     accessorKey: 'order_items',
     header: 'Quantity',
-    cell: ({ row }) => {
-      return h(
-        'a',
-        {
-          href: `/admin/orders/${row.getValue('id')}`,
-          class: 'hover:text-primary-700 cursor-pointer'
-        },
-        row.getValue('order_items')[0].count
-      )
-    }
+    id: 'quantity'
   },
   {
     accessorKey: 'created_at',
     header: 'Booked at',
-    cell: ({ row }) => {
-      return h(
-        'a',
-        {
-          href: `/admin/orders/${row.getValue('id')}`,
-          class: 'hover:text-primary-700 cursor-pointer'
-        },
-        readableDateTime(row.getValue('created_at'))
-      )
-    }
+    id: 'bookedAt'
   },
 ]
 </script>

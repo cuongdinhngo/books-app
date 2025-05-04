@@ -1,5 +1,5 @@
 <template>
-  <NuxtLink :to="card.link">
+  <NuxtLink :to="card.to">
     <div :class="card.class ? card.class : 'bg-gray-50 p-4 rounded-lg shadow-sm hover:bg-primary-50'">
         <p class="text-sm font-medium text-gray-600">{{ card.label }}</p>
         <p class="text-2xl font-semibold text-gray-900">{{ card.count }}</p>

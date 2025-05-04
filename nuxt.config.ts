@@ -2,7 +2,7 @@
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   ssr: false,
-  devtools: { enabled: false },
+  devtools: { enabled: true },
   modules: ['@nuxt/icon', '@nuxt/ui', '@nuxtjs/supabase', '@vueuse/nuxt'],
   css: ['~/assets/css/main.css'],
   app: {
@@ -10,7 +10,6 @@ export default defineNuxtConfig({
   },
   icon: {
     clientBundle: {
-      strategy: 'static',
       icons: [
         'lucide:book-open', 'lucide:chevron-down', 'lucide:house', 'lucide:settings', 'lucide:shield-user', 'lucide:shopping-cart', 'lucide:users', 'lucide:image-plus',
         'lucide:ellipsis-vertical', 'lucide:chevrons-left', 'lucide:chevron-right', 'lucide:file-text', 'lucide:swatch-book', 'lucide:cog', 'lucide:chevron-up', 'lucide:x',

@@ -12,7 +12,7 @@
 
       <FormCreateLink
         name="Create New Author"
-        link="/admin/authors/create"
+        :to="{name: 'admin-authors-create'}"
       />
     </div>
   </form>
@@ -20,7 +20,7 @@
   <DataTable
     :data="author?.data"
     :columns="columns"
-    editLink="/admin/authors/"
+    editLink="admin-authors-id"
     :delete-item="deleteAuthor"
   />
 

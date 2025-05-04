@@ -64,17 +64,17 @@ function getIcon() {
 }
 
 function getLink() {
-  let link = '';
+  let link = {};
   switch(props.notification.type) {
     case NOTIFICATION_TYPES.APPROVED_EXTEND_DUE_DATE:
     case NOTIFICATION_TYPES.ORDER_OVERDUE:
-      link = `/reader/orders/${props.notification.notifiable_id}`;
+      link = { name: 'reader-orders-id', params: { id: props.notification.notifiable_id} };
       break;
     case NOTIFICATION_TYPES.BOOK_WISHLIST:
-      link = `/book/${props.notification.notifiable_id}`;
+      link = { name: 'book-id', params: { id: props.notification.notifiable_id } };
       break;
     case NOTIFICATION_TYPES.REQUEST_EXTEND_DUE_DATE:
-      link = `/admin/orders/${props.notification.notifiable_id}`;
+      link = { name: 'admin-orders-id', params: { id: props.notification.notifiable_id }};
       break;
   }
 

@@ -11,7 +11,7 @@
       />
       <FormCreateLink
         name="Create New Categories"
-        link="/admin/categories/create"
+        :to="{ name: 'admin-categories-create' }"
       />
     </div>
   </form>
@@ -20,7 +20,7 @@
     v-if="category?.data"
     :data="category?.data"
     :columns="columns"
-    edit-link="/admin/categories/"
+    edit-link="admin-categories-id"
     :delete-item="deleteCategory"
   />
 

@@ -30,11 +30,29 @@
     </div>
   </div>
 
-  <DataTable
+  <UTable
     v-if="reader?.count > 0"
     :data="reader.data"
     :columns="columns"
-  />
+    class="flex-1"
+  >
+    <template #readerName-cell="{ row }">
+      <div class="flex items-center gap-3">
+        <UAvatar :src="row.original.photo" size="xl" class="rounded-none"/>
+        <div>
+          <NuxtLink :to="{ name: 'admin-readers-id', params: { id: row.original.id }}">
+            <p class="font-medium text-primary-500">{{ row.original.fullName }}</p>
+          </NuxtLink>
+        </div>
+      </div>
+    </template>
+
+    <template #readerEmail-cell="{ row }">
+      <NuxtLink :to="{ name: 'admin-readers-id', params: { id: row.original.id }}" class="font-medium text-primary-500">
+        {{ row.original.email }}
+      </NuxtLink>
+    </template>
+  </UTable>
   <h3 v-else class="justify-center flex text-stone-900">No Data</h3>
 
   <Pagination
@@ -93,16 +111,7 @@ const columns = [
   {
     accessorKey: 'email',
     header: 'Email',
-    cell: ({ row }) => {
-      return h(
-        'a',
-        {
-          href: `/admin/readers/${row.original.id}`,
-          class: 'text-primary-500'
-        },
-        `${row.getValue('email')}`
-      )
-    }
+    id: 'readerEmail'
   },
 ]
 </script>

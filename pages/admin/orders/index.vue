@@ -42,13 +42,13 @@
     class="flex-1"
   >
     <template #id-cell="{ row }">
-      <NuxtLink :to="`/admin/orders/${row.getValue('status')}`" class="hover:text-primary-500">
+      <NuxtLink :to="{ name: 'admin-orders-id', params: { id: row.original.id }}" class="hover:text-primary-500">
         #{{ row.getValue('id') }}
       </NuxtLink>
     </template>
 
     <template #readers-cell="{ row }">
-      <NuxtLink :to="`/admin/readers/${row.getValue('readers').id}`">
+      <NuxtLink :to="{ name: 'admin-readers-id', params: { id: row.getValue('readers').id} }">
         <div class="flex items-center gap-3 hover:text-primary-500">
           <UAvatar :src="row.getValue('readers').photo" size="xl" class="rounded-none"/>
           <div>
@@ -59,7 +59,7 @@
     </template>
 
     <template #status-cell="{ row }">
-      <NuxtLink :to="`/admin/orders/${row.getValue('id')}`" class="hover:text-primary-500">
+      <NuxtLink :to="{ name: 'admin-orders-id', params: { id: row.getValue('id') } }" class="hover:text-primary-500">
         {{ capitalize(row.getValue('status')) }}
         <UBadge
           v-if="new Date() > new Date(row.original.due_date) && row.original.status === ORDER_STATUS.BORROWING"
@@ -71,13 +71,13 @@
     </template>
 
     <template #createdAt-cell="{ row }">
-      <NuxtLink :to="`/admin/orders/${row.getValue('id')}`" class="hover:text-primary-500">
+      <NuxtLink :to="{ name: 'admin-orders-id', params: { id: row.getValue('id') } }" class="hover:text-primary-500">
         {{ useDateFormat(row.original.created_at, 'MMMM Do, YYYY') }}
       </NuxtLink>
     </template>
 
     <template #dueDate-cell="{ row }">
-      <NuxtLink :to="`/admin/orders/${row.getValue('id')}`" class="hover:text-primary-500">
+      <NuxtLink :to="{ name: 'admin-orders-id', params: { id: row.getValue('id') } }" class="hover:text-primary-500">
         {{ useDateFormat(row.original.due_date, 'MMMM Do, YYYY') }}
       </NuxtLink>
     </template>
@@ -89,7 +89,7 @@
           size="md"
           color="primary"
           variant="subtle"
-          @click="navigateTo(`/admin/orders/${row.original.id}`)"
+          :to="{ name: 'admin-orders-id', params: { id: row.getValue('id') } }"
         >
           View details
         </UButton>
@@ -110,19 +110,26 @@
 <script setup lang="ts">
 import { ORDER_STATUS, ORDER_STATUS_OPTIONS } from '~/composables/orders';
 import { useRouteQuery } from '@vueuse/router';
-import { id } from '@nuxt/ui/runtime/locale/index.js';
 
 const { index, update } = useOrders();
 const { index:getOrderItems, upsert:upsertOrderItems } = useOrderItems();
 const { upsert:upsertBookItems } = useBookItems();
+const router = useRouter();
 
 const page = useRouteQuery('page', 1 , { transform: Number });
 const pageSize = 5;
-
 const orderId = ref(null)
-const selectedStatus = ref([ORDER_STATUS.WAITING, ORDER_STATUS.BORROWING]);
 const from = ref(null);
 const to = ref(null);
+
+const selectedStatus = ref<string[]>([]);
+const currentQuery = useRouteQuery('status', null).value;
+if (currentQuery) {
+  selectedStatus.value = Array.isArray(currentQuery) ? currentQuery : [currentQuery];
+} else {
+  selectedStatus.value = [ORDER_STATUS.WAITING, ORDER_STATUS.BORROWING];
+}
+
 const searchParams = ref({
   columns: `id, status, due_date, created_at, readers(id, fullName:full_name, photo)`,
   status: selectedStatus.value,
@@ -139,13 +146,15 @@ const { data: order, error, refresh, clear } = useAsyncData(
   { watch: [searchParams.value] }
 );
 
-console.log('DATA => ', order);
-
 const handleSearch = () => {
   searchParams.value.id = orderId.value;
   searchParams.value.status = selectedStatus.value;
   searchParams.value.from = from.value;
   searchParams.value.to = to.value;
+  router.replace({
+    name: 'admin-orders',
+    query: { id: orderId.value, status: selectedStatus.value, from: from.value, to: to.value }
+  });
 }
 
 const handlePageChange = (newPage) => {

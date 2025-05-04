@@ -1,6 +1,6 @@
 <template>
   <NuxtLink
-    :to="link" 
+    :to="to"
     class="flex-1 bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 text-center"
   >
     {{ name }}
@@ -15,8 +15,8 @@ defineProps({
     type: String,
     required: true
   },
-  link: {
-    type: String,
+  to: {
+    type: Object,
     required: true
   }
 });

@@ -45,7 +45,7 @@
       />
       <FormCreateLink
         name="Create New Book"
-        link="/admin/books/create"
+        :to="{ name: 'admin-books-create' }"
       />
     </div>
   </form>
@@ -55,8 +55,7 @@
     :data="book?.data"
     :columns="columns"
     :delete-item="deleteBook"
-    edit-link="/admin/books/"
-    detail-link="/admin/books/"
+    edit-link="admin-books-id"
   />
   <h3 v-else class="justify-center flex text-stone-900">No Data</h3>
 
