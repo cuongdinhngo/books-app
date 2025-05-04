@@ -42,7 +42,7 @@
 
     <div class="flex items-center space-x-1">
       <label class="block text-sm text-gray-500">Due date:</label>
-      <span class="text-sm text-gray-900">{{ useDateFormat(order?.due_date, 'MMMM Do, YYYY') }}</span>
+      <span class="text-sm text-gray-900">{{ order?.due_date ? useDateFormat(order?.due_date, 'MMMM Do, YYYY') : 'waiting for approve' }}</span>
       <UButton
         label="Extend due date"
         color="neutral"
