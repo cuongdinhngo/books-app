@@ -89,7 +89,7 @@ let overviewCards = [
 let orderStats = [
   {
     id: 'total_orders',
-    to: { name: "admin-orders" },
+    to: { name: "admin-orders", query: { status: [ORDER_STATUS.CLOSE, ORDER_STATUS.BORROWING, ORDER_STATUS.WAITING, ORDER_STATUS.REJECT] } },
     label: 'Total Orders',
     count: 0
   },
