@@ -178,11 +178,16 @@ const isSubmittedReview = computed(() => {
 wishlists.value = data.value?.book.data.wishlists;
 
 async function handleWishlist() {
+  if (!userId.value) {
+    useToastError('Unauthenticated User','Please login to add to wishlist');
+    return;
+  }
+
   const current = wishlists.value.filter(item => (item.book_id === bookId.value));
-  console.log(current)
   if (current.length > 0) {
     return;
   }
+
   await addToWishlist({ reader_id: userId.value, book_id: bookId.value })
     .then(({ error }) => {
       if (error) throw error;
