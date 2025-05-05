@@ -31,8 +31,8 @@
 </template>
 
 <script setup lang="ts">
-import { NOTIFICATION_TYPES } from '~/composables/notifications';
-import { publicAsset } from '../../utils';
+import { NOTIFICATION_TYPES } from '~/constants/notifications';
+const { update } = useNotifications();
 
 const props = defineProps({
   notification: {
@@ -40,8 +40,6 @@ const props = defineProps({
     required: true
   }
 });
-
-const { update } = useNotifications();
 
 const message = computed(() => props.notification.message.replace('#{orderId}', `#${props.notification.notifiable_id}`));
 
