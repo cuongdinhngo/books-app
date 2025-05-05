@@ -168,6 +168,9 @@ const { data, error, refresh } = await useAsyncData(
 
 const isSubmittedReview = computed(() => {
   console.log('COMPUTED => ', data.value?.reviews);
+  if (!userId.value) {
+    return true;
+  }
   const reviews = data.value?.reviews.data?.find(item => (item.readers.id === userId.value));
   return reviews ? Object.keys(reviews).length > 0 : false;
 });

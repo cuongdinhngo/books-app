@@ -3,6 +3,11 @@ export default defineNuxtRouteMiddleware((to, from) => {
   const isAdminRoute = to.path.includes('/admin');
   const isLoginRoute = to.path === '/login';
   const isAuthenticated = !!auth.userId.value;
+  const publicRoutes = ["/", "/login", "/signup", "/book/"];
+
+  if (publicRoutes.some(route => to.path.startsWith(route))) {
+    return;
+  }
 
   if (!isAuthenticated && !isLoginRoute) {
     return navigateTo('/login');

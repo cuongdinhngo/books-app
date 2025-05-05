@@ -72,7 +72,7 @@ definePageMeta({
   layout: 'main'
 })
 
-import { ORDER_STATUS, BORROWING_PERIOD } from '~/composables/orders';
+import { ORDER_STATUS } from '~/composables/orders';
 
 const { bookCart, removeCartItem, reset: resetBookCart } = useBookCarts();
 const { index } = useBooks();
@@ -82,7 +82,6 @@ const { insert:addOrderItems } = useOrderItems();
 
 const table = useTemplateRef('table');
 const rowSelection = ref<Record<string, boolean>>({})
-const currentDate = new Date();
 const checkoutItems = ref([]);
 
 const { data: book, error, refresh } = useAsyncData(
@@ -92,6 +91,12 @@ const { data: book, error, refresh } = useAsyncData(
 );
 
 async function handleBorrow() {
+  if (!userId.value) {
+    window.alert('Please login to borrow books');
+    navigateTo('/login');
+    return;
+  }
+
   checkoutItems.value = table?.value?.tableApi.getFilteredSelectedRowModel().rows.map(row => row.original.id);
   if (checkoutItems.value.length > 2) {
     window.alert('You can borrow only 2 books');
