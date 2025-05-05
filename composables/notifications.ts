@@ -1,32 +1,8 @@
-import type { Tables } from '~/types/database.types';
-
-export interface NotificationOptions {
-  column?: string,
-  id?: number,
-  readerId?: string,
-  type?: string,
-  isRead?: boolean,
-  notifiableId?: number,
-  notifiableType?: string,
-  page?: number,
-  size?: number
-}
-
-export const NOTIFICATION_TYPES = {
-  ORDER_OVERDUE: 'order_overdue',
-  BOOK_WISHLIST: 'book_wishlist',
-  REQUEST_EXTEND_DUE_DATE: 'request_extend_due_date',
-  APPROVED_EXTEND_DUE_DATE: 'approved_extend_due_date',
-}
-
-export const NOTIFICATION_MESSAGES = {
-  ORDER_OVERDUE: 'Your order #{orderId} is overdue. Please check it and return the books soon!',
-  BOOK_WISHLIST: 'Your book is available. Please make an order soon!',
-  REQUEST_EXTEND_DUE_DATE: 'A request is to extend due date. Please check it!',
-  APPROVED_EXTEND_DUE_DATE: 'Your request of extending due date was approved'
-}
+import type { NotificationOptions } from '~/types/options';
 
 const TABLE_NAME = 'notifications';
+
+const { insert, update} = useCrud(TABLE_NAME);
 
 export const useNotifications = () => {
   
@@ -65,14 +41,6 @@ export const useNotifications = () => {
     }
 
     return query;
-  }
-
-  const update = (id: number, data: Tables<'notifications'>) => {
-    return useTable(TABLE_NAME).update(data).eq('id', id);
-  }
-
-  const insert = (data: Tables<'notifications'>) => {
-    return useTable(TABLE_NAME).insert(data);
   }
 
   return {

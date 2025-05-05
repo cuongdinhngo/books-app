@@ -1,15 +1,5 @@
 import type { Tables } from '~/types/database.types';
-interface GetBooksOptions {
-  columns?: string,
-  ids?: (string | number)[],
-  title?: string,
-  authorIds?: (number)[],
-  publisherIds?: (number)[],
-  categoryIds?: (number)[],
-  status?: (string)[],
-  page?: number,
-  size?: number
-}
+import type { BookOptions } from '~/types/options';
 
 const TABLE_NAME = 'books';
 export const BOOK_STATUS = {
@@ -19,11 +9,12 @@ export const BOOK_STATUS = {
   LOST: 'lost'
 };
 
+const { insert: createNewBook, get: getBook, update: updateBook, remove } = useCrud(TABLE_NAME);
+
 export const useBooks = () => {
-  const supabase = useSupabaseClient();
   const { uploadPhoto } = useImages('books');
 
-  const index = (options: GetBooksOptions = {}) => {
+  const index = (options: BookOptions = {}) => {
     console.log('BOOK OPTIONS => ', options);
 
     const {
@@ -90,7 +81,7 @@ export const useBooks = () => {
     if (imageUrl) {
       data.cover_image = imageUrl;
     }
-    return useTable(TABLE_NAME).insert(data);
+    return createNewBook(data);
   }
 
   const get = (id: number, columns: string = '') => {
@@ -108,7 +99,8 @@ export const useBooks = () => {
     if (columns.length > 0) {
       selectColumns = `${selectColumns}, ${columns}`;
     }
-    return useTable(TABLE_NAME).select(selectColumns).eq('id', id).single();
+
+    return getBook(id, selectColumns);
   }
 
   const update = async (id: number, data: Tables<'books'>) => {
@@ -116,15 +108,11 @@ export const useBooks = () => {
     if (imageUrl) {
       data.cover_image = imageUrl;
     }
-    return useTable(TABLE_NAME).update(data).eq('id', id);
-  }
-
-  const remove = (id: number) => {
-    return useTable(TABLE_NAME).delete().eq('id', id);
+    return updateBook(id, data);
   }
 
   const getTopRatings = () => {
-    return supabase.rpc('get_average_ratings_with_book_details');
+    return useSupabaseClient().rpc('get_average_ratings_with_book_details');
   }
 
   return {

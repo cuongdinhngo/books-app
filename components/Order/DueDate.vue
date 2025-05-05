@@ -24,6 +24,7 @@
   </UTable>
 </template>
 <script setup lang="ts">
+import { NOTIFICATION_MESSAGES, NOTIFICATION_TYPES } from '~/constants/notifications';
 import { useRouteParams } from '@vueuse/router';
 
 const orderId = useRouteParams('id', null, { transform: Number }) 
