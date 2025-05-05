@@ -1,16 +1,16 @@
-export const useToastError = (e: any) => {
+export const useToastError = (e: any, errorMessage = 'This action failed. Please try again.') => {
   console.error('[ERROR] => ', e)
   useToast().add({
     title: 'Error',
-    description: 'This action failed. Please try again.',
+    description: errorMessage,
     color: 'error'
   })
 }
 
-export const useToastSuccess = (e: any = null) => {
+export const useToastSuccess = (successMessage = 'This action is completed successfully!') => {
   useToast().add({
     title: 'Success',
-    description: 'This action is completed successfully!',
+    description: successMessage,
     color: 'success'
   })
 }
