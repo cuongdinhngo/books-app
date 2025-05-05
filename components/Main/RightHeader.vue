@@ -25,7 +25,7 @@
     @click="navigateTo('/book/cart')"
   />
 
-  <USlideover title="" description="">
+  <USlideover title="" description="" v-if="isAuthenticated">
     <UChip
       v-if="unreadNotificaitons.length > 0"
       :text="unreadNotificaitons.length"
@@ -73,8 +73,8 @@
   </USlideover>
 
   <UDropdownMenu
+    v-if="isAuthenticated"
     class="bg-primary-600 border-primary-900 hover:bg-primary-700"
-    :items="items"
     :content="{
       align: 'end',
       side: 'bottom',
@@ -83,6 +83,26 @@
     :ui="{
       content: 'w-40'
     }"
+    :items="[
+      {
+        label: 'Profile',
+        icon: 'lucide:user',
+        to: `/reader/${userId}`
+      },
+      {
+        label: 'Orders',
+        icon: 'lucide:notebook-pen',
+        to: '/reader/orders'
+      },
+      {
+        label: 'Logout',
+        icon: 'lucide:log-out',
+        async onSelect() {
+          await signout();
+          navigateTo('/login')
+        }
+      }
+    ]"
   >
     <UButton icon="lucide:settings" color="neutral" variant="outline" class="ring-0 bg-primary-800 text-lg" />
   </UDropdownMenu>
@@ -96,32 +116,18 @@ const { userId } = useAuth();
 const { bookCart } = useBookCarts();
 const { index:getNotifications } = useNotifications();
 
-const items = ref([
-  {
-    label: 'Profile',
-    icon: 'lucide:user',
-    to: `/reader/${userId.value}`
-  },
-  {
-    label: 'Orders',
-    icon: 'lucide:notebook-pen',
-    to: '/reader/orders'
-  },
-  {
-    label: 'Logout',
-    icon: 'lucide:log-out',
-    async onSelect() {
-      signout();
-      navigateTo('/login')
-    }
-  }
-]);
-
 const bookCounts = computed(() => bookCart.value.length);
+const isAuthenticated = computed(() => !!userId.value);
 
 const { data:notifications, error } = await useAsyncData(
   `reader-${userId.value}-notifications`,
-  () => getNotifications({ readerId: userId.value })
+  async() => {
+    if (userId.value) {
+      return await getNotifications({ readerId: userId.value })
+    } else {
+      return { data: [] }
+    }
+  }
 );
 
 const unreadNotificaitons = computed(() => notifications.value.data.filter(item => !item.is_read));

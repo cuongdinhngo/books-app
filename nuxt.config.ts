@@ -25,7 +25,7 @@ export default defineNuxtConfig({
     redirectOptions: {
       login: '/login',
       callback: '/login',
-      exclude: ['/signup', '/'],
+      exclude: ['/signup', '/', '/book/**'],
     }
   },
   runtimeConfig: {
