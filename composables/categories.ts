@@ -1,17 +1,12 @@
-import type { Tables } from '~/types/database.types';
-
-interface GetCategoriesOptions {
-  columns?: string,
-  ids?: (string | number)[],
-  name?: string
-  page?: number,
-  size?: number
-}
+import type { CategoryOptions } from '~/types/options';
 
 const TABLE_NAME = 'categories';
+
+const { insert, get, update, remove } = useCrud(TABLE_NAME);
+
 export const useCategories = () => {
 
-  const index = (options: GetCategoriesOptions = {}) => {
+  const index = (options: CategoryOptions = {}) => {
 
     const {
       columns = '*',
@@ -38,22 +33,6 @@ export const useCategories = () => {
     }
 
     return query;
-  }
-
-  const insert = (data: Tables<'categories'>) => {
-    return useTable(TABLE_NAME).insert(data);
-  }
-
-  const get = (id: number, columns: string = '*') => {
-    return useTable(TABLE_NAME).select(columns).eq('id', id).single();
-  }
-
-  const update = (id: number, data: Tables<'categories'>) => {
-    return useTable(TABLE_NAME).update(data).eq('id', id);
-  }
-
-  const remove = (id: number) => {
-    return useTable(TABLE_NAME).delete().eq('id', id);
   }
 
   return {

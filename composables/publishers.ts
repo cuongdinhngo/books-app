@@ -1,18 +1,14 @@
 import type { Tables } from '~/types/database.types';
-
-interface GetPublishersOptions {
-  columns?: string,
-  ids?: (string | number)[],
-  name?: string,
-  page?: number,
-  size?: number
-}
+import type { PublisherOptions } from '~/types/options';
 
 const TABLE_NAME = 'publishers';
+
+const { insert: createNewPublisher, get, update: updatePublisher, remove } = useCrud(TABLE_NAME);
+
 export const usePublishers = () => {
   const { uploadPhoto } = useImages('books');
 
-  const index = (options: GetPublishersOptions = {}) => {
+  const index = (options: PublisherOptions = {}) => {
 
     const {
       columns = '*',
@@ -44,11 +40,7 @@ export const usePublishers = () => {
     if (logoUrl) {
       data.logo = logoUrl;
     }
-    return useTable(TABLE_NAME).insert(data);
-  }
-
-  const get = (id: number, columns: string = '*') => {
-    return useTable(TABLE_NAME).select(columns).eq('id', id).single();
+    return createNewPublisher(data);
   }
 
   const update = async (id: number, data: Tables<'publishers'>) => {
@@ -56,11 +48,7 @@ export const usePublishers = () => {
     if (logoUrl) {
       data.logo = logoUrl;
     }
-    return useTable(TABLE_NAME).update(data).eq('id', id);
-  }
-
-  const remove = (id: number) => {
-    return useTable(TABLE_NAME).delete().eq('id', id);
+    return updatePublisher(id, data);
   }
 
   return {
