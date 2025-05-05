@@ -3,19 +3,34 @@
     <form class="space-y-4 w-full md:w-1/2" @submit.prevent="submitForm">
       <div>
         <label class="block text-sm font-medium text-gray-700">Author name</label>
-        <UInput v-model="fullName" placeholder="Author's fullname"/>
+        <UInput
+          v-model="fullName"
+          placeholder="Author's fullname"
+          variant="subtle"
+        />
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700">Photo</label>
-        <UInput type="file" @change="handleFileUpload" v-model="photoInput"/>
+        <UInput
+          type="file"
+          @change="handleFileUpload"
+          v-model="photoInput"
+          variant="subtle"
+        />
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700">Birth year</label>
-        <UInput v-model="birthYear" />
+        <UInput
+          v-model="birthYear"
+          variant="subtle"
+        />
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700">Death year</label>
-        <UInput v-model="deathYear" />
+        <UInput
+          v-model="deathYear"
+          variant="subtle"
+        />
       </div>
       <div class="flex justify-between gap-4">
         <button type="submit" 
@@ -48,15 +63,15 @@ import { useRouteParams } from '@vueuse/router';
 const { update, get } = useAuthors();
 
 const authorId = useRouteParams('id', null, {transform: Number});
-const fullName = ref(null);
-const birthYear = ref(null);
-const deathYear = ref(null);
-const selectedPhoto = ref(null);
-const imagePreview = ref(null);
+const fullName = ref('');
+const birthYear = ref('');
+const deathYear = ref('');
+const selectedPhoto = ref<File | null>(null);
+const imagePreview = ref('');
 const photoInput = ref('');
 
-const { data:author, error } = await useAsyncData(
-  `author-${authorId.value}`,
+const { data:author, error, refresh} = await useAsyncData(
+ `author-${authorId.value}`,
   () => get(authorId.value)
 );
 
@@ -74,12 +89,11 @@ const handleFileUpload = (event: Event) => {
 };
 
 const submitForm = async() => {
-
   let author = {
     id: Number(authorId.value),
     full_name: fullName.value,
-    birth_year: birthYear.value,
-    death_year: deathYear.value,
+    birth_year: birthYear.value ? Number(birthYear.value) : null,
+    death_year: deathYear.value ? Number(deathYear.value) : null,
   } as Tables<'authors'>;
 
 
@@ -94,7 +108,7 @@ const submitForm = async() => {
     .then(({error}) => {
       if (error) throw error;
 
-      useToastSuccess();
+      useToastSuccess('Author updated successfully!!!');
     })
     .catch((error) => useToastError(error));
 }

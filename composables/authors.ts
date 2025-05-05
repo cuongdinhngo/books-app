@@ -1,19 +1,20 @@
 import type { Tables } from '~/types/database.types';
-
-interface GetAuthorsOptions {
-  columns?: string,
-  ids?: (string | number)[],
-  full_name?: string,
-  page?: number,
-  size?: number
-}
+import type { AuthorOptions } from '~/types/options';
 
 const TABLE_NAME = 'authors';
 const PHOTO_DIRECTORY = 'authors';
+
+const {
+  insert:createNewAuthor,
+  get,
+  update:updateAuthor,
+  remove
+} = useCrud(TABLE_NAME);
+
 export const useAuthors = () => {
   const { uploadPhoto } = useImages('books');
 
-  const index = (options: GetAuthorsOptions = {}) => {
+  const index = (options: AuthorOptions = {}) => {
 
     const {
       columns = '*',
@@ -44,11 +45,7 @@ export const useAuthors = () => {
     if (photoUrl) {
       data.photo = photoUrl;
     }
-    return useTable(TABLE_NAME).insert(data);
-  }
-
-  const get = (id: number, columns: string = '*') => {
-    return useTable(TABLE_NAME).select(columns).eq('id', id).single();
+    return createNewAuthor(data);
   }
 
   const update = async (id: number, data: Tables<'authors'>) => {
@@ -56,11 +53,7 @@ export const useAuthors = () => {
     if (photoUrl) {
       data.photo = photoUrl;
     }
-    return useTable(TABLE_NAME).update(data).eq('id', id);
-  }
-
-  const remove = (id: number) => {
-    return useTable(TABLE_NAME).delete().eq('id', id);
+    return updateAuthor(id, data);
   }
 
   return {
