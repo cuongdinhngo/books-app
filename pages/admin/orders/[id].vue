@@ -16,7 +16,7 @@
           <label for="current-status" class="text-sm font-medium text-gray-500">Status:</label>
           <span id="current-status" class="text-sm text-gray-900">{{ order ? capitalize(order?.orderStatus) : '' }}</span>
           <UBadge
-            v-if="new Date() > new Date(order?.due_date) && order?.orderStatus === ORDER_STATUS.BORROWING"
+            v-if="new Date() > new Date(order?.orderDueDate) && order?.orderStatus === ORDER_STATUS.BORROWING"
             variant="solid" color="warning"
           >
             Overdue
@@ -37,12 +37,12 @@
 
     <div class="flex items-center space-x-1">
       <label class="block text-sm text-gray-500">Booked at:</label>
-      <span class="text-sm text-gray-900">{{ useDateFormat(order?.created_at, 'MMMM Do, YYYY') }}</span>
+      <span class="text-sm text-gray-900">{{ useDateFormat(order?.orderCreatedAt, 'MMMM Do, YYYY') }}</span>
     </div>
 
     <div class="flex items-center space-x-1">
       <label class="block text-sm text-gray-500">Due date:</label>
-      <span class="text-sm text-gray-900">{{ order?.due_date ? useDateFormat(order?.due_date, 'MMMM Do, YYYY') : 'waiting for approve' }}</span>
+      <span class="text-sm text-gray-900">{{ order?.orderDueDate ? useDateFormat(order?.orderDueDate, 'MMMM Do, YYYY') : 'waiting for approve' }}</span>
       <UButton
         label="Extend due date"
         color="neutral"
@@ -104,10 +104,24 @@
       <DataTable
         v-if="bookItems.length > 0"
         :data="bookItems"
-        :columns="columns"
         :remove-unavailable-book="removeUnavailableBook"
         v-model="itemComment"
         :mark-lost-book="markLostBook"
+        :columns="[
+          {
+            accessorKey: 'coverImage',
+            header: 'Book',
+          },
+          {
+            accessorKey: 'bookItemStatus',
+            header: 'Status',
+            id: 'bookItemStatus'
+          },
+          {
+            header: 'Actions',
+            id: 'adminOrderActions'
+          }
+        ]"
       />
     </div>
 
@@ -126,13 +140,12 @@ import { BOOK_ITEM_STATUS } from '~/composables/bookItems';
 const { userId } = useAuth();
 const { update, get:getOrderById } = useOrders();
 const { insert:renewDueDate } = useOrderRenews();
-const { index:getBooksItems, update:updateBookItemStatus } = useBookItems();
-const { upsert:upsertOrderItems, index:getOrderItems, remove:removeOrderItem, update:markDeletedAt } = useOrderItems();
+const { upsert:upsertOrderItems, update:markDeletedAt } = useOrderItems();
 const { upsert:upsertBookItems } = useBookItems();
 
 const orderId = useRouteParams('id', null, { transform: Number });
+const order = ref({});
 const bookItems = ref([]);
-const order = ref(null);
 const itemComment = ref('');
 const orderStatus = ref('');
 const oldOrderStatus = ref('');
@@ -157,6 +170,74 @@ function getOrderSelection() {
   return ORDER_STATUS_OPTIONS.filter(option => option.id !== oldOrderStatus.value && option.id !== ORDER_STATUS.OVERDUE && option.id !== ORDER_STATUS.WAITING);
 }
 
+const selectedColumns = `
+  orderStatus:status, orderId:id, orderDueDate:due_date, orderCreatedAt:created_at,
+  readers!inner(id,fullName:full_name,photo),
+  order_items!inner(
+    orederItemId:id,
+    orderItemStatus:status,
+    bookItemId:book_item_id,
+    books!inner(
+      bookId:id, bookTitle:title, bookCoverImage:cover_image,
+      book_items!inner(
+        bookItemId:id, bookItemStatus:status
+      )
+    )
+  )
+`;
+const { data, error, refresh } = await useAsyncData(
+  `order-${orderId.value}`,
+  () => getOrderById(orderId.value, selectedColumns)
+);
+
+console.log('DATA => ', data.value);
+
+order.value = data.value.data;
+bookItems.value = mapBookItems(data.value.data.order_items);
+orderStatus.value = data.value.data.orderStatus;
+oldOrderStatus.value = data.value.data.orderStatus;
+
+console.log('BOOK ITEMS => ', bookItems.value);
+
+async function refreshOrder() {
+  await refresh();
+  order.value = data.value.data;
+  bookItems.value = mapBookItems(data.value.data.order_items);
+  orderStatus.value = data.value.data.orderStatus;
+  oldOrderStatus.value = data.value.data.orderStatus;
+  console.log('Order and Book Items refreshed');
+}
+
+function mapBookItems(orderItems: Object[]) {
+  return orderItems.map(item => {
+    console.log('ORDER ITEM => ', item);
+    let currentbookItem = {};
+    if (item.orderItemStatus === ORDER_ITEM_STATUS.WAITING) {
+      currentbookItem = item.books.book_items.find(
+        bookItem => bookItem.bookItemStatus === BOOK_ITEM_STATUS.OPENING && item.orderItemStatus === ORDER_ITEM_STATUS.WAITING
+      );
+    }
+    if (item.orderItemStatus === ORDER_ITEM_STATUS.BORROWING) {
+      currentbookItem = item.books.book_items.find(
+        bookItem => bookItem.bookItemId === item.bookItemId
+      );
+    }
+
+    return {
+      ...item,
+      bookItemStatus: currentbookItem?.bookItemStatus || null,
+      bookItemId: currentbookItem?.bookItemId || null,
+      id: item.books.bookId,
+      title: item.books.bookTitle,
+      coverImage: item.books.bookCoverImage,
+      orderItemId: item.orederItemId,
+      orderId: orderId.value,
+      orderStatus: order.value.orderStatus,
+      uId: `orderId:${orderId.value}-orderItemId:${item.orederItemId}-bookId:${item.books.bookId}-bookItemId:${currentbookItem?.bookItemId}`,
+    };
+  });
+}
+
 async function handleRenew() {
   await renewDueDate({
       order_id: order?.value.id,
@@ -171,7 +252,7 @@ async function handleRenew() {
     const {error:updateOrderError } = await update(order.value.id, { due_date: orderRenewDueDate.value });
     if (updateOrderError) throw updateOrderError;
 
-    await loadOrder();
+    await refreshOrder();
     useToastSuccess();
   })
   .catch((error) => useToastError(error));
@@ -197,7 +278,7 @@ const handleUpdate = async() => {
   const upsertBookItemsData = bookItems.value
     .filter(item => item.bookItemStatus !== BOOK_ITEM_STATUS.LOST)
     .map(item => {
-      let tmpData = { id: item.bookItemId, book_id: item.bookId, status: item.bookItemStatus };
+      let tmpData = { id: item.bookItemId, book_id: item.id, status: item.bookItemStatus };
       if (orderStatus.value !== ORDER_STATUS.REJECT) {
         tmpData = {
           ...tmpData,
@@ -213,7 +294,7 @@ const handleUpdate = async() => {
     .map(item => ({
       id: item.orderItemId,
       order_id: item.orderId,
-      book_id: item.bookId,
+      book_id: item.id,
       book_item_id: item.bookItemId,
       status: orderStatus.value,
     }));
@@ -229,85 +310,11 @@ const handleUpdate = async() => {
     upsertOrderItems(upsertOrderItemsData),
     upsertBookItems(upsertBookItemsData)
   ])
-  .then(() => {
-    loadOrder();
+  .then(async() => {
+    await refreshOrder();
     useToastSuccess();
   })
   .catch((error) => useToastError(error));
-}
-
-onMounted(async() => {
-  await loadOrder();
-});
-
-async function loadOrder() {
-  const { data } = await getOrderById(orderId.value, `id, orderStatus:status, due_date, created_at, readers(id, fullName:full_name, photo), order_items(*)`);
-  order.value = data;
-  console.log('ORDER => ', order.value);
-  orderStatus.value = data.orderStatus;
-  oldOrderStatus.value = data.orderStatus;
-
-  const orderItems = data.order_items;
-  const orderBookItems = orderItems
-    .filter(item => item.deleted_at === null)
-    .map(item => ({ bookId: item.book_id, orderItemStatus: item.status, orderItemId: item.id, bookItemId: item.book_item_id }));
-  console.log('ORDER BOOK ITEMS => ', orderBookItems);
-  
-  const bookItemIds = orderItems.map(item => (item.book_id));
-  const { data: bookItemsData } = await getBooksItems({
-    columns: `id, book_id, bookItemStatus:status, books(id,title,cover_image)`,
-    bookIds: bookItemIds
-  });
-  console.log('BOOK ITEMS DATA => ', bookItemsData);
-
-  bookItems.value = orderBookItems.map(item => {
-    const availableBook = bookItemsData.find(
-      data => data.book_id === item.bookId && data.bookItemStatus === BOOK_STATUS.OPENING && item.bookItemId === null
-    );
-
-    if (availableBook) {
-      console.log('AVAILABLE BOOK => ', availableBook);
-      return {
-        ...item,
-        bookItemId: availableBook.id,
-        bookItemStatus: availableBook.bookItemStatus,
-        title: availableBook.books.title,
-        coverImage: availableBook.books.cover_image,
-        orderId: order.value.id,
-        uId: `${item.bookId}-${availableBook.id}-${order.value.id}-${item.orderItemId}`,
-        orderStatus: orderStatus.value
-      };
-    } else if (null === item.bookItemId) {
-      const unavailableBook = bookItemsData.find(
-        data => data.book_id === item.bookId && data.bookItemStatus === BOOK_STATUS.PENDING
-      );
-      console.log('UNAVAILABLE BOOK => ', unavailableBook);
-      return {
-        ...item,
-        bookItemStatus: unavailableBook.bookItemStatus,
-        title: unavailableBook.books.title,
-        coverImage: unavailableBook.books.cover_image,
-        orderId: order.value.id,
-        uId: `${item.bookId}-${unavailableBook?.id}-${order.value.id}-${item.orderItemId}`,
-        orderStatus: orderStatus.value
-      };
-    } else {
-      const matchingBook = bookItemsData.find(
-        data => data.book_id === item.bookId && data.id === item.bookItemId
-      );
-      console.log('OTHER BOOK => ', matchingBook);
-      return {
-        ...item,
-        bookItemStatus: matchingBook.bookItemStatus,
-        title: matchingBook.books.title,
-        coverImage: matchingBook.books.cover_image,
-        orderId: order.value.id,
-        orderStatus: orderStatus.value,
-        uId: `${item.bookId}-${matchingBook.id}-${order.value.id}-${item.orderItemId}`,
-      };
-    }
-  });
-  console.log('bookItems => ', bookItems.value);
 }
 
 async function markLostBook(uId:string) {
@@ -321,7 +328,7 @@ async function markLostBook(uId:string) {
   .then(async({ error }) => {
     if (error) throw error;
 
-    await loadOrder()
+    await refreshOrder();
     useToastSuccess();
   })
   .catch((error) => useToastError(error));
@@ -334,26 +341,10 @@ async function removeUnavailableBook(orderItemId: number) {
     .then(async({ error }) => {
       if (error) throw error;
 
-      await loadOrder()
+      await refreshOrder();
       useToastSuccess();
       itemComment.value = '';
     })
     .catch((error) => useToastError(error));
 }
-
-const columns = [
-  {
-    accessorKey: 'coverImage',
-    header: 'Book',
-  },
-  {
-    accessorKey: 'bookItemStatus',
-    header: 'Status',
-    id: 'bookItemStatus'
-  },
-  {
-    header: 'Actions',
-    id: 'adminOrderActions'
-  }
-]
 </script>
