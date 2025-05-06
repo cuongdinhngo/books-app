@@ -1,5 +1,5 @@
 <template>
-  <aside class="bg-gray-800 text-white w-full md:w-64 p-4">
+  <aside class="bg-gray-800 text-white w-full md:w-64 p-4 md:h-screen">
     <UNavigationMenu
       orientation="vertical"
       :items="items"

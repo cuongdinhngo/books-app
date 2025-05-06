@@ -32,8 +32,11 @@
     </div>
   </div>
 
-  <h3 class="text-stone-800 font-bold mb-1">Top Orders</h3>
+  <h3
+    v-if="data.topOrders.data.length > 0"
+    class="text-stone-800 font-bold mb-1">Top Orders</h3>
   <UCarousel
+    v-if="data.topOrders.data.length > 0"
     v-slot="{ item }"
     loop
     arrows
@@ -145,6 +148,8 @@ const { data, error:dashboardError } = await useAsyncData(
     return {statistics, topOrders};
   }
 );
+
+console.log('DATA', data.value);
 
 overviewCards = overviewCards.map(card => {
   if (data.value?.statistics.data.hasOwnProperty(card.id)) {

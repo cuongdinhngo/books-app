@@ -51,7 +51,7 @@ export const useReaders = () => {
       size = null
     } = options;
 
-    let query = useTable(TABLE_NAME).select(columns, { count: 'exact'});
+    let query = useTable(TABLE_NAME).select(columns, { count: 'exact'}).order('id', { ascending: false });
     if (fullName) {
       query = query.ilike('full_name', `%${fullName}%`);
     }

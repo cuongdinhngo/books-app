@@ -35,7 +35,7 @@ export const useBooks = () => {
       page = null,
       size = null
     } = options;
-    let query = useTable(TABLE_NAME).select('*', {count: 'exact'}).order('created_at', { ascending: false });;
+    let query = useTable(TABLE_NAME).select('*', {count: 'exact'}).order('id', { ascending: false });;
     let selectColumns = [];
     selectColumns.push(columns);
 

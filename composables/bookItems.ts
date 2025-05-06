@@ -42,23 +42,22 @@ export const BOOK_ITEM_STATUS = {
 };
 
 const TABLE_NAME = 'book_items';
-export const useBookItems = () => {
 
-  const insert = (data: Tables<'book_items'>[]) => {
-    return useTable(TABLE_NAME).insert(data);
-  }
+const { insert, update } = useCrud(TABLE_NAME);
+
+export const useBookItems = () => {
 
   const index = (options: GetBookItemsOptions = {}) => {
     const {
       columns = '*',
       ids = [],
-      bookIds = null,
+      bookIds = [],
       status = [],
       page = null,
       size = null
     } = options;
 
-    let query = useTable(TABLE_NAME).select(columns, {count: 'exact'});
+    let query = useTable(TABLE_NAME).select(columns, {count: 'exact'}).order('id', { ascending: false });
 
     if (ids.length > 0) {
       query = query.in('id', ids);
@@ -74,10 +73,6 @@ export const useBookItems = () => {
     }
 
     return query;
-  }
-
-  const update = async(itemId: number, data: Tables<'book_items'>) => {
-    return useTable(TABLE_NAME).update(data).eq('id', itemId);
   }
 
   const remove = (options: GetBookItemsOptions = {}) => {
