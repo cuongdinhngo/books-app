@@ -112,7 +112,7 @@ export const useBooks = () => {
   }
 
   const getTopRatings = () => {
-    return useSupabaseClient().rpc('get_average_ratings_with_book_details');
+    return useSupabaseClient().rpc('get_average_ratings_with_book_details', {limit_count: 10});
   }
 
   return {
