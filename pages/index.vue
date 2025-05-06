@@ -60,7 +60,7 @@ const hasQuery = computed(() => {
 const page = ref<number>(useRouteQuery('page', '1', { transform: Number }));
 const category = ref<number|null>(useRouteQuery('category'));
 const publisher = ref<number|null>(useRouteQuery('publisher'));
-const pageSize = 5;
+const pageSize = 12;
 const searchParams = ref({
   page: page.value,
   size: pageSize,

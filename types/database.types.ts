@@ -513,7 +513,7 @@ export type Database = {
           created_at?: string
           email: string
           full_name: string
-          id?: string
+          id: string
           photo?: string | null
         }
         Update: {
@@ -543,7 +543,7 @@ export type Database = {
           created_at?: string
           id?: number
           rating: number
-          reader_id?: string
+          reader_id: string
           updated_at?: string | null
         }
         Update: {
@@ -637,6 +637,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_admin_dashboard_counts: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       get_average_rating_by_book: {
         Args: { p_book_id: number }
         Returns: {
@@ -654,7 +658,7 @@ export type Database = {
         }[]
       }
       get_average_ratings_with_book_details: {
-        Args: Record<PropertyKey, never>
+        Args: { limit_count?: number }
         Returns: {
           book_id: number
           book_title: string
@@ -718,6 +722,15 @@ export type Database = {
           last_message: string
           created_at: string
           is_read: boolean
+        }[]
+      }
+      get_top_ordered_books: {
+        Args: { limit_count?: number }
+        Returns: {
+          book_id: number
+          book_title: string
+          total_orders: number
+          book_image: string
         }[]
       }
       notify_wishlist_availability: {
