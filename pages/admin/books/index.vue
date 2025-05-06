@@ -80,7 +80,7 @@ const { remove:deleteBookItems } = useBookItems();
 const {query} = useRoute();
 
 const page = ref(useRouteParams('page', 1, { transform: Number }));
-const pageSize = 5;
+const pageSize = 10;
 const title = ref('');
 const selectedAuthors = ref([]);
 const selectedCategories = ref([]);

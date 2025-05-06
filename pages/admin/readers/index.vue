@@ -69,7 +69,7 @@ const { query } = useRoute();
 const { index } = useReaders();
 const email = ref('');
 const name = ref('');
-const pageSize = 5;
+const pageSize = 10;
 const page = ref(Number(query.page) || 1);
 const searchParams = ref({
   columns: 'id, fullName:full_name, email, photo',

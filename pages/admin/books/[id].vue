@@ -21,6 +21,10 @@
         <BookDetails />
       </div>
 
+      <div v-if="activeTab === 'items'" class="tab-content">
+        <BookHardCopy />
+      </div>
+
       <div v-if="activeTab === 'orders'" class="tab-content">
         <BookHistoricalOrders />
       </div>
@@ -35,6 +39,7 @@
 <script setup lang="ts">
 const tabs = [
   { id: 'details', name: 'Details' },
+  { id: 'items', name: 'Hard Copies' },
   { id: 'orders', name: 'Historical Orders' },
   { id: 'ratings', name: 'Ratings & Reviews' }
 ];
