@@ -45,3 +45,10 @@ export interface NotificationOptions {
   page?: number,
   size?: number
 }
+
+export interface OrderRenewOptions {
+  columns?: string,
+  orderId?: number,
+  readerId?: string,
+  isHead?: boolean
+}

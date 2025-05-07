@@ -27,19 +27,26 @@
 import { NOTIFICATION_MESSAGES, NOTIFICATION_TYPES } from '~/constants/notifications';
 import { useRouteParams } from '@vueuse/router';
 
-const orderId = useRouteParams('id', null, { transform: Number }) 
 const { index, update } = useOrderRenews();
 const { userId } = useAuth();
 const { update:updateOrder } = useOrders();
 const { insert:insertNotification } = useNotifications();
 
+const emit = defineEmits(['update-renew-count']);
+
+const orderId = useRouteParams('id', null, { transform: Number });
+
 const { data:orderRenews, error, refresh } = await useAsyncData(
-  `order-${orderId.value}`,
+  `order/${orderId.value}/renews`,
   () => index({
     columns: 'id,reader_id,new_due_date,approved_by,comment,request_note,created_at,users(id,fullName:full_name)',
     orderId: orderId.value
   })
 );
+
+if (orderRenews.value) {
+  emit('update-renew-count', orderRenews.value.count);
+}
 
 async function handleApprove(orderRenewId: number, newDueDate: string, readerId: string) {
   await update(orderRenewId, {
