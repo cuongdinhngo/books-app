@@ -5,7 +5,7 @@
       <button
         v-for="tab in tabs"
         :key="tab.id"
-        @click="activeTab = tab.id"
+        @click="handleTabChange(tab.id)"
         :class="[
           'px-4 py-2 text-gray-600 font-medium border-b-2 focus:outline-none',
           activeTab === tab.id ? 'border-blue-500 text-blue-600' : 'border-transparent hover:border-blue-500'
@@ -37,11 +37,19 @@
 </template>
 
 <script setup lang="ts">
+import { useRouteQuery } from '@vueuse/router';
+const router = useRouter();
+
 const tabs = [
   { id: 'details', name: 'Details' },
   { id: 'items', name: 'Hard Copies' },
   { id: 'orders', name: 'Historical Orders' },
   { id: 'ratings', name: 'Ratings & Reviews' }
 ];
-const activeTab = ref('details');
+const activeTab = ref<string>(useRouteQuery('tab', 'details').value);
+
+function handleTabChange(tabId: string) {
+  activeTab.value = tabId;
+  router.replace({ name: 'admin-books-id', query: { tab: tabId } });
+}
 </script>

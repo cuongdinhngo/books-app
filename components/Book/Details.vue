@@ -37,18 +37,6 @@
             type="file"
             @change="handleFileUpload"
           />
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Quantity</label>
-            <UInputNumber
-              v-model="quantity"
-              orientation="vertical"
-              placeholder="Enter quantity"
-              variant="subtle"
-              :min="0"
-              @change="updateItemStatus"
-            />
-          </div>
         </div>
 
         <!-- Right Side: Book Cover -->
@@ -69,48 +57,6 @@
           class="w-full"
           variant="subtle"
         />
-      </div>
-
-      <!-- INVENTORY -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-5">
-        <div class="flex items-center space-x-2">
-          <label for="pending" class="w-25 text-sm font-medium text-gray-700 p-2 bg-violet-300 rounded-2xl">Pending:</label>
-          <UInputNumber
-            v-model="pendingCounts"
-            orientation="vertical"
-            :min="0"
-            class="w-full"
-            @change="updateItemStatus(BOOK_STATUS.PENDING)"
-          />
-        </div>
-        <div class="flex items-center space-x-2">
-          <label for="pending" class="w-25 text-sm font-medium text-gray-700 p-2 bg-green-300 rounded-2xl">Opening:</label>
-          <UInputNumber
-            v-model="openingCounts"
-            orientation="vertical"
-            :min="0"
-            class="w-full"
-            @change="updateItemStatus(BOOK_STATUS.OPENING)"
-          />
-        </div>
-        <div class="flex items-center space-x-2">
-          <label for="pending" class="w-25 text-sm font-medium text-gray-700 p-2 bg-orange-300 rounded-2xl">Borrowing:</label>
-          <UInputNumber
-            v-model="borrowingCounts"
-            orientation="vertical"
-            disabled
-            class="w-full"
-          />
-        </div>
-        <div class="flex items-center space-x-2">
-          <label for="pending" class="w-25 text-sm font-medium text-gray-700 p-2 bg-gray-300 rounded-2xl">Lost:</label>
-          <UInputNumber
-            v-model="lostCounts"
-            orientation="vertical"
-            disabled
-            class="w-full"
-          />
-        </div>
       </div>
 
       <div class="mt-6">
@@ -151,10 +97,6 @@ const oldAuthors = ref([]);
 const oldCategories = ref([]);
 const oldPublishers = ref([]);
 const bookItems = ref([]);
-const pendingCounts = ref(0);
-const openingCounts = ref(0);
-const borrowingCounts = ref(0);
-const lostCounts = ref(0);
 
 const { data:book, error, refresh } = await useAsyncData(
   `book-${bookId.value}`,
@@ -176,45 +118,12 @@ oldAuthors.value = book.value.data.authors.map(author => Number(author.id));
 oldPublishers.value = book.value.data.publishers.map(publisher => Number(publisher.id));
 oldQuantity.value = book.value.data.quantity;
 
-processItems(book.value.data.book_items);
-
 const handleFileUpload = (file) => {
   if (file && file.type.startsWith("image/")) {
     selectedPhoto.value = file;
     imagePreview.value = URL.createObjectURL(file);
   }
 };
-
-function updateItemStatus(status) {
-  const oldTotal = pendingCounts.value + openingCounts.value + borrowingCounts.value + lostCounts.value;
-  const newTotal = quantity.value;
-  switch(status) {
-    case BOOK_STATUS.PENDING:
-      pendingCounts.value = Math.max(0, Math.min(newTotal, pendingCounts.value));
-      openingCounts.value = newTotal - pendingCounts.value;
-      break;
-    case BOOK_STATUS.OPENING:
-      openingCounts.value = Math.max(0, Math.min(newTotal, openingCounts.value));
-      pendingCounts.value = newTotal - openingCounts.value;
-      break;
-    default:
-      const difference = newTotal - oldTotal;
-      pendingCounts.value = Math.max(0, pendingCounts.value + difference);
-      openingCounts.value = Math.max(0, Math.min(newTotal - pendingCounts.value, openingCounts.value));
-      break;
-  }
-}
-
-function processItems (data: Array<Tables<'book_items'>>) {
-  bookItems.value = data.reduce((acc, item) => {
-    acc[item.status] = (acc[item.status] || 0) + 1;
-    return acc;
-  }, {});
-  pendingCounts.value = bookItems.value?.pending || 0;
-  openingCounts.value = bookItems.value?.opening || 0;
-  borrowingCounts.value = bookItems.value?.borrowing || 0;
-  lostCounts.value = bookItems.value?.lost || 0;
-}
 
 const submitForm = async() => {
   let book = {

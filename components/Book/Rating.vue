@@ -1,10 +1,10 @@
 <template>
   <div class="p-3">
     <div class="mb-4">
-      <label class="block text-gray-600 font-medium">Average Rating</label>
       <div class="flex items-center">
-          <span class="text-yellow-500">{{ generateRating(data?.rating.data?.average_rating) }}</span>
-          <span class="ml-2 text-gray-800"> {{ data?.rating.data?.average_rating }}/ 5 ({{ data?.rating.data?.review_count }} reviews)</span>
+        <label class="block text-gray-600 font-medium mr-3">Average Rating: </label>
+        <BookStarRating :rating="data?.rating.data?.average_rating" :is-show-value="true"/>
+        <span class="ml-2 text-gray-800">({{ data?.rating.data?.review_count }} reviews)</span>
       </div>
     </div>
     <div class="space-y-4">
@@ -14,26 +14,50 @@
         :review="review"
       />
     </div>
+
+    <Pagination
+      v-model="page"
+      v-if="data?.reviews.count > 0"
+      :totalCounts="data?.reviews.count"
+      :items-per-page="pageSize"
+      @changePage="handlePageChange"
+    />
   </div>
 </template>
 <script setup lang="ts">
-import { useRouteParams } from '@vueuse/router';
+import { useRouteParams, useRouteQuery } from '@vueuse/router';
 
 const { index:getBookReviews } = useReviews();
 const supabase = useSupabaseClient();
-const bookId = useRouteParams('id', null, {transform: Number});
+
+const page = ref(useRouteQuery('page', 1, { transform: Number }));
+const pageSize = 10;
+const bookId = useRouteParams('id', null, { transform: Number });
+const searchParams = ref({
+  bookId: bookId.value,
+  page: page.value,
+  size: pageSize
+});
 
 const { data, error } = await useAsyncData(
-  `book`,
+  `book/${bookId.value}/reviews`,
   async() => {
     const [rating, reviews] = await Promise.all([
       supabase.rpc('get_average_rating_by_book', { p_book_id: bookId.value }).single(),
-      getBookReviews({ columns: 'id,rating,content,created_at,readers(id,fullName:full_name)', bookId: bookId.value })
+      getBookReviews({ columns: 'id,rating,content,created_at,readers(id,fullName:full_name)', ...searchParams.value })
     ]);
 
     return { rating, reviews };
+  },
+  {
+    watch: [searchParams.value]
   }
 );
 
-console.log('DATA => ', data);
+console.log('data', data.value);
+
+function handlePageChange(newPage: number) {
+  page.value = newPage;
+  searchParams.value.page = newPage;
+}
 </script>
