@@ -3,8 +3,33 @@
     <UTable
       v-if="orderItems.length > 0"
       :data="orderItems"
-      :columns="columns"
       class="flex-1"
+      :columns="[
+        {
+          accessorKey: 'orderId',
+          header: 'Order No.',
+          id: 'orderId'
+        },
+        {
+          accessorKey: 'orderItemStatus',
+          header: 'Status',
+        },
+        {
+          accessorKey: 'orderCreatedAt',
+          header: 'Ordered at',
+          id: 'orderCreatedAt'
+        },
+        {
+          accessorKey: 'orderReturnedAt',
+          header: 'Returned at',
+          id: 'orderReturnedAt',
+        },
+        {
+          accessorKey: 'orderItemComment',
+          header: 'Comment',
+          id: 'orderItemComment'
+        }
+      ]"
     >
       <template #orderId-cell="{ row }">
         <NuxtLink :to="{ name: 'admin-orders-id', params: { id: row.original.orderId }}" class="hover:text-primary-700 cursor-pointer">
@@ -20,25 +45,40 @@
 
       <template #orderCreatedAt-cell="{ row }">
         <NuxtLink :to="{ name: 'admin-orders-id', params: { id: row.original.orderId }}" class="hover:text-primary-700 cursor-pointer">
-          {{ row.original.orderCreatedAt }}
+          {{ useDateFormat(row.original.orderCreatedAt, 'MMMM Do, YYYY') }}
         </NuxtLink>
       </template>
 
       <template #orderReturnedAt-cell="{ row }">
         <NuxtLink :to="{ name: 'admin-orders-id', params: { id: row.original.orderId }}" class="hover:text-primary-700 cursor-pointer">
-          {{ row.original.orderReturnedAt }}
+          {{ row.original.orderReturnedAt ? useDateFormat(row.original.orderReturnedAt, 'MMMM Do, YYYY') : 'Not returned' }}
         </NuxtLink>
       </template>
     </UTable>
+
+    <Pagination
+      v-model="page"
+      v-if="data.count > 0"
+      :totalCounts="data.count"
+      :items-per-page="pageSize"
+      @changePage="handlePageChange"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { useRouteParams } from '@vueuse/router';
+import { useRouteParams, useRouteQuery } from '@vueuse/router';
 const { index:getOrderItems} = useOrderItems();
 
 const orderItems = ref([]);
 const bookId = useRouteParams('id', null, { transform: Number });
+const page = ref(useRouteQuery('page', 1, { transform: Number }));
+const pageSize = 10;
+const searchParams = ref({
+  bookId: bookId.value,
+  page: page.value,
+  pageSize: pageSize,
+});
 const orderItemStatusColor = {
   openning: 'success',
   pending: 'info',
@@ -48,31 +88,20 @@ const orderItemStatusColor = {
   rejected: 'neutral',
 }
 
-const columns = [
-  {
-    accessorKey: 'orderId',
-    header: 'Order No.',
-    id: 'orderId'
-  },
-  {
-    accessorKey: 'orderItemStatus',
-    header: 'Status',
-  },
-  {
-    accessorKey: 'orderCreatedAt',
-    header: 'Ordered at',
-    id: 'orderCreatedAt'
-  },
-  {
-    accessorKey: 'orderReturnedAt',
-    header: 'Returned at',
-    id: 'orderReturnedAt',
-  },
-];
+function handlePageChange(newPage) {
+  page.value = newPage;
+  searchParams.value.page = newPage;
+}
 
 const { data, error, refresh } = await useAsyncData(
-  `book-historical-orders-${bookId.value}`,
-  () => getOrderItems({ columns: 'orderId:order_id, orderItemStatus:status, orderItemComment:comment, orders(*)', bookId:bookId.value }),
+  `book/${bookId.value}/orders`,
+  () => getOrderItems({
+    columns: 'orderId:order_id, orderItemStatus:status, orderItemComment:comment, orders(*)',
+    ...searchParams.value
+  }),
+  {
+    watch: [searchParams.value]
+  }
 );
 
 orderItems.value = data.value.data.map(item => {

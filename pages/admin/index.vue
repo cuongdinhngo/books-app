@@ -60,31 +60,31 @@ let overviewCards = [
   {
     id: 'total_categories',
     to: { name: "admin-categories" },
-    label: 'Total Categories',
+    label: 'Categories',
     count: 0
   },
   {
     id: 'total_publishers',
     to: { name: "admin-publishers" },
-    label: 'Total Publishers',
+    label: 'Publishers',
     count: 0
   },
   {
     id: 'total_authors',
     to: { name: "admin-authors" },
-    label: 'Total Authors',
+    label: 'Authors',
     count: 0
   },
   {
     id: 'total_books',
     to: { name: "admin-books" },
-    label: 'Total Books',
+    label: 'Books',
     count: 0
   },
   {
     id: 'total_readers',
     to: { name: "admin-readers" },
-    label: 'Total Readers',
+    label: 'Readers',
     count: 0
   },
 ];
@@ -93,25 +93,25 @@ let orderStats = [
   {
     id: 'total_orders',
     to: { name: "admin-orders", query: { status: [ORDER_STATUS.CLOSE, ORDER_STATUS.BORROWING, ORDER_STATUS.WAITING, ORDER_STATUS.REJECT] } },
-    label: 'Total Orders',
+    label: 'Orders',
     count: 0
   },
   {
     id: 'borrowed_orders',
     to: { name: "admin-orders", query: { status: ORDER_STATUS.CLOSE } },
-    label: 'Total Borrowed Orders',
+    label: 'Borrowed Orders',
     count: 0
   },
   {
     id: 'borrowing_orders',
     to: { name: "admin-orders", query: { status: ORDER_STATUS.BORROWING } },
-    label: 'Total Open Orders',
+    label: 'Open Orders',
     count: 0
   },
   {
     id: 'overdue_orders',
     to: { name: "admin-orders", query: { status: ORDER_STATUS.OVERDUE } },
-    label: 'Total Overdue Orders',
+    label: 'Overdue Orders',
     count: 0,
     class: 'bg-yellow-100 p-4 rounded-lg shadow-sm hover:bg-primary-50'
   },
@@ -121,19 +121,19 @@ let bookStats = [
   {
     id: 'total_book_items',
     to: { name: "admin-books" },
-    label: 'Total Book Items',
+    label: 'Hard Copies',
     count: 0
   },
   {
     id: 'available_books',
     to: { name: "admin-books", query: { status: BOOK_ITEM_STATUS.OPENING } },
-    label: 'Total Available Books',
+    label: 'Available Copies',
     count: 0
   },
   {
     id: 'lost_books',
     to: { name: "admin-books", query: { status: BOOK_ITEM_STATUS.LOST } },
-    label: 'Total Lost Books',
+    label: 'Lost Copies',
     count: 0
   },
 ]

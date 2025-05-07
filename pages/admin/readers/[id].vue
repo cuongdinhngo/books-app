@@ -35,8 +35,27 @@
   <UTable
     v-if="data.order.count > 0"
     :data="data.order.data"
-    :columns="columns"
     class="flex-1"
+    :columns="[
+      {
+        accessorKey: 'id',
+        header: '#'
+      },
+      {
+        accessorKey: 'status',
+        header: 'Status'
+      },
+      {
+        accessorKey: 'order_items',
+        header: 'Quantity',
+        id: 'quantity'
+      },
+      {
+        accessorKey: 'created_at',
+        header: 'Booked at',
+        id: 'bookedAt'
+      }
+    ]"
   >
     <template #id-cell="{ row }">
       <NuxtLink :to="{ name: 'admin-orders-id', params: { id: row.original.id }}" class="font-medium text-primary-500">
@@ -75,11 +94,14 @@ const readerId = useRouteParams('id');
 
 const handleUploadPhoto = async(event) => {
   const file = event.target.files[0];
+  console.log('handle-upload-photo => ', readerId.value, file);
   if (file && file.type.startsWith("image/")) {
     await update(readerId.value, { photo: file })
-      .then(() => {
+      .then(({ error }) => {
+        if (error) throw error;
+
         useToastSuccess();
-        refreshReder();
+        refresh();
       })
       .catch((error) => useToastError(error));
   }
@@ -96,25 +118,4 @@ const {data, error, refresh} = await useAsyncData(
     return { reader, order };
   }
 );
-
-const columns = [
-  {
-    accessorKey: 'id',
-    header: '#'
-  },
-  {
-    accessorKey: 'status',
-    header: 'Status'
-  },
-  {
-    accessorKey: 'order_items',
-    header: 'Quantity',
-    id: 'quantity'
-  },
-  {
-    accessorKey: 'created_at',
-    header: 'Booked at',
-    id: 'bookedAt'
-  },
-]
 </script>

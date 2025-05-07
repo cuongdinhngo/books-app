@@ -11,6 +11,9 @@ interface GetReadersOptions {
 
 const TABLE_NAME = 'readers';
 const PHOTO_DIRECTORY = 'readers';
+
+const { insert, get, remove } = useCrud(TABLE_NAME);
+
 export const useReaders = () => {
   const token = useCookie<String>('token');
   const readerId = useCookie<Number>('readerId');
@@ -38,10 +41,6 @@ export const useReaders = () => {
     }
   }
 
-  const insert = (data: Tables<'readers'>) => {
-    return useTable(TABLE_NAME).insert(data);
-  }
-
   const index = (options: GetReadersOptions = {}) => {
     const {
       columns = '*',
@@ -65,15 +64,12 @@ export const useReaders = () => {
     return query;
   }
 
-  const get = (readerId: number, columns: string = '*') => {
-    return useTable(TABLE_NAME).select(columns).eq('id', readerId).single();
-  }
-
-  const update = async(readerId: number, data: Tables<'readers'>) => {
+  const update = async(readerId: string, data: Tables<'readers'>) => {
     const photoUrl = await uploadPhoto(data.photo, PHOTO_DIRECTORY);
     if (photoUrl) {
       data.photo = photoUrl;
     }
+    console.log('UPDATE DATA', data, readerId);
     return useTable(TABLE_NAME).update(data).eq('id', readerId);
   }
 
