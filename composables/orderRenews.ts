@@ -1,13 +1,10 @@
 import type { Tables } from '~/types/database.types';
-
-interface OrderRenewOptions {
-  columns?: string,
-  orderId?: number,
-  readerId?: string,
-  isHead?: boolean
-}
+import type { OrderRenewOptions } from '~/types/options';
 
 const TABLE_NAME = 'order_renews'
+
+const { insert, update } = useCrud(TABLE_NAME);
+
 export const useOrderRenews = () => {
 
   const index = (options: OrderRenewOptions = {}) => {
@@ -28,14 +25,6 @@ export const useOrderRenews = () => {
     }
 
     return query;
-  }
-
-  const insert = (data: Tables<'order_renews'>) => {
-    return useTable(TABLE_NAME).insert(data);
-  }
-
-  const update = (id: number, data: Tables<'order_renews'>) => {
-    return useTable(TABLE_NAME).update(data).eq('id', id);
   }
 
   return {

@@ -23,7 +23,7 @@
     <!-- INVENTORY -->
     <div class="grid grid-cols-5 gap-4 my-3">
       <label
-        class="w-40 text-sm font-medium text-gray-700 p-2 bg-blue-200 rounded-2xl"
+        class="w-40 text-sm font-medium text-gray-700 p-2 bg-blue-200 rounded-2xl cursor-pointer"
         @click="searchByStatus('')"
       >
         Total: {{ totalCounts }}
@@ -35,19 +35,19 @@
         Pending: {{ pendingCounts }}
       </label>
       <label
-        class="w-40 text-sm font-medium text-gray-700 p-2 bg-green-200 rounded-2xl"
+        class="w-40 text-sm font-medium text-gray-700 p-2 bg-green-200 rounded-2xl cursor-pointer"
         @click="searchByStatus(BOOK_ITEM_STATUS.OPENING)"
       >
         Opening: {{ openingCounts }}
       </label>
       <label
-        class="w-40 text-sm font-medium text-gray-700 p-2 bg-orange-200 rounded-2xl"
+        class="w-40 text-sm font-medium text-gray-700 p-2 bg-orange-200 rounded-2xl cursor-pointer"
         @click="searchByStatus(BOOK_ITEM_STATUS.BORROWING)"
       >
         Borrowing: {{ borrowingCounts }}
       </label>
       <label
-        class="w-40 text-sm font-medium text-gray-700 p-2 bg-gray-300 rounded-2xl"
+        class="w-40 text-sm font-medium text-gray-700 p-2 bg-gray-300 rounded-2xl cursor-pointer"
         @click="searchByStatus(BOOK_ITEM_STATUS.LOST)"
       >
         Lost: {{ lostCounts }}

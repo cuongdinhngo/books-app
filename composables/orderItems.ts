@@ -18,7 +18,7 @@ export const ORDER_ITEM_STATUS = {
   WAITING: 'waiting',
   BORROWING: 'borrowing',
   CLOSED: 'closed',
-  UNAVAILABLE: 'unavailable',
+  REJECT: 'rejected',
   LOST: 'lost'
 }
 
