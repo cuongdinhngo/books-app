@@ -65,6 +65,8 @@
 </template>
 
 <script setup>
+import { USER_ROLE_READER } from '~/constants/users';
+
 const { query } = useRoute();
 const { index } = useUsers();
 
@@ -77,7 +79,8 @@ const searchParams = ref({
   page: page.value,
   size: pageSize,
   email: email.value,
-  name: name.value
+  name: name.value,
+  role: USER_ROLE_READER
 });
 
 const { data: reader, error, refresh } = await useAsyncData(
