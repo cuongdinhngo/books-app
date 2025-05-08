@@ -20,6 +20,15 @@ yarn install
 bun install
 ```
 
+## Seeding DB
+
+To seed the mock DB:
+
+```bash
+# npm
+npx ts-node commands/seed.ts
+```
+
 ## Development Server
 
 Start the development server on `http://localhost:3000`:
