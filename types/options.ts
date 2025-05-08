@@ -52,3 +52,13 @@ export interface OrderRenewOptions {
   readerId?: string,
   isHead?: boolean
 }
+
+export interface UserOptions {
+  columns?: string,
+  id?: string,
+  name?: string,
+  email?: string,
+  role?: string,
+  page?: number,
+  size?: number
+}

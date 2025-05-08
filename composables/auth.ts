@@ -1,13 +1,16 @@
+import { ro } from "@nuxt/ui/runtime/locale/index.js";
+
 export const useAuth = () => {
   const supabase = useSupabaseClient();
   const authModel = useSupabaseClient().auth;
+  const { get:verifyUser } = useUsers();
 
   const token = useCookie('token');
   const userId = useCookie('userId');
   const user = ref(null);
   const isAuthenticated = ref(false);
   const error = ref('');
-  const userType = useCookie('userType');
+  const userRole = useCookie('userRole');
   const session = ref([]);
 
   const signup = (email: string, password: string) => {
@@ -29,24 +32,18 @@ export const useAuth = () => {
         return false;
       }
 
-      const { data: user, error: fetchUserError } = await supabase
-        .from('users')
-        .select()
-        .eq('id', data.user.id)
-      ;
+      const { data: user, error: fetchUserError } = await verifyUser(data.user.id);
       if (fetchUserError) throw fetchUserError;
- 
-      if (user?.length > 0) {
-        userType.value = 'staff';
-      } else {
-        userType.value = 'reader';
-      }
 
-      setAuthenticatedUser(data);
-      return true;
+      console.log('user: ', user);
+      if (user.id) {
+        setAuthenticatedUser(data, user.role);
+        return true;
+      } else {
+        return false;
+      }
     } catch (err) {
       console.error('[ERROR] FAIELD: signin ', err);
-      error.value = 'Plase try again!';
       return false;
     }
   };
@@ -58,22 +55,16 @@ export const useAuth = () => {
 
       token.value = null;
       userId.value = null;
-      userType.value = null;
-      localStorage.removeItem('session');
+      userRole.value = null;
     } catch(err) {
       console.log('[ERROR] signout: ', err);
     }
   }
 
-  const setToken = (newToken) => {
-    token.value = newToken;
-    isAuthenticated.value = !!newToken;
-  }
-
-  const setAuthenticatedUser = (data) => {
+  const setAuthenticatedUser = (data: any, role: string = 'reader') => {
     token.value = data.session.access_token;
     userId.value = data.user.id;
-    localStorage.setItem('session', JSON.stringify(data.session));
+    userRole.value = role;
   }
 
   return {
@@ -82,7 +73,7 @@ export const useAuth = () => {
     error,
     token,
     session,
-    userType,
+    userRole,
     isAuthenticated,
     signin,
     signout,

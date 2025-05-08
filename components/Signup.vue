@@ -8,14 +8,8 @@
               placeholder="Enter your full name">
     </div>
     <div>
-      <label for="birthday" class="block text-sm font-medium text-gray-700">Birthday</label>
-      <input type="text" id="birthday" v-model="birthday"
-              class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
-              placeholder="Enter your birthday YYYY-MM-DD">
-    </div>
-    <div>
-      <label for="address" class="block text-sm font-medium text-gray-700">Address</label>
-      <input type="text" id="address" v-model="address"
+      <label for="address" class="block text-sm font-medium text-gray-700">Phone</label>
+      <input type="text" id="address" v-model="phone"
               class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
               placeholder="Enter address">
     </div>
@@ -46,28 +40,29 @@
 <script setup lang="ts">
 import { NuxtLink } from '#components';
 import type { Tables } from '~/types/database.types';
-const { insert } = useReaders();
+const { insert } = useUsers();
 const { signup, setAuthenticatedUser } = useAuth();
 
 const fullName = ref('');
-const birthday = ref('');
-const address = ref('');
+const phone = ref('');
 const email = ref('');
 const password = ref('');
 
 const handleSubmit = async() => {
-  const {data:authData, error:authError} = await signup(email.value, password.value);
-  const reader = {
-    id: authData.user?.id,
-    full_name: fullName.value,
-    birthday: birthday.value,
-    address: address.value,
-    email: email.value
-  };
+  await signup(email.value, password.value)
+    .then(async({data:authData, error:authError}) => {
+      if (authError) throw authError;
 
-  await insert(reader)
-    .then(({ data, error:insertError}) => {
+      const reader = {
+        id: authData.user?.id,
+        name: fullName.value,
+        phone: phone.value,
+        email: email.value
+      };
+
+      const { data, error:insertError } = await insert(reader);
       if (insertError) throw insertError;
+
       setAuthenticatedUser(authData),
       useToastSuccess();
       navigateTo('/');
