@@ -36,7 +36,7 @@ export type Database = {
         }
         Relationships: []
       }
-      book_items: {
+      book_copies: {
         Row: {
           book_id: number | null
           created_at: string
@@ -60,10 +60,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "book_items_book_id_fkey"
+            foreignKeyName: "book_copies_book_id_fkey"
             columns: ["book_id"]
             isOneToOne: false
-            referencedRelation: "books"
+            referencedRelation: "book_copies"
             referencedColumns: ["id"]
           },
         ]
@@ -74,7 +74,6 @@ export type Database = {
           created_at: string
           description: string | null
           id: number
-          quantity: number | null
           title: string
         }
         Insert: {
@@ -82,7 +81,6 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: number
-          quantity?: number | null
           title: string
         }
         Update: {
@@ -90,7 +88,6 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: number
-          quantity?: number | null
           title?: string
         }
         Relationships: []
@@ -194,340 +191,7 @@ export type Database = {
           },
         ]
       }
-      carts: {
-        Row: {
-          created_at: string
-          id: number
-          items: number[] | null
-          reader_id: string
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string
-          id?: number
-          items?: number[] | null
-          reader_id?: string
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string
-          id?: number
-          items?: number[] | null
-          reader_id?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "carts_reader_id_fkey"
-            columns: ["reader_id"]
-            isOneToOne: false
-            referencedRelation: "readers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      categories: {
-        Row: {
-          created_at: string
-          id: number
-          name: string
-        }
-        Insert: {
-          created_at?: string
-          id?: number
-          name: string
-        }
-        Update: {
-          created_at?: string
-          id?: number
-          name?: string
-        }
-        Relationships: []
-      }
-      messages: {
-        Row: {
-          content: string
-          created_at: string
-          id: number
-          is_read: boolean
-          receiver_id: string
-          sender_id: string
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          id?: number
-          is_read?: boolean
-          receiver_id?: string
-          sender_id?: string
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          id?: number
-          is_read?: boolean
-          receiver_id?: string
-          sender_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "messages_receiver_id_fkey"
-            columns: ["receiver_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "messages_sender_id_fkey"
-            columns: ["sender_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      notifications: {
-        Row: {
-          created_at: string
-          id: number
-          is_read: boolean | null
-          message: string | null
-          notifiable_id: number | null
-          notifiable_type: string | null
-          reader_id: string | null
-          type: string | null
-        }
-        Insert: {
-          created_at?: string
-          id?: number
-          is_read?: boolean | null
-          message?: string | null
-          notifiable_id?: number | null
-          notifiable_type?: string | null
-          reader_id?: string | null
-          type?: string | null
-        }
-        Update: {
-          created_at?: string
-          id?: number
-          is_read?: boolean | null
-          message?: string | null
-          notifiable_id?: number | null
-          notifiable_type?: string | null
-          reader_id?: string | null
-          type?: string | null
-        }
-        Relationships: []
-      }
-      order_items: {
-        Row: {
-          book_id: number
-          book_item_id: number | null
-          comment: string | null
-          created_at: string
-          deleted_at: string | null
-          id: number
-          order_id: number
-          status: string | null
-          updated_at: string
-        }
-        Insert: {
-          book_id: number
-          book_item_id?: number | null
-          comment?: string | null
-          created_at?: string
-          deleted_at?: string | null
-          id?: number
-          order_id: number
-          status?: string | null
-          updated_at?: string
-        }
-        Update: {
-          book_id?: number
-          book_item_id?: number | null
-          comment?: string | null
-          created_at?: string
-          deleted_at?: string | null
-          id?: number
-          order_id?: number
-          status?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "order_items_book_id_fkey"
-            columns: ["book_id"]
-            isOneToOne: false
-            referencedRelation: "books"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "order_items_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      order_renews: {
-        Row: {
-          approved_by: string | null
-          comment: string | null
-          created_at: string
-          id: number
-          new_due_date: string | null
-          order_id: number
-          reader_id: string
-          request_note: string | null
-        }
-        Insert: {
-          approved_by?: string | null
-          comment?: string | null
-          created_at?: string
-          id?: number
-          new_due_date?: string | null
-          order_id: number
-          reader_id: string
-          request_note?: string | null
-        }
-        Update: {
-          approved_by?: string | null
-          comment?: string | null
-          created_at?: string
-          id?: number
-          new_due_date?: string | null
-          order_id?: number
-          reader_id?: string
-          request_note?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "order_renew_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "order_renew_reader_id_fkey"
-            columns: ["reader_id"]
-            isOneToOne: false
-            referencedRelation: "readers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "order_renews_approved_by_fkey"
-            columns: ["approved_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      orders: {
-        Row: {
-          approved_by: string | null
-          comment: string | null
-          created_at: string
-          due_date: string | null
-          id: number
-          reader_id: string
-          returned_at: string | null
-          status: string | null
-          updated_at: string
-        }
-        Insert: {
-          approved_by?: string | null
-          comment?: string | null
-          created_at?: string
-          due_date?: string | null
-          id?: number
-          reader_id?: string
-          returned_at?: string | null
-          status?: string | null
-          updated_at?: string
-        }
-        Update: {
-          approved_by?: string | null
-          comment?: string | null
-          created_at?: string
-          due_date?: string | null
-          id?: number
-          reader_id?: string
-          returned_at?: string | null
-          status?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "orders_approved_by_fkey"
-            columns: ["approved_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "orders_reader_id_fkey"
-            columns: ["reader_id"]
-            isOneToOne: false
-            referencedRelation: "readers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      publishers: {
-        Row: {
-          created_at: string
-          id: number
-          logo: string | null
-          name: string
-        }
-        Insert: {
-          created_at?: string
-          id?: number
-          logo?: string | null
-          name: string
-        }
-        Update: {
-          created_at?: string
-          id?: number
-          logo?: string | null
-          name?: string
-        }
-        Relationships: []
-      }
-      readers: {
-        Row: {
-          address: string | null
-          birthday: string | null
-          created_at: string
-          email: string
-          full_name: string
-          id: string
-          photo: string | null
-        }
-        Insert: {
-          address?: string | null
-          birthday?: string | null
-          created_at?: string
-          email: string
-          full_name: string
-          id: string
-          photo?: string | null
-        }
-        Update: {
-          address?: string | null
-          birthday?: string | null
-          created_at?: string
-          email?: string
-          full_name?: string
-          id?: string
-          photo?: string | null
-        }
-        Relationships: []
-      }
-      reviews: {
+      books_reviews: {
         Row: {
           book_id: number
           content: string
@@ -557,42 +221,259 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "books_reviews_reader_id_fkey"
+            columns: ["reader_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "reviews_book_id_fkey"
             columns: ["book_id"]
             isOneToOne: false
             referencedRelation: "books"
             referencedColumns: ["id"]
           },
+        ]
+      }
+      carts: {
+        Row: {
+          created_at: string
+          id: number
+          items: number[] | null
+          reader_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          items?: number[] | null
+          reader_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          items?: number[] | null
+          reader_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
           {
-            foreignKeyName: "reviews_reader_id_fkey"
+            foreignKeyName: "carts_reader_id_fkey1"
             columns: ["reader_id"]
             isOneToOne: false
-            referencedRelation: "readers"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
+      }
+      categories: {
+        Row: {
+          created_at: string
+          id: number
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: number
+          is_read: boolean | null
+          message: string | null
+          notifiable_id: number | null
+          notifiable_type: string | null
+          type: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          is_read?: boolean | null
+          message?: string | null
+          notifiable_id?: number | null
+          notifiable_type?: string | null
+          type?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          is_read?: boolean | null
+          message?: string | null
+          notifiable_id?: number | null
+          notifiable_type?: string | null
+          type?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_renews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: number
+          new_due_date: string | null
+          old_due_date: string | null
+          order_id: number
+          request_note: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: number
+          new_due_date?: string | null
+          old_due_date?: string | null
+          order_id: number
+          request_note?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: number
+          new_due_date?: string | null
+          old_due_date?: string | null
+          order_id?: number
+          request_note?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_renew_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          book_copy_id: number | null
+          book_id: number
+          comment: string | null
+          created_at: string
+          due_date: string | null
+          id: number
+          reader_id: string
+          returned_at: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          book_copy_id?: number | null
+          book_id: number
+          comment?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: number
+          reader_id: string
+          returned_at?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          book_copy_id?: number | null
+          book_id?: number
+          comment?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: number
+          reader_id?: string
+          returned_at?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_book_copy_id_fkey"
+            columns: ["book_copy_id"]
+            isOneToOne: false
+            referencedRelation: "book_copies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_reader_id_fkey1"
+            columns: ["reader_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      publishers: {
+        Row: {
+          created_at: string
+          id: number
+          logo: string | null
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          logo?: string | null
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          logo?: string | null
+          name?: string
+        }
+        Relationships: []
       }
       users: {
         Row: {
           created_at: string
           email: string | null
-          full_name: string
           id: string
+          name: string
+          phone: string | null
           photo: string | null
+          role: string | null
         }
         Insert: {
           created_at?: string
           email?: string | null
-          full_name: string
           id?: string
+          name: string
+          phone?: string | null
           photo?: string | null
+          role?: string | null
         }
         Update: {
           created_at?: string
           email?: string | null
-          full_name?: string
           id?: string
+          name?: string
+          phone?: string | null
           photo?: string | null
+          role?: string | null
         }
         Relationships: []
       }
@@ -607,7 +488,7 @@ export type Database = {
           book_id: number
           created_at?: string
           id?: number
-          reader_id?: string
+          reader_id: string
         }
         Update: {
           book_id?: number
@@ -624,10 +505,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "wishlists_reader_id_fkey"
+            foreignKeyName: "wishlists_reader_id_fkey1"
             columns: ["reader_id"]
             isOneToOne: false
-            referencedRelation: "readers"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -670,7 +551,8 @@ export type Database = {
       get_due_orders: {
         Args: { currentdate: string }
         Returns: {
-          approved_by: string | null
+          book_copy_id: number | null
+          book_id: number
           comment: string | null
           created_at: string
           due_date: string | null
