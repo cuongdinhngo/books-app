@@ -89,7 +89,7 @@ import { useRouteParams } from '@vueuse/router';
 import { NOTIFICATION_MESSAGES, NOTIFICATION_TYPES } from '~/constants/notifications';
 
 const { get, renew:extendDueDate, update } = useOrders();
-const { index:getBooksItems } = useBookItems();
+const { index:getBooksItems } = useBookCopies();
 const { userId } = useAuth();
 const { insert } = useNotifications();
 

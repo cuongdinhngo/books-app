@@ -173,7 +173,7 @@
       </UModal>
 
       <UBadge
-        v-if="[ORDER_STATUS.CLOSE, ORDER_STATUS.REJECT].includes(row.original.orderStatus) || row.original.bookItemStatus === BOOK_ITEM_STATUS.LOST"
+        v-if="[ORDER_STATUS.CLOSE, ORDER_STATUS.REJECT].includes(row.original.orderStatus) || row.original.bookItemStatus === BOOK_COPY_STATUS.LOST"
         class="capitalize"
         variant="subtle"
         color="neutral"
@@ -298,10 +298,10 @@ function transformOrderItemStatus(data) {
     data.orderStatus !== ORDER_STATUS.CLOSE
   ) {
     status = 'Available';
-  } else if (data.bookItemStatus ===  BOOK_ITEM_STATUS.BORROWING) {
-    status = BOOK_ITEM_STATUS.BORROWING;
-  } else if (data.bookItemStatus ===  BOOK_ITEM_STATUS.LOST) {
-    status = BOOK_ITEM_STATUS.LOST;
+  } else if (data.bookItemStatus ===  BOOK_COPY_STATUS.BORROWING) {
+    status = BOOK_COPY_STATUS.BORROWING;
+  } else if (data.bookItemStatus ===  BOOK_COPY_STATUS.LOST) {
+    status = BOOK_COPY_STATUS.LOST;
   } else {
     status = data.orderItemStatus;
   }

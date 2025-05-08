@@ -192,7 +192,7 @@
           </UModal>
 
           <UBadge
-            v-if="[ORDER_STATUS.CLOSE, ORDER_STATUS.REJECT].includes(row.original.orderStatus) || row.original.bookItemStatus === BOOK_ITEM_STATUS.LOST"
+            v-if="[ORDER_STATUS.CLOSE, ORDER_STATUS.REJECT].includes(row.original.orderStatus) || row.original.bookItemStatus === BOOK_COPY_STATUS.LOST"
             class="capitalize"
             variant="subtle"
             color="neutral"
@@ -250,7 +250,7 @@
 import { useRouteParams } from '@vueuse/router';
 import { ORDER_ITEM_STATUS } from '~/composables/orderItems';
 import { ORDER_STATUS_OPTIONS, BORROWING_PERIOD } from '~/composables/orders';
-import { BOOK_ITEM_STATUS } from '~/composables/bookItems';
+import { BOOK_COPY_STATUS } from '~/composables/bookCopies';
 import { NOTIFICATION_MESSAGES, NOTIFICATION_TYPES } from '~/constants/notifications';
 import { MAX_EXTEND_DUE_DATE_TIMES } from '~/constants/rules';
 
@@ -258,7 +258,7 @@ const { userId } = useAuth();
 const { update, get:getOrderById } = useOrders();
 const { insert:renewDueDate } = useOrderRenews();
 const { upsert:upsertOrderItems, update:updateOrderItem } = useOrderItems();
-const { upsert:upsertBookItems } = useBookItems();
+const { upsert:upsertBookItems } = useBookCopies();
 const { insert:sendNotification } = useNotifications();
 
 const orderId = useRouteParams('id', null, { transform: Number });
@@ -352,7 +352,7 @@ function getBookItemsOption(bookId) {
     .filter(item => item.books.bookId === bookId)
     .map(item => {
       const availableBookItems = item.books.book_items.filter(
-        bookItem => bookItem.bookItemStatus === BOOK_ITEM_STATUS.OPENING
+        bookItem => bookItem.bookItemStatus === BOOK_COPY_STATUS.OPENING
       );
       return availableBookItems.map(bookItem => bookItem.bookItemId)
     });
@@ -364,7 +364,7 @@ function mapBookItems(orderItems: Object[]) {
     let currentbookItem = {};
     if (item.orderItemStatus === ORDER_ITEM_STATUS.WAITING) {
       currentbookItem = item.books.book_items.find(
-        bookItem => bookItem.bookItemStatus === BOOK_ITEM_STATUS.OPENING && item.orderItemStatus === ORDER_ITEM_STATUS.WAITING
+        bookItem => bookItem.bookItemStatus === BOOK_COPY_STATUS.OPENING && item.orderItemStatus === ORDER_ITEM_STATUS.WAITING
       );
     } else {
       currentbookItem = item.books.book_items.find(
@@ -534,8 +534,8 @@ async function markLostBook(uId:string) {
   console.log('MARK LOST BOOK => ', uId, lostItem)
 
   Promise.all([
-    useTable('order_items').update({ status: BOOK_ITEM_STATUS.LOST, comment: itemComment.value }).eq('id', lostItem[0].orderItemId),
-    useTable('book_items').update({ status: BOOK_ITEM_STATUS.LOST }).eq('id', lostItem[0].bookItemId)
+    useTable('order_items').update({ status: BOOK_COPY_STATUS.LOST, comment: itemComment.value }).eq('id', lostItem[0].orderItemId),
+    useTable('book_items').update({ status: BOOK_COPY_STATUS.LOST }).eq('id', lostItem[0].bookItemId)
   ])
   .then(async({ error }) => {
     if (error) throw error;
