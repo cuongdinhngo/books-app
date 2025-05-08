@@ -56,7 +56,10 @@
 
 <script setup lang="ts">
 import { BOOK_COPY_STATUS } from '~/constants/bookCopies';
+import { ORDER_STATUS } from '~/constants/orders';
+
 const supabase = useSupabaseClient();
+
 let overviewCards = [
   {
     id: 'total_categories',

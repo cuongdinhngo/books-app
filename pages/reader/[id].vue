@@ -10,15 +10,11 @@
         <div class="space-y-4">
             <div>
                 <span class="text-gray-600">Full Name:</span>
-                <span class="font-bold text-stone-900 ml-1"> {{ data.reader?.data.full_name }} </span>
+                <span class="font-bold text-stone-900 ml-1"> {{ data.reader?.data.name }} </span>
             </div>
             <div>
                 <span class="text-gray-600">Email:</span>
                 <span class="font-bold text-stone-900 ml-1"> {{ data.reader?.data.email }}</span>
-            </div>
-            <div>
-                <span class="text-gray-600">Birthday:</span>
-                <span class="font-bold text-stone-900 ml-1"> {{ data.reader?.data.birthday }}</span>
             </div>
             <div>
                 <span class="text-gray-600">Address:</span>
@@ -48,16 +44,16 @@ definePageMeta({
   layout: 'main'
 })
 import { useRouteParams } from '@vueuse/router';
-import { BOOK_COPY_STATUS } from '~/composables/bookCopies';
+import { BOOK_COPY_STATUS } from '~/constants/bookCopies';
 
-const { get, update } = useReaders();
+const { get, update } = useUsers();
 const { index } = useWishlists();
-const { index:getBookItems } = useBookCopies();
+const { index:getBookCopies } = useBookCopies();
 
 const readerId = useRouteParams('id');
 
 const { data, error } = await useAsyncData(
-  `reader-${readerId.value}`,
+  `reader/${readerId.value}`,
   async() => {
     const [reader, books] = await Promise.all([
       get(readerId.value),
@@ -81,7 +77,7 @@ const { data:wishlists, error:wishlistsError } = await useAsyncData(
       }
     });
 
-    const { data:bookItems, error } = await getBookItems({ bookIds: ids, status: [BOOK_COPY_STATUS.OPENING]});
+    const { data:bookItems, error } = await getBookCopies({ bookIds: ids, status: [BOOK_COPY_STATUS.OPENING]});
     if (error) {
       useToastError(error);
       return [];
