@@ -4,6 +4,7 @@
     <div v-else class="w-full h-full bg-gray-200 flex items-center justify-center rounded-lg">
       <UModal
         title="Upload profile photo"
+        v-model:open="openModal"
         :close="{
           color: 'primary',
           variant: 'outline',
@@ -28,4 +29,6 @@ const props = defineProps({
     default: null
   }
 });
+
+const openModal = defineModel();
 </script>

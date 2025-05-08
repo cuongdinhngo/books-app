@@ -66,17 +66,18 @@
 
 <script setup>
 const { query } = useRoute();
-const { index } = useReaders();
+const { index } = useUsers();
+
 const email = ref('');
 const name = ref('');
 const pageSize = 10;
 const page = ref(Number(query.page) || 1);
 const searchParams = ref({
-  columns: 'id, fullName:full_name, email, photo',
+  columns: 'id, name, email, photo',
   page: page.value,
   size: pageSize,
   email: email.value,
-  fullName: name.value
+  name: name.value
 });
 
 const { data: reader, error, refresh } = await useAsyncData(
@@ -91,15 +92,9 @@ const handlePageChange = (newPage) => {
 }
 
 const handleSearch = async() => {
-  searchParams.value = {
-    columns: 'id, fullName:full_name, email, photo',
-    page: page.value,
-    size: pageSize,
-    email: email.value,
-    fullName: name.value
-  }
-
-  refresh();
+  searchParams.value.page = 1;
+  searchParams.value.name = name.value;
+  searchParams.value.email = email.value;
 }
 
 const columns = [

@@ -4,21 +4,22 @@
     <ProfilePhotoBlock
       :data="data.reader?.data"
       :handle-upload-photo="handleUploadPhoto"
+      :open-modal="profileModal"
     />
     <!-- Right: Information Details -->
     <div class="w-2/3 p-6 flex flex-col justify-between">
         <div class="space-y-4">
             <div>
                 <span class="text-gray-600">Full Name:</span>
-                <span class="font-bold text-stone-900 ml-1"> {{ data.reader?.data.full_name }} </span>
+                <span class="font-bold text-stone-900 ml-1"> {{ data.reader?.data?.name }} </span>
             </div>
             <div>
                 <span class="text-gray-600">Email:</span>
                 <span class="font-bold text-stone-900 ml-1"> {{ data.reader?.data.email }}</span>
             </div>
             <div>
-                <span class="text-gray-600">Birthday:</span>
-                <span class="font-bold text-stone-900 ml-1"> {{ data.reader?.data.birthday }}</span>
+                <span class="text-gray-600">Phone:</span>
+                <span class="font-bold text-stone-900 ml-1"> {{ data.reader?.data.phone }}</span>
             </div>
             <div>
                 <span class="text-gray-600">Address:</span>
@@ -46,11 +47,6 @@
         header: 'Status'
       },
       {
-        accessorKey: 'order_items',
-        header: 'Quantity',
-        id: 'quantity'
-      },
-      {
         accessorKey: 'created_at',
         header: 'Booked at',
         id: 'bookedAt'
@@ -69,12 +65,6 @@
       </NuxtLink>
     </template>
 
-    <template #quantity-cell="{ row }">
-      <NuxtLink :to="{ name: 'admin-orders-id', params: { id: row.original.id }}" class="font-medium text-primary-500">
-        {{ row.original.order_items[0].count }}
-      </NuxtLink>
-    </template>
-
     <template #bookedAt-cell="{ row }">
       <NuxtLink :to="{ name: 'admin-orders-id', params: { id: row.original.id }}" class="font-medium text-primary-500">
         {{ useDateFormat(row.original.created_at, 'MMMM Do, YYYY') }}
@@ -87,10 +77,11 @@
 <script setup lang="ts">
 import { useRouteParams } from '@vueuse/router';
 
-const { get, update } = useReaders();
+const { get, update } = useUsers();
 const { index } = useOrders();
 
 const readerId = useRouteParams('id');
+const profileModal = ref(false);
 
 const handleUploadPhoto = async(event) => {
   const file = event.target.files[0];
@@ -100,6 +91,7 @@ const handleUploadPhoto = async(event) => {
       .then(({ error }) => {
         if (error) throw error;
 
+        profileModal.value = false;
         useToastSuccess();
         refresh();
       })
@@ -112,10 +104,14 @@ const {data, error, refresh} = await useAsyncData(
   async() => {
     const [reader, order] = await Promise.all([
       get(readerId.value),
-      index({ readerId: readerId.value, columns: 'id, status, created_at, order_items(count)' }) 
+      index({ readerId: readerId.value, columns: 'id, status, created_at' })
     ]);
 
     return { reader, order };
   }
 );
+
+if (error.value) {
+  useToastError(error.value);
+}
 </script>
