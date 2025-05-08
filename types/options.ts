@@ -62,3 +62,18 @@ export interface UserOptions {
   page?: number,
   size?: number
 }
+
+export interface OrderOptions {
+  columns?: string,
+  id?: number,
+  readerId?: string,
+  bookId?: number,
+  bookCopyId?: number,
+  status?: (string)[],
+  from?: string,
+  to?: string,
+  isOverdue?: boolean,
+  isHead?: boolean,
+  page?: number,
+  size?: number
+}

@@ -72,13 +72,12 @@ definePageMeta({
   layout: 'main'
 })
 
-import { ORDER_STATUS } from '~/composables/orders';
+import { ORDER_STATUS } from '~/constants/orders';
 
 const { bookCart, removeCartItem, reset: resetBookCart } = useBookCarts();
 const { index } = useBooks();
 const { userId } = useAuth();
 const { insert, index: getOrders } = useOrders();
-const { insert:addOrderItems } = useOrderItems();
 
 const table = useTemplateRef('table');
 const rowSelection = ref<Record<string, boolean>>({})
@@ -103,23 +102,15 @@ async function handleBorrow() {
     return;
   }
 
-  return insert({ reader_id: userId.value, status: ORDER_STATUS.WAITING })
+  const orderItems = checkoutItems.value.map(id => ({
+    reader_id: userId.value,
+    book_id: id,
+    status:ORDER_STATUS.WAITING,
+  }));
+
+  return insert(orderItems)
     .then(async({ error }) => {
       if (error) throw error;
-
-      const { data: newestOrder, error:getOrdersError } = await getOrders({ readerId: userId.value, status: [ORDER_STATUS.WAITING]})
-        .limit(1)
-        .single();
-      if (getOrdersError) throw getOrdersError;
-
-
-      const orderItems = checkoutItems.value.map(id => ({
-        order_id: newestOrder.id,
-        book_id: id,
-        status:ORDER_STATUS.WAITING,
-      }));
-      const { error:addOrderItemsError } = await addOrderItems(orderItems);
-      if (addOrderItemsError) throw addOrderItemsError;
 
       resetBookCart(checkoutItems.value);
       useToastSuccess();

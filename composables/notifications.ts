@@ -25,7 +25,7 @@ export const useNotifications = () => {
       query = query.eq('id', id);
     }
     if (readerId) {
-      query = query.eq('reader_id', readerId);
+      query = query.eq('user_id', readerId);
     }
     if (type) {
       query = query.eq('type', type);
@@ -43,9 +43,17 @@ export const useNotifications = () => {
     return query;
   }
 
+  const get = (userId: string, columns: string = '*') => {
+    return useTable(TABLE_NAME)
+      .select(columns)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false }); 
+  }
+
   return {
     index,
     update,
-    insert
+    insert,
+    get
   }
 }

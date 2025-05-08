@@ -1,5 +1,3 @@
-import type { Tables } from '~/types/database.types';
-
 interface GetBookItemsOptions {
   columns?: string,
   ids?: (number)[],
@@ -9,29 +7,6 @@ interface GetBookItemsOptions {
   size?: number
 }
 
-export const bookStatus = [
-  {
-    label: 'Pending',
-    id: 'pending'
-  },
-  {
-    label: 'Opening',
-    id: 'opening'
-  },
-  {
-    label: 'Borrowed',
-    id: 'borrowed'
-  },
-  {
-    label: 'Borrowing',
-    id: 'borrowing'
-  },
-  {
-    label: 'Lost',
-    id: 'lost'
-  }
-];
-
 const TABLE_NAME = 'book_copies';
 
 const { insert, update } = useCrud(TABLE_NAME);
@@ -40,7 +15,7 @@ export const useBookCopies = () => {
 
   const index = (options: GetBookItemsOptions = {}) => {
 
-    console.log('BOOK ITEM OPTIONS => ', options);
+    console.log('BOOK COPY OPTIONS => ', options);
     const {
       columns = '*',
       ids = [],
@@ -68,35 +43,9 @@ export const useBookCopies = () => {
     return query;
   }
 
-  const remove = (options: GetBookItemsOptions = {}) => {
-    const {
-      ids = [],
-      bookId = null,
-      status = null
-    } = options;
-    let query = useTable(TABLE_NAME).delete();
-    if (ids && ids.length > 0) {
-      query = query.in('id', ids);
-    }
-    if (bookId) {
-      query = query.eq('book_id', bookId);
-    }
-    if (status) {
-      query = query.eq('status', status);
-    }
-
-    return query;
-  }
-
-  const upsert = (data: Tables<'book_items'>[]) => {
-    return useTable(TABLE_NAME).upsert(data);
-  }
-
   return {
     insert,
     index,
-    update,
-    remove,
-    upsert
+    update
   }
 }

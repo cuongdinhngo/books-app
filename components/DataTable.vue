@@ -219,6 +219,8 @@
 </template>
 
 <script setup lang="ts">
+import { ORDER_STATUS } from '~/constants/orders';
+
 const props = defineProps({
   data: {
     type: Object,

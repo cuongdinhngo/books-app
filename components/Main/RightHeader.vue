@@ -27,8 +27,8 @@
 
   <USlideover title="" description="" v-if="isAuthenticated">
     <UChip
-      v-if="unreadNotificaitons.length > 0"
-      :text="unreadNotificaitons.length"
+      v-if="unreadNotificaitons?.length > 0"
+      :text="unreadNotificaitons?.length"
       size="3xl"
       color="neutral"
       :ui="{
@@ -114,21 +114,21 @@ import { DialogTitle, VisuallyHidden, DialogDescription } from 'reka-ui';
 const { signout } = useAuth();
 const { userId } = useAuth();
 const { bookCart } = useBookCarts();
-const { index:getNotifications } = useNotifications();
+const { get:getNotifications } = useNotifications();
 
 const bookCounts = computed(() => bookCart.value.length);
 const isAuthenticated = computed(() => !!userId.value);
 
 const { data:notifications, error } = await useAsyncData(
-  `reader-${userId.value}-notifications`,
+  `reader/${userId.value}/notifications`,
   async() => {
     if (userId.value) {
-      return await getNotifications({ readerId: userId.value })
+      return await getNotifications(userId.value)
     } else {
       return { data: [] }
     }
   }
 );
 
-const unreadNotificaitons = computed(() => notifications.value.data.filter(item => !item.is_read));
+const unreadNotificaitons = computed(() => notifications.value.data?.filter(item => !item.is_read));
 </script>

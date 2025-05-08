@@ -247,10 +247,11 @@
 </template>
 
 <script setup lang="ts">
+
 import { useRouteParams } from '@vueuse/router';
-import { ORDER_ITEM_STATUS } from '~/composables/orderItems';
-import { ORDER_STATUS_OPTIONS, BORROWING_PERIOD } from '~/composables/orders';
-import { BOOK_COPY_STATUS } from '~/composables/bookCopies';
+import { ORDER_STATUS, ORDER_STATUS_OPTIONS } from '~/constants/orders';
+import { BORROWING_PERIOD } from '~/constants/rules';
+import { BOOK_COPY_STATUS } from '~/constants/bookCopies';
 import { NOTIFICATION_MESSAGES, NOTIFICATION_TYPES } from '~/constants/notifications';
 import { MAX_EXTEND_DUE_DATE_TIMES } from '~/constants/rules';
 
@@ -296,32 +297,9 @@ function getOrderSelection() {
   return ORDER_STATUS_OPTIONS.filter(option => option.id !== oldOrderStatus.value && option.id !== ORDER_STATUS.OVERDUE && option.id !== ORDER_STATUS.WAITING);
 }
 
-const testItems = [
-  { id: 1, status: 'opening' },
-  { id: 2, status: 'pending' },
-  { id: 3, status: 'borrowed' },
-  { id: 4, status: 'lost' },
-  { id: 5, status: 'rejected' },
-  { id: 6, status: 'closed' }
-];
-
-console.log('TEST ITEMS => ', testItems.filter(item => item.status !== ORDER_ITEM_STATUS.REJECT));
-
 const selectedColumns = `
-  orderStatus:status, orderId:id, orderDueDate:due_date, orderCreatedAt:created_at,
-  readers!inner(id,fullName:full_name,photo),
-  order_items!inner(
-    orderItemId:id,
-    orderItemStatus:status,
-    bookItemId:book_item_id,
-    orderItemComment:comment,
-    books!inner(
-      bookId:id, bookTitle:title, bookCoverImage:cover_image,
-      book_items!inner(
-        bookItemId:id, bookItemStatus:status
-      )
-    )
-  )
+  status, id, orderDueDate:due_date, orderCreatedAt:created_at,
+  users!inner(id,name,photo)
 `;
 const { data, error, refresh } = await useAsyncData(
   `order-detail-${orderId.value}`,

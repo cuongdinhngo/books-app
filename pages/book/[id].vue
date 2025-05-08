@@ -173,7 +173,7 @@ const isSubmittedReview = computed(() => {
   if (!userId.value) {
     return true;
   }
-  const reviews = data.value?.reviews.data?.find(item => (item.readers.id === userId.value));
+  const reviews = data.value?.reviews.data?.find(item => (item.users.id === userId.value));
   return reviews ? Object.keys(reviews).length > 0 : false;
 });
 
