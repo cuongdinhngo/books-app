@@ -32,20 +32,11 @@ export const bookStatus = [
   }
 ];
 
-export const BOOK_ITEM_STATUS = {
-  PENDING: 'pending',
-  OPENING: 'opening',
-  BORROWING: 'borrowing',
-  LOST: 'lost',
-  UNAVAILABLE: 'unavailable',
-  AVAILABLE: 'available'
-};
-
-const TABLE_NAME = 'book_items';
+const TABLE_NAME = 'book_copies';
 
 const { insert, update } = useCrud(TABLE_NAME);
 
-export const useBookItems = () => {
+export const useBookCopies = () => {
 
   const index = (options: GetBookItemsOptions = {}) => {
 

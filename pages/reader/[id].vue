@@ -48,11 +48,11 @@ definePageMeta({
   layout: 'main'
 })
 import { useRouteParams } from '@vueuse/router';
-import { BOOK_ITEM_STATUS } from '~/composables/bookItems';
+import { BOOK_COPY_STATUS } from '~/composables/bookCopies';
 
 const { get, update } = useReaders();
 const { index } = useWishlists();
-const { index:getBookItems } = useBookItems();
+const { index:getBookItems } = useBookCopies();
 
 const readerId = useRouteParams('id');
 
@@ -77,11 +77,11 @@ const { data:wishlists, error:wishlistsError } = await useAsyncData(
         id: item.book_id,
         title: item.books.title,
         coverImage: item.books.coverImage,
-        status: BOOK_ITEM_STATUS.UNAVAILABLE
+        status: BOOK_COPY_STATUS.UNAVAILABLE
       }
     });
 
-    const { data:bookItems, error } = await getBookItems({ bookIds: ids, status: [BOOK_ITEM_STATUS.OPENING]});
+    const { data:bookItems, error } = await getBookItems({ bookIds: ids, status: [BOOK_COPY_STATUS.OPENING]});
     if (error) {
       useToastError(error);
       return [];
@@ -90,8 +90,8 @@ const { data:wishlists, error:wishlistsError } = await useAsyncData(
     if (bookItems?.length > 0) {
       books.forEach(book => {
         const availableBook = bookItems.find(ab => ab.book_id === book.id);
-        if (availableBook && availableBook.status === BOOK_ITEM_STATUS.OPENING) {
-          book.status = BOOK_ITEM_STATUS.AVAILABLE;
+        if (availableBook && availableBook.status === BOOK_COPY_STATUS.OPENING) {
+          book.status = BOOK_COPY_STATUS.AVAILABLE;
         }
       });
     }

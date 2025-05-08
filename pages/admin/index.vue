@@ -33,14 +33,14 @@
   </div>
 
   <h3
-    v-if="data.topOrders.data.length > 0"
+    v-if="data?.topOrders.data.length > 0"
     class="text-stone-800 font-bold mb-1">Top Orders</h3>
   <UCarousel
-    v-if="data.topOrders.data.length > 0"
+    v-if="data?.topOrders.data.length > 0"
     v-slot="{ item }"
     loop
     arrows
-    :items="data.topOrders.data"
+    :items="data?.topOrders.data"
     :ui="{
       item: 'basis-1/4',
       next: 'end-0',
@@ -55,6 +55,7 @@
 </template>
 
 <script setup lang="ts">
+import { BOOK_COPY_STATUS } from '~/constants/bookCopies';
 const supabase = useSupabaseClient();
 let overviewCards = [
   {
@@ -119,20 +120,20 @@ let orderStats = [
 
 let bookStats = [
   {
-    id: 'total_book_items',
+    id: 'total_book_copies',
     to: { name: "admin-books" },
     label: 'Hard Copies',
     count: 0
   },
   {
     id: 'available_books',
-    to: { name: "admin-books", query: { status: BOOK_ITEM_STATUS.OPENING } },
+    to: { name: "admin-books", query: { status: BOOK_COPY_STATUS.OPENING } },
     label: 'Available Copies',
     count: 0
   },
   {
     id: 'lost_books',
-    to: { name: "admin-books", query: { status: BOOK_ITEM_STATUS.LOST } },
+    to: { name: "admin-books", query: { status: BOOK_COPY_STATUS.LOST } },
     label: 'Lost Copies',
     count: 0
   },

@@ -47,7 +47,7 @@
         <UAvatar :src="row.original.photo" size="xl" class="rounded-none"/>
         <div>
           <NuxtLink :to="{ name: 'admin-staff-id', params: { id: row.original.id }}">
-            <p class="font-medium text-primary-500">{{ row.original.fullName }}</p>
+            <p class="font-medium text-primary-500">{{ row.original.name }}</p>
           </NuxtLink>
         </div>
       </div>
@@ -71,19 +71,22 @@
 </template>
 
 <script setup>
-import { NuxtLink } from '#components'
 import { useRouteQuery } from '@vueuse/router';
-const { index } = useStaff();
+import { USER_ROLE_STAFF } from '~/constants/users';
+
+const { index } = useUsers();
+
 const email = ref('');
 const name = ref('');
 const pageSize = 5;
 const page = useRouteQuery('page', '1', { transform: Number });
 const searchParams = ref({
-  columns: 'id, fullName:full_name, email, photo',
+  columns: 'id, name, email, photo',
   page: page.value,
   size: pageSize,
   email: email.value,
-  fullName: name.value
+  name: name.value,
+  role: USER_ROLE_STAFF
 });
 
 const { data: staff, error, refresh } = await useAsyncData(
@@ -99,13 +102,13 @@ const handlePageChange = (newPage) => {
 
 const searchUsers = async() => {
   searchParams.value.email = email.value;
-  searchParams.value.fullName = name.value;
+  searchParams.value.name = name.value;
   searchParams.value.page = 1;
 }
 
 const columns = [
   {
-    accessorKey: 'fullName',
+    accessorKey: 'name',
     header: 'Full name',
     id: 'staffName'
   },

@@ -57,23 +57,16 @@
 
 <script setup lang="ts">
 import type { Tables } from '~/types/database.types';
-import { useRouteQuery } from '@vueuse/router';
+import { USER_ROLE_STAFF } from '~/constants/users';
 
-const { insert, get, update } = useStaff();
+const { insert } = useStaff();
 const { signup } = useAuth();
+
 const name = ref<string>('');
 const email = ref<string>('');
 const photo = ref<string>('');
 const photoPreview = ref<string>('');
 const password = ref<string>('');
-const staffId = useRouteQuery('id');
-
-onMounted(async() => {
-  const { data, error } = await get(staffId.value);
-  name.value = data.full_name;
-  email.value = data.email;
-  photoPreview.value = data.photo;
-});
 
 function handlePhoto(event) {
   const file = event.target.files[0];
@@ -85,8 +78,9 @@ function handlePhoto(event) {
 
 async function submitForm() {
   let staff = {
-    full_name: name.value,
+    name: name.value,
     email: email.value,
+    role: USER_ROLE_STAFF
   } as Tables<'users'>;
 
   if (photo.value) {
@@ -96,12 +90,7 @@ async function submitForm() {
     };
   }
 
-  if (staffId.value) {
-    await update(staffId.value, staff)
-      .then(() => useToastSuccess())
-      .catch((error) => useToastError(error));
-  } else {
-    await signup(email.value, password.value)
+  await signup(email.value, password.value)
     .then(async({ data, error }) => {
       const userId = data.user?.id;
       staff = {
@@ -111,9 +100,12 @@ async function submitForm() {
       const { error:insertError } = await insert(staff);
       if (insertError) throw insertError;
 
+      name.value = '';
+      email.value = '';
+      password.value = '';
+      photo.value = '';
       useToastSuccess();
     })
     .catch((error) => useToastError(error));
-  }
 }
 </script>

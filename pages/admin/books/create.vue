@@ -88,7 +88,7 @@ const { index, insert } = useBooks();
 const { insert:insertBookAuthors } = useBooksAuthors();
 const { insert:insertBookCategories } = useBooksCategories();
 const { insert:insertBookPublishers } = useBooksPublishers();
-const { insert:insertBookItems } = useBookItems();
+const { insert:insertBookItems } = useBookCopies();
 
 const title = ref('');
 const selectedAuthors = ref([]);

@@ -113,7 +113,7 @@ import { useRouteQuery } from '@vueuse/router';
 
 const { index, update } = useOrders();
 const { index:getOrderItems, upsert:upsertOrderItems } = useOrderItems();
-const { upsert:upsertBookItems } = useBookItems();
+const { upsert:upsertBookItems } = useBookCopies();
 const router = useRouter();
 
 const page = useRouteQuery('page', 1 , { transform: Number });
