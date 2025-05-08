@@ -1,20 +1,12 @@
 import type { Tables } from '~/types/database.types';
+import type { UserOptions } from '~/types/options';
 
-interface GetReadersOptions {
-  columns?: string,
-  id?: string,
-  fullName?: string,
-  email?: string,
-  page?: number,
-  size?: number
-}
-
-const TABLE_NAME = 'readers';
-const PHOTO_DIRECTORY = 'readers';
+const TABLE_NAME = 'users';
+const PHOTO_DIRECTORY = 'users';
 
 const { insert, get, remove } = useCrud(TABLE_NAME);
 
-export const useReaders = () => {
+export const useUsers = () => {
   const token = useCookie<String>('token');
   const readerId = useCookie<Number>('readerId');
   const { uploadPhoto } = useImages('books');
@@ -41,21 +33,25 @@ export const useReaders = () => {
     }
   }
 
-  const index = (options: GetReadersOptions = {}) => {
+  const index = (options: UserOptions = {}) => {
     const {
       columns = '*',
-      fullName = null,
+      name = null,
       email = null,
+      role = null,
       page = null,
       size = null
     } = options;
 
     let query = useTable(TABLE_NAME).select(columns, { count: 'exact'}).order('id', { ascending: false });
-    if (fullName) {
-      query = query.ilike('full_name', `%${fullName}%`);
+    if (name) {
+      query = query.ilike('name', `%${name}%`);
     }
     if (email) {
       query = query.ilike('email', `%${email}%`);
+    }
+    if (role) {
+      query = query.eq('role', role);
     }
     if (page && size && page >= 1 && size >= 1) {
       query = query.range((page - 1) * size, page * size - 1);
@@ -64,13 +60,12 @@ export const useReaders = () => {
     return query;
   }
 
-  const update = async(readerId: string, data: Tables<'readers'>) => {
+  const update = async(userId: string, data: Tables<'users'>) => {
     const photoUrl = await uploadPhoto(data.photo, PHOTO_DIRECTORY);
     if (photoUrl) {
       data.photo = photoUrl;
     }
-    console.log('UPDATE DATA', data, readerId);
-    return useTable(TABLE_NAME).update(data).eq('id', readerId);
+    return useTable(TABLE_NAME).update(data).eq('id', userId);
   }
 
   return {
