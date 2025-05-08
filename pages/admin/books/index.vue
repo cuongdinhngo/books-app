@@ -76,7 +76,7 @@ const { index, remove } = useBooks();
 const { remove:deleteBooksAuthors } = useBooksAuthors();
 const { remove:deleteBooksCategories } = useBooksCategories();
 const { remove:deleteBooksPublishers } = useBooksPublishers();
-const { remove:deleteBookItems } = useBookItems();
+const { remove:deleteBookItems } = useBookCopies();
 const {query} = useRoute();
 
 const page = ref(useRouteParams('page', 1, { transform: Number }));

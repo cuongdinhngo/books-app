@@ -80,7 +80,7 @@ const { get, update } = useBooks();
 const { insert:insertBooksAuthors, remove:deleteBooksAuthors } = useBooksAuthors();
 const { insert:insertBooksCategories, remove:deleteBooksCategories } = useBooksCategories();
 const { insert:insertBooksPublishers, remove:deleteBooksPublishers } = useBooksPublishers();
-const { insert:insertBooksItems, remove:deleteBookItems, index:getBookItems } = useBookItems();
+const { insert:insertBooksItems, remove:deleteBookItems, index:getBookItems } = useBookCopies();
 
 const bookId = useRouteParams('id', null, { transform: Number });
 
@@ -102,6 +102,10 @@ const { data:book, error, refresh } = await useAsyncData(
   `book-${bookId.value}`,
   () => get(bookId.value)
 );
+
+if (error.value) {
+  useToastError(error.value);
+}
 
 title.value = book.value.data.title;
 description.value = book.value.data.description;

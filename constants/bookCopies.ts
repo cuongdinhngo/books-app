@@ -1,4 +1,4 @@
-export const BOOK_ITEM_STATUS = {
+export const BOOK_COPY_STATUS = {
   PENDING: 'pending',
   OPENING: 'opening',
   BORROWING: 'borrowing',
