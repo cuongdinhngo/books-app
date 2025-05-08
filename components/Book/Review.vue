@@ -2,7 +2,7 @@
   <div class="border-b pb-4">
     <div class="flex items-center">
         <span class="text-gray-800 font-medium mr-2">
-          {{ review.readers.fullName}}
+          {{ review.users.name}}
         </span>
         <BookStarRating
           :rating="review.rating"

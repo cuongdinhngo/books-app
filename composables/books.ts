@@ -90,11 +90,10 @@ export const useBooks = () => {
       title,
       description,
       coverImage:cover_image,
-      quantity,
       publishers(id, name),
       authors(id, name:full_name),
       categories(id, name),
-      book_items(id, book_id, status)
+      book_copies(id, book_id, status)
     `;
     if (columns.length > 0) {
       selectColumns = `${selectColumns}, ${columns}`;

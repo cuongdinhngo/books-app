@@ -27,7 +27,7 @@
 <script setup lang="ts">
 import { useRouteParams, useRouteQuery } from '@vueuse/router';
 
-const { index:getBookReviews } = useReviews();
+const { index:getBookReviews } = useBooksReviews();
 const supabase = useSupabaseClient();
 
 const page = ref(useRouteQuery('page', 1, { transform: Number }));
@@ -44,7 +44,7 @@ const { data, error } = await useAsyncData(
   async() => {
     const [rating, reviews] = await Promise.all([
       supabase.rpc('get_average_rating_by_book', { p_book_id: bookId.value }).single(),
-      getBookReviews({ columns: 'id,rating,content,created_at,readers(id,fullName:full_name)', ...searchParams.value })
+      getBookReviews({ columns: 'id,rating,content,created_at,users(id,name)', ...searchParams.value })
     ]);
 
     return { rating, reviews };

@@ -10,9 +10,9 @@ interface ReviewOptions {
   isHead?: Boolean
 }
 
-const TABLE_NAME = 'reviews';
+const TABLE_NAME = 'books_reviews';
 
-export const useReviews = () => {
+export const useBooksReviews = () => {
 
   const index = (options: ReviewOptions = {}) => {
 

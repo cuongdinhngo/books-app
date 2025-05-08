@@ -30,32 +30,32 @@
       </label>
       <label
         class="w-40 text-sm font-medium text-gray-700 p-2 bg-violet-300 rounded-2xl cursor-pointer"
-        @click="searchByStatus(BOOK_ITEM_STATUS.PENDING)"
+        @click="searchByStatus(BOOK_COPY_STATUS.PENDING)"
       >
         Pending: {{ pendingCounts }}
       </label>
       <label
         class="w-40 text-sm font-medium text-gray-700 p-2 bg-green-200 rounded-2xl cursor-pointer"
-        @click="searchByStatus(BOOK_ITEM_STATUS.OPENING)"
+        @click="searchByStatus(BOOK_COPY_STATUS.OPENING)"
       >
         Opening: {{ openingCounts }}
       </label>
       <label
         class="w-40 text-sm font-medium text-gray-700 p-2 bg-orange-200 rounded-2xl cursor-pointer"
-        @click="searchByStatus(BOOK_ITEM_STATUS.BORROWING)"
+        @click="searchByStatus(BOOK_COPY_STATUS.BORROWING)"
       >
         Borrowing: {{ borrowingCounts }}
       </label>
       <label
         class="w-40 text-sm font-medium text-gray-700 p-2 bg-gray-300 rounded-2xl cursor-pointer"
-        @click="searchByStatus(BOOK_ITEM_STATUS.LOST)"
+        @click="searchByStatus(BOOK_COPY_STATUS.LOST)"
       >
         Lost: {{ lostCounts }}
       </label>
     </div>
 
     <div
-      v-if="itemStatus.length > 0 ? bookItems?.perPage.count : bookItems?.all.count"
+      v-if="itemStatus.length > 0 ? bookCopies?.perPage.count : bookCopies?.all.count"
       class="flex justify-start mt-10"
     >
       <UButton
@@ -69,8 +69,8 @@
 
     <UTable
       ref="table"
-      v-if="bookItems?.perPage.count > 0"
-      :data="bookItems?.perPage.data"
+      v-if="bookCopies?.perPage.count > 0"
+      :data="bookCopies?.perPage.data"
       class="flex-1"
       :columns="[
         {
@@ -106,7 +106,7 @@
 
       <template #select-cell="{ row }">
         <UCheckbox
-          :disabled="row.original.status === BOOK_ITEM_STATUS.LOST || row.original.status === BOOK_ITEM_STATUS.BORROWING"
+          :disabled="row.original.status === BOOK_COPY_STATUS.LOST || row.original.status === BOOK_COPY_STATUS.BORROWING"
           :key="row.original.id"
           :model-value="row.getIsSelected()"
           v-on:update:model-value="(value: boolean | 'indeterminate') => row.toggleSelected(!!value)"
@@ -125,7 +125,7 @@
 
       <template #actions-cell="{ row }">
         <USwitch
-          v-if="row.original.status !== BOOK_ITEM_STATUS.LOST && row.original.status !== BOOK_ITEM_STATUS.BORROWING"
+          v-if="row.original.status !== BOOK_COPY_STATUS.LOST && row.original.status !== BOOK_COPY_STATUS.BORROWING"
           :ui="{
             label: 'text-stone-900'
           }"
@@ -133,15 +133,15 @@
           variant="subtle"
           unchecked-icon="lucide-x"
           checked-icon="lucide-check"
-          :label="row.original.status === BOOK_ITEM_STATUS.OPENING ? 'Disable' : 'Enable'"
-          :modelValue="row.original.status === BOOK_ITEM_STATUS.OPENING"
+          :label="row.original.status === BOOK_COPY_STATUS.OPENING ? 'Disable' : 'Enable'"
+          :modelValue="row.original.status === BOOK_COPY_STATUS.OPENING"
           @update:modelValue="(value) => handleStatusChange(row, value)"
         />
       </template>
     </UTable>
 
     <div
-      v-if="itemStatus.length > 0 ? bookItems?.perPage.count : bookItems?.all.count"
+      v-if="itemStatus.length > 0 ? bookCopies?.perPage.count : bookCopies?.all.count"
       class="px-4 py-3.5 text-sm text-muted text-stone-800"
     >
       {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
@@ -150,8 +150,8 @@
 
     <Pagination
       v-model="page"
-      v-if="itemStatus.length > 0 ? bookItems?.perPage.count : bookItems?.all.count"
-      :totalCounts="itemStatus.length > 0 ? bookItems?.perPage.count : bookItems?.all.count"
+      v-if="itemStatus.length > 0 ? bookCopies?.perPage.count : bookCopies?.all.count"
+      :totalCounts="itemStatus.length > 0 ? bookCopies?.perPage.count : bookCopies?.all.count"
       :items-per-page="pageSize"
       @changePage="handlePageChange"
     />
@@ -161,14 +161,15 @@
 
 <script setup lang="ts">
 import { useRouteParams, useRouteQuery } from '@vueuse/router';
-import { BOOK_ITEM_STATUS } from '~/constants/bookItems';
+import { BOOK_COPY_STATUS } from '~/constants/bookCopies';
 
-const { index, update, upsert } = useBookItems();
+const { index, update, upsert } = useBookCopies();
 const router = useRouter();
 
 const bookId = useRouteParams('id', null, {transform: Number});
 const page = ref(useRouteQuery('page', 1, { transform: Number }));
 const pageSize = 5;
+
 const table = useTemplateRef('table');
 const totalCounts = ref(0);
 const pendingCounts = ref(0);
@@ -184,7 +185,7 @@ const searchParams = ref({
   size: pageSize
 });
 
-const { data:bookItems, error, refresh } = await useAsyncData(
+const { data:bookCopies, error, refresh } = await useAsyncData(
   `book/${bookId.value}/items/page/${page.value}`,
   async() => {
     const [ all, perPage] = await Promise.all([
@@ -199,9 +200,9 @@ const { data:bookItems, error, refresh } = await useAsyncData(
   }
 );
 
-console.log('bookItems', bookItems.value);
+console.log('bookCopies', bookCopies.value);
 
-processItems(bookItems.value?.all.data);
+processItems(bookCopies.value?.all.data);
 
 function searchByStatus (status: string) {
   console.log('searchByStatus', status);
@@ -217,6 +218,7 @@ function searchByStatus (status: string) {
 }
 
 function processItems (data: any[]) {
+  console.log('processItems', data);
   const items = data.reduce((acc, item) => {
     acc[item.status] = (acc[item.status] || 0) + 1;
     return acc;
@@ -225,7 +227,7 @@ function processItems (data: any[]) {
   openingCounts.value = items.opening || 0;
   borrowingCounts.value = items.borrowing || 0;
   lostCounts.value = items.lost || 0;
-  totalCounts.value = bookItems.value?.all.count || 0;
+  totalCounts.value = bookCopies.value?.all.count || 0;
 }
 
 function handlePageChange (newPage: number) {
@@ -235,7 +237,7 @@ function handlePageChange (newPage: number) {
 
 const submitItems = async() => {
   if (quantity.value <= 0) {
-    useToastError('Please enter a valid quantity.');
+    useToastError(null, 'Please enter a valid quantity.');
     return;
   }
 
@@ -251,10 +253,10 @@ const submitItems = async() => {
 
       quantity.value = 0;
       refresh().then(() => {
-        processItems(bookItems.value.data);
+        processItems(bookCopies.value.all.data);
       });
 
-      useToastSuccess('Book items added successfully!!!');
+      useToastSuccess('Book copies added successfully!!!');
     })
     .catch((error) => useToastError(error));
 };
@@ -279,7 +281,7 @@ const enableAll = async() => {
 
       table?.value?.tableApi.toggleAllPageRowsSelected(false);
       refresh().then(() => {
-        processItems(bookItems.value.data);
+        processItems(bookCopies.value.all.data);
       });
       useToastSuccess('Book items status updated successfully!!!');
     })
@@ -292,6 +294,10 @@ const handleStatusChange = async(row: any, value: boolean) => {
   await update(row.original.id, { status: newStatus })
     .then(({ error }) => {
       if (error) throw error;
+
+      refresh().then(() => {
+        processItems(bookCopies.value.all.data);
+      });
       useToastSuccess(`Book item #${row.original.id} status updated successfully!!!`);
     })
     .catch((error) => useToastError(error));
