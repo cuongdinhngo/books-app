@@ -40,11 +40,11 @@
       </div>
       <div class="text-sm font-medium">
         <label class="inline text-gray-600">Quantity: </label>
-        <span class="text-gray-900"> {{ data?.book.data?.book_items.filter(item => item.status === 'opening').length }} </span>
+        <span class="text-gray-900"> {{ data?.book.data?.book_copies.filter(item => item.status === 'opening').length }} </span>
       </div>
       <div class="flex space-x-4">
         <UButton
-          v-if="data?.book.data?.book_items.filter(item => item.status === 'opening').length > 0"
+          v-if="data?.book.data?.book_copies.filter(item => item.status === 'opening').length > 0"
           icon="lucide:shopping-cart"
           class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
           @click="handleBorrow"
@@ -141,10 +141,10 @@ import { useRouteParams } from '@vueuse/router';
 
 const { userId } = useAuth();
 const { addToCart } = useBookCarts();
-const { insert, index:getBookReviews } = useReviews();
+const { insert, index:getBookReviews } = useBooksReviews();
 const { get:getBookDetails } = useBooks();
 const { insert:addToWishlist } = useWishlists();
-const { index:getBorrowedBookCounts } = useOrderItems();
+const { index:getBorrowedBookCounts } = useOrders();
 
 const supabase = useSupabaseClient();
 const bookId = useRouteParams('id', null, { transform: Number });
@@ -157,7 +157,7 @@ const { data, error, refresh } = await useAsyncData(
   async () => {
     const [book, reviews, rating, borrowedCounts] = await Promise.all([
       getBookDetails(bookId.value, 'wishlists(id, book_id)'),
-      getBookReviews({ columns: 'id,rating,content,created_at,readers(id,fullName:full_name)', bookId: bookId.value }),
+      getBookReviews({ columns: 'id,rating,content,created_at,users(id,name)', bookId: bookId.value }),
       supabase.rpc('get_average_rating_by_book', { p_book_id: bookId.value }).single(),
       getBorrowedBookCounts({ bookId: bookId.value, isHead: true })
     ])
@@ -165,6 +165,8 @@ const { data, error, refresh } = await useAsyncData(
     return { book, reviews, rating, borrowedCounts}
   }
 );
+
+console.log('BOOK => ', data.value);
 
 const isSubmittedReview = computed(() => {
   console.log('COMPUTED => ', data.value?.reviews);
