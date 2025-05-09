@@ -1,51 +1,18 @@
 <template>
   <h3 class="text-stone-900">Historical Orders</h3>
 
-  <h3 v-if="status === 'pending'" class="justify-center flex text-stone-900">Loading ...</h3>
-  <div v-else>
-    <UTable
-      v-if="order.count > 0"
-      :data="order.data"
-      :columns="columns"
-      class="flex-1"
-    >
-      <template #id-cell="{ row }">
-        <NuxtLink :to="`/reader/orders/${row.original.id}`" class="hover:text-primary-700 cursor-pointer">
-          #{{ row.original.id}}
-        </NuxtLink>
-      </template>
-
-      <template #status-cell="{ row }">
-        <NuxtLink :to="`/reader/orders/${row.original.id}`" class="hover:text-primary-700 cursor-pointer">
-          {{ capitalize(row.original.status) }}
-          <UBadge
-            v-if="row.getValue('status') === ORDER_ITEM_STATUS.BORROWING && new Date() > new Date(row.original.due_date)"
-            color="warning" variant="solid"
-          >
-            Overdue
-          </UBadge>
-        </NuxtLink>
-      </template>
-
-      <template #orderItems-cell="{ row }">
-        <NuxtLink :to="`/reader/orders/${row.original.id}`" class="hover:text-primary-700 cursor-pointer">
-          {{ row.getValue('orderItems')[0].count }}
-        </NuxtLink>
-      </template>
-
-      <template #createdAt-cell="{ row }">
-        <NuxtLink :to="`/reader/orders/${row.original.id}`" class="hover:text-primary-700 cursor-pointer">
-          {{ useDateFormat(row.getValue('createdAt'), 'MMMM Do, YYYY') }}
-        </NuxtLink>
-      </template>
-
-      <template #dueDate-cell="{ row }">
-        <NuxtLink :to="`/reader/orders/${row.original.id}`" class="hover:text-primary-700 cursor-pointer">
-          {{ row.getValue('dueDate') ? useDateFormat(row.getValue('dueDate'), 'MMMM Do, YYYY') : ''}}
-        </NuxtLink>
-      </template>
-    </UTable>
+  <div class="w-full">
+    <ReaderOrderCard
+      v-if="order?.count > 0"
+      v-for="order in order?.data"
+      :key="order.id"
+      :order="order"
+      :book="order.books"
+      :user="order.users"
+      :book-copies="order.books.book_copies"
+    />
   </div>
+  <h3 v-if="order?.count == 0" class="justify-center flex text-stone-900">No Data</h3>
 </template>
 
 <script setup lang="ts">
@@ -54,47 +21,32 @@ definePageMeta({
 })
 
 import { ORDER_ITEM_STATUS } from '~/composables/orderItems';
+import { useRouteQuery  } from '@vueuse/router'; 
 
 const { index } = useOrders();
 const { userId } = useAuth();
 
-const selectColumns = `
-  id,
-  status,
-  created_at,
-  due_date,
-  order_items(count)
-`;
-const {data: order, error, status} = await useAsyncData(
-  'reader-orders',
-  () => index({ columns: selectColumns, readerId: userId.value }) 
-)
+const page = useRouteQuery('page', 1, { transform: Number });
+const pageSize = 10;
+const searchParams = ref({
+  columns: `
+    id, status, book_id, book_copy_id, due_date, created_at,
+    users!inner(id, name, photo),
+    books!inner(
+      id, title, cover_image,
+      book_copies!inner(id, status)
+    )
+  `,
+  readerId: userId.value,
+  page: page.value,
+  size: pageSize
+});
 
-console.log('DATA => ', order);
+const { data: order, error, refresh, clear } = useAsyncData(
+  `order-page-${page.value}`,
+  () => index(searchParams.value),
+  { watch: [searchParams.value] }
+);
 
-const columns = [
-  {
-    accessorKey: 'id',
-    header: 'Order No.'
-  },
-  {
-    accessorKey: 'status',
-    header: 'Status'
-  },
-  {
-    accessorKey: 'order_items',
-    header: 'Quantity',
-    id: 'orderItems'
-  },
-  {
-    accessorKey: 'created_at',
-    header: 'Booked at',
-    id: 'createdAt'
-  },
-  {
-    accessorKey: 'due_date',
-    header: 'Due date',
-    id: 'dueDate'
-  }
-]
+console.log('Historical Orders => ', order);
 </script>

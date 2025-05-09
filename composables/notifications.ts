@@ -1,4 +1,6 @@
 import type { NotificationOptions } from '~/types/options';
+import { ORDER_STATUS } from '~/constants/orders';
+import { NOTIFICATION_TYPES, NOTIFICATION_MESSAGES } from '~/constants/notifications';
 
 const TABLE_NAME = 'notifications';
 
@@ -50,10 +52,35 @@ export const useNotifications = () => {
       .order('created_at', { ascending: false }); 
   }
 
+  const getNotificationByOrderStatus = (orderStatus: string) => {
+    let type = '';
+    let message = '';
+    switch (orderStatus) {
+      case ORDER_STATUS.BORROWING:
+        type = NOTIFICATION_TYPES.ORDER_APPROVED;
+        message = NOTIFICATION_MESSAGES.ORDER_APPROVED;
+        break;
+      case ORDER_STATUS.CLOSE:
+        type = NOTIFICATION_TYPES.ORDER_CLOSED;
+        message = NOTIFICATION_MESSAGES.ORDER_CLOSED;
+        break;
+      case ORDER_STATUS.REJECT:
+        type = NOTIFICATION_TYPES.ORDER_REJECTED;
+        message = NOTIFICATION_MESSAGES.ORDER_REJECTED;
+        break;
+    }
+  
+    return {
+      type,
+      message
+    };
+  }
+
   return {
     index,
     update,
     insert,
-    get
+    get,
+    getNotificationByOrderStatus
   }
 }
