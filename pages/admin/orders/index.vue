@@ -66,7 +66,7 @@ const router = useRouter();
 
 const page = useRouteQuery('page', 1 , { transform: Number });
 const pageSize = 5;
-const orderId = ref(null)
+const orderId = useRouteQuery('id', null);
 const from = ref(null);
 const to = ref(null);
 
