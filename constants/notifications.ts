@@ -10,6 +10,8 @@ export const NOTIFICATION_TYPES = {
 
   REQUEST_EXTEND_DUE_DATE: 'request_extend_due_date',
   APPROVED_EXTEND_DUE_DATE: 'approved_extend_due_date',
+  STAFF_EXTEND_DUE_DATE: 'staff_extend_due_date',
+  REJECTED_REQUEST_DUE_DATE: 'rejected_request_due_date'
 }
 
 export const NOTIFICATION_MESSAGES = {
@@ -23,5 +25,7 @@ export const NOTIFICATION_MESSAGES = {
   BOOK_WISHLIST: 'Your book is available. Please make an order soon!',
 
   REQUEST_EXTEND_DUE_DATE: 'A request is to extend due date. Please check it!',
-  APPROVED_EXTEND_DUE_DATE: 'Your request of extending due date was approved'
+  APPROVED_EXTEND_DUE_DATE: 'Your request of extending due date was approved',
+  STAFF_EXTEND_DUE_DATE: 'Your order #{orderId} was extened.',
+  REJECTED_REQUEST_DUE_DATE: 'Your request of extending due date was rejected.'
 }

@@ -54,7 +54,17 @@ function getIcon() {
       icon = 'img/wishlist.png';
       break;
     case NOTIFICATION_TYPES.APPROVED_EXTEND_DUE_DATE:
+    case NOTIFICATION_TYPES.STAFF_EXTEND_DUE_DATE:
       icon = 'img/check.png';
+      break;
+    case NOTIFICATION_TYPES.NEW_ORDER:
+    case NOTIFICATION_TYPES.ORDER_APPROVED:
+    case NOTIFICATION_TYPES.ORDER_CLOSED:
+      icon = 'img/book.png';
+      break;
+    case NOTIFICATION_TYPES.ORDER_REJECTED:
+    case NOTIFICATION_TYPES.REJECTED_REQUEST_DUE_DATE:
+      icon = 'img/reject.png';
       break;
   }
 
@@ -65,14 +75,18 @@ function getLink() {
   let link = {};
   switch(props.notification.type) {
     case NOTIFICATION_TYPES.APPROVED_EXTEND_DUE_DATE:
+    case NOTIFICATION_TYPES.REJECTED_REQUEST_DUE_DATE:
+    case NOTIFICATION_TYPES.ORDER_APPROVED:
+    case NOTIFICATION_TYPES.ORDER_REJECTED:
     case NOTIFICATION_TYPES.ORDER_OVERDUE:
-      link = { name: 'reader-orders-id', params: { id: props.notification.notifiable_id} };
+    case NOTIFICATION_TYPES.ORDER_CLOSED:
+      link = { name: 'reader-orders', query: { id: props.notification.notifiable_id} };
       break;
     case NOTIFICATION_TYPES.BOOK_WISHLIST:
       link = { name: 'book-id', params: { id: props.notification.notifiable_id } };
       break;
-    case NOTIFICATION_TYPES.REQUEST_EXTEND_DUE_DATE:
-      link = { name: 'admin-orders-id', params: { id: props.notification.notifiable_id }};
+    default:
+      link = { name: 'admin-orders', query: { id: props.notification.notifiable_id }};
       break;
   }
 

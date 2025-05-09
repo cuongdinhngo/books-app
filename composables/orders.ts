@@ -1,45 +1,22 @@
-import type { Tables } from '~/types/database.types';interface GetOrdersOptions {
-  columns?: string,
-  id?: number,
-  readerId?: string,
-  status?: (string)[],
-  from?: string,
-  to?: string,
-  isOverdue?: boolean,
-  isHead?: boolean,
-  page?: number,
-  size?: number
-}
-
-export const ORDER_STATUS = {
-  WAITING: 'waiting',
-  BORROWING: 'borrowing',
-  CLOSE: 'closed',
-  REJECT: 'rejected',
-  OVERDUE: 'overdue'
-};
-
-export const ORDER_STATUS_OPTIONS = [
-  {label: 'Close', id: 'closed'},
-  {label: 'Borrowing', id: 'borrowing'},
-  {label: 'Waiting', id: 'waiting'},
-  {label: 'Reject', id: 'rejected'},
-  {label: 'Overdue', id: 'overdue'},
-];
-
-export const BORROWING_PERIOD = 7;
+import type { Tables } from '~/types/database.types';
+import type { OrderOptions } from '~/types/options';
+import { ORDER_STATUS } from '~/constants/orders';
 
 const TABLE_NAME = 'orders';
 const RENEW_TABLE_NAME = 'order_renews';
 
+const { insert, update, get, remove } = useCrud(TABLE_NAME);
+
 export const useOrders = () => {
 
-  const index = (options: GetOrdersOptions = {}) => {
+  const index = (options: OrderOptions = {}) => {
     let {
       columns = '*',
       id = null,
       readerId = null,
       status = [],
+      bookId = null,
+      bookCopyId = null,
       from = null,
       to = null,
       isOverdue = false,
@@ -59,6 +36,13 @@ export const useOrders = () => {
     if (readerId) {
       query = query.eq('reader_id', readerId);
     }
+    if (bookId) {
+      query = query.eq('book_id', bookId);
+    }
+    if (bookCopyId) {
+      query = query.eq('book_copy_id', bookCopyId);
+    }
+
     //overdue filter requires that status must be borrowing
     if (isOverdue) {
       status = [ORDER_STATUS.BORROWING];
@@ -79,38 +63,6 @@ export const useOrders = () => {
     return query;
   }
 
-  const update = (orderId: number, data: Tables<'orders'>) => {
-    return useTable(TABLE_NAME).update(data).eq('id', orderId);
-  }
-
-  const insert = (data: Tables<'orders'>) => {
-    return useTable(TABLE_NAME).insert(data);
-  }
-
-  const get = async(orderId: number, columns: string = '*') => {
-    return useTable(TABLE_NAME).select(columns).eq('id', orderId).single();
-  }
-
-  const getOrdersByReaderId = async(readerId: Number) => {
-    try {
-      const { data, error } = await supabase.from(TABLE_NAME)
-        .select(`
-          id,
-          status,
-          created_at,
-          order_items(count)
-        `)
-        .eq('reader_id', readerId)
-      ;
-      if (error) throw error;
-
-      return data;
-    } catch(err) {
-      console.error('[ERRO] getOrderById: ', err);
-      return [];
-    }
-  }
-
   const renew = (data: Tables<'order_renews'>) => {
     return useTable(RENEW_TABLE_NAME).insert(data);
   }
@@ -120,7 +72,6 @@ export const useOrders = () => {
     index,
     insert,
     get,
-    getOrdersByReaderId,
     renew
   }
 }

@@ -1,4 +1,6 @@
 import type { NotificationOptions } from '~/types/options';
+import { ORDER_STATUS } from '~/constants/orders';
+import { NOTIFICATION_TYPES, NOTIFICATION_MESSAGES } from '~/constants/notifications';
 
 const TABLE_NAME = 'notifications';
 
@@ -25,7 +27,7 @@ export const useNotifications = () => {
       query = query.eq('id', id);
     }
     if (readerId) {
-      query = query.eq('reader_id', readerId);
+      query = query.eq('user_id', readerId);
     }
     if (type) {
       query = query.eq('type', type);
@@ -43,9 +45,42 @@ export const useNotifications = () => {
     return query;
   }
 
+  const get = (userId: string, columns: string = '*') => {
+    return useTable(TABLE_NAME)
+      .select(columns)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false }); 
+  }
+
+  const getNotificationByOrderStatus = (orderStatus: string) => {
+    let type = '';
+    let message = '';
+    switch (orderStatus) {
+      case ORDER_STATUS.BORROWING:
+        type = NOTIFICATION_TYPES.ORDER_APPROVED;
+        message = NOTIFICATION_MESSAGES.ORDER_APPROVED;
+        break;
+      case ORDER_STATUS.CLOSE:
+        type = NOTIFICATION_TYPES.ORDER_CLOSED;
+        message = NOTIFICATION_MESSAGES.ORDER_CLOSED;
+        break;
+      case ORDER_STATUS.REJECT:
+        type = NOTIFICATION_TYPES.ORDER_REJECTED;
+        message = NOTIFICATION_MESSAGES.ORDER_REJECTED;
+        break;
+    }
+  
+    return {
+      type,
+      message
+    };
+  }
+
   return {
     index,
     update,
-    insert
+    insert,
+    get,
+    getNotificationByOrderStatus
   }
 }
