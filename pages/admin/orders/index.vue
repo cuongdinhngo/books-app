@@ -43,6 +43,7 @@
       :book="order.books"
       :user="order.users"
       :book-copies="order.books.book_copies"
+      :order-renews="order.order_renews"
     />
   </div>
   <h3 v-if="order?.count == 0" class="justify-center flex text-stone-900">No Data</h3>
@@ -60,9 +61,7 @@
 import { ORDER_STATUS, ORDER_STATUS_OPTIONS } from '~/constants/orders';
 import { useRouteQuery } from '@vueuse/router';
 
-const { index, update } = useOrders();
-const { index:getOrderItems, upsert:upsertOrderItems } = useOrderItems();
-const { upsert:upsertBookItems } = useBookCopies();
+const { index } = useOrders();
 const router = useRouter();
 
 const page = useRouteQuery('page', 1 , { transform: Number });
@@ -86,7 +85,8 @@ const searchParams = ref({
     books!inner(
       id, title, cover_image,
       book_copies!inner(id, status)
-    )
+    ),
+    order_renews(*)
   `,
   status: selectedStatus.value,
   from: from.value,
