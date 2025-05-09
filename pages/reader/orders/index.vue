@@ -28,6 +28,7 @@ const { userId } = useAuth();
 
 const page = useRouteQuery('page', 1, { transform: Number });
 const pageSize = 10;
+const orderId = useRouteQuery('id', null);
 const searchParams = ref({
   columns: `
     id, status, book_id, book_copy_id, due_date, created_at,
@@ -38,6 +39,7 @@ const searchParams = ref({
     )
   `,
   readerId: userId.value,
+  id: orderId.value,
   page: page.value,
   size: pageSize
 });
