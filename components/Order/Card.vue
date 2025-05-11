@@ -81,6 +81,7 @@
         </UButton>
         <UButton
           icon="lucide:audio-lines" size="md" color="primary" variant="solid"
+          @click="timelineModal = true"
         >
           Timeline Detail
         </UButton>
@@ -209,13 +210,30 @@
       </template>
     </UModal>
 
+    <!-- Order Timeline Modal -->
+    <UModal
+      :title="`#${props.order.id}: Timeline`"
+      v-model:open="timelineModal"
+      :close="{
+        color: 'primary',
+        variant: 'outline',
+        class: 'rounded-full'
+      }"
+    >
+      <template #body>
+        <UStepper orientation="vertical" :items="timelineItems" class="w-full" />
+      </template>
+    </UModal>
+
   </div>
 </template>
 <script setup lang="ts">
+import type { StepperItem } from '@nuxt/ui'
 import { BOOK_COPY_STATUS } from '~/constants/bookCopies';
 import { NOTIFICATION_TYPES, NOTIFICATION_MESSAGES } from '~/constants/notifications';
 import { ORDER_RENEWS_STATUS } from '~/constants/orderRenews';
 import { ORDER_STATUS, ORDER_STATUS_OPTIONS } from '~/constants/orders';
+import { TIMELINE_ACTIONS, TIMELINE_TYPES } from '~/constants/orderTimeline';
 import { BORROWING_PERIOD } from '~/constants/rules';
 
 const props = defineProps({
@@ -238,6 +256,10 @@ const props = defineProps({
   orderRenews: {
     type: Array,
     required: true
+  },
+  timeline: {
+    type: Array,
+    required: true
   }
 });
 
@@ -250,11 +272,26 @@ const dueDateComment = ref('');
 const orderRenewStatus = ref('');
 const orderRenewComment = ref('');
 const confirmDueDateModal = ref(false);
+const timelineModal = ref(false);
 
 const { update:updateOrder } = useOrders();
 const { update:updateBookCopy } = useBookCopies();
 const { insert:sendNotification, getNotificationByOrderStatus } = useNotifications();
 const { insert:insertNewDueDate, update:updateOrderRenew } = useOrderRenews();
+const { insert:createOrderTimeline} = useOrderTimeline();
+const { userId } = useAuth();
+
+const timelineItems = computed(() => {
+  return props.timeline.map((item: StepperItem) => {
+    const action = TIMELINE_ACTIONS.filter(action => item.action === action.type)[0];
+    return {
+      ...action,
+      description: action.description.replace('#dateTime', useDateFormat(action.created_at, 'MMMM Do, YYYY').value),
+    }
+  });
+});
+
+console.log('timelineItems => ', timelineItems.value); 
 
 const items = computed(() => {
   if (props.order.book_copy_id) {
@@ -279,7 +316,19 @@ console.log('requestOrderRenews => ', requestOrderRenews.value);
 const handleOrderRenew = async() => {
   if (orderRenewStatus.value === ORDER_RENEWS_STATUS.REJECTED) {
     const { error } = await updateOrderRenew(props.order.id, { status: orderRenewStatus.value});
-    useToastError(error);
+    if (error) {
+      useToastError(error);
+      return;
+    }
+
+    const { error:timelineError } = await createOrderTimeline({
+      order_id: props.order.id,
+      action: getTimelineTypeViaOrderStatus(NOTIFICATION_TYPES.REJECTED_REQUEST_DUE_DATE),
+      user_id: userId.value
+    });
+    useToastSuccess(`Order #${props.order.id} was rejected!`);
+    confirmDueDateModal.value = false;
+
     return;
   }
 
@@ -296,6 +345,12 @@ const handleOrderRenew = async() => {
       message: NOTIFICATION_MESSAGES.APPROVED_EXTEND_DUE_DATE,
       notifiable_id: props.order.id,
       notifiable_type: 'orders'
+    });
+
+    const { error:timelineError } = await createOrderTimeline({
+      order_id: props.order.id,
+      action: getTimelineTypeViaOrderStatus(NOTIFICATION_TYPES.APPROVED_EXTEND_DUE_DATE),
+      user_id: userId.value
     });
 
     confirmDueDateModal.value = false;
@@ -346,7 +401,12 @@ const extendDueDate = () => {
         notifiable_type: 'orders'
       }
     );
-    if (notificationError) throw notificationError;
+    
+    const { error:timelineError } = await createOrderTimeline({
+      order_id: props.order.id,
+      action: getTimelineTypeViaOrderStatus(NOTIFICATION_TYPES.STAFF_EXTEND_DUE_DATE),
+      user_id: userId.value
+    });
 
     dueDateModal.value = false;
     newDueDate.value = '';
@@ -390,7 +450,13 @@ const processOrder = () => {
       notifiable_id: props.order.id,
       notifiable_type: 'orders'
     });
-    if (notificationError) throw notificationError;
+
+    const { error:timelineError } = await createOrderTimeline({
+      order_id: props.order.id,
+      action: getTimelineTypeViaOrderStatus(orderStatus.value),
+      user_id: userId.value
+    });
+    if (timelineError) throw timelineError;
   }).catch((error) => useToastError(error));
 }
 
@@ -403,6 +469,27 @@ function getBookCopyStatusViaOrderStatus(orderStatus: string) {
       return BOOK_COPY_STATUS.OPENING;
     case ORDER_STATUS.LOST:
       return BOOK_COPY_STATUS.LOST;
+    case ORDER_STATUS.CLOSE:
+      return BOOK_COPY_STATUS.OPENING;
+  }
+}
+
+function getTimelineTypeViaOrderStatus(orderStatus: string) {
+  switch (orderStatus) {
+    case ORDER_STATUS.BORROWING:
+      return TIMELINE_TYPES.ORDER_APPROVED;
+    case ORDER_STATUS.REJECT:
+      return TIMELINE_TYPES.ORDER_REJECTED;
+    case ORDER_STATUS.LOST:
+      return TIMELINE_TYPES.ORDER_CLOSED;
+    case ORDER_STATUS.CLOSE:
+      return TIMELINE_TYPES.ORDER_CLOSED;
+    case NOTIFICATION_TYPES.STAFF_EXTEND_DUE_DATE:
+      return TIMELINE_TYPES.ORDER_EXTENDED;
+    case NOTIFICATION_TYPES.APPROVED_EXTEND_DUE_DATE:
+      return TIMELINE_TYPES.ORDER_REQUEST_APPROVED;
+    case NOTIFICATION_TYPES.REJECTED_REQUEST_DUE_DATE:
+      return TIMELINE_TYPES.ORDER_REQUEST_REJECTED
   }
 }
 

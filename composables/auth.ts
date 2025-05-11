@@ -8,7 +8,6 @@ export const useAuth = () => {
   const token = useCookie('token');
   const userId = useCookie('userId');
   const user = ref(null);
-  const isAuthenticated = ref(false);
   const error = ref('');
   const userRole = useCookie('userRole');
   const session = ref([]);
@@ -67,6 +66,12 @@ export const useAuth = () => {
     userRole.value = role;
   }
 
+  const resetCredentials = () => {
+    token.value = null;
+    userId.value = null;
+    userRole.value = null;
+  }
+
   return {
     user,
     userId,
@@ -74,10 +79,6 @@ export const useAuth = () => {
     token,
     session,
     userRole,
-    isAuthenticated,
-    signin,
-    signout,
-    signup,
-    setAuthenticatedUser
+    signin
   }
 }

@@ -44,6 +44,7 @@
       :user="order.users"
       :book-copies="order.books.book_copies"
       :order-renews="order.order_renews"
+      :timeline="order.order_timeline"
     />
   </div>
   <h3 v-if="order?.count == 0" class="justify-center flex text-stone-900">No Data</h3>
@@ -86,7 +87,8 @@ const searchParams = ref({
       id, title, cover_image,
       book_copies!inner(id, status)
     ),
-    order_renews(*)
+    order_renews(*),
+    order_timeline(*)
   `,
   status: selectedStatus.value,
   from: from.value,

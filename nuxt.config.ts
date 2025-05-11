@@ -15,7 +15,8 @@ export default defineNuxtConfig({
         'lucide:ellipsis-vertical', 'lucide:chevrons-left', 'lucide:chevron-right', 'lucide:file-text', 'lucide:swatch-book', 'lucide:cog', 'lucide:chevron-up', 'lucide:x',
         'lucide:user', 'lucide:log-out', 'lucide:search', 'lucide:notebook-pen', 'lucide:chevron-left', 'lucide:chevrons-right', 'lucide:building-2', 'lucide:calendar-cog',
         'lucide:badge-check', 'lucide:notebook-text', 'lucide:trash-2', 'lucide:handshake', 'lucide:clipboard-pen-line', 'lucide:check-check', 'lucide:list', 'lucide:cog',
-        'lucide:bell', 'lucide:book-heart', 'lucide:arrow-left', 'lucide:arrow-right', 'lucide:arrow-up-from-line', 'lucide:circle-x', 'lucide:audio-lines', 'lucide:send-horizontal'
+        'lucide:bell', 'lucide:book-heart', 'lucide:arrow-left', 'lucide:arrow-right', 'lucide:arrow-up-from-line', 'lucide:circle-x', 'lucide:audio-lines', 'lucide:send-horizontal',
+        'lucide:book-plus', 'lucide:book-check'
       ]
     }
   },
