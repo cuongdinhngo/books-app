@@ -1,15 +1,7 @@
-import type { Tables } from '~/types/database.types';
-
-interface WishlistOptions {
-  columns?: string,
-  id?: number,
-  readerId?: number,
-  bookId?: number,
-  page?: number,
-  size?: number
-}
+import type { WishlistOptions } from '~/types/options';
 
 const TABLE_NAME = 'wishlists';
+const { insert, update, get, remove } = useCrud(TABLE_NAME);
 
 export const useWishlists = () => {
   const index = (options: WishlistOptions = {}) => {
@@ -39,17 +31,11 @@ export const useWishlists = () => {
     return query;
   }
 
-  const insert = (data: Tables<'wishlists'>) => {
-    return useTable(TABLE_NAME).insert(data);
-  }
-
-  const upsert = (data: Tables<'wishlists'>) => {
-    return useTable(TABLE_NAME).upsert(data);
-  }
-
   return {
     index,
     insert,
-    upsert
+    update,
+    get,
+    remove
   }
 }

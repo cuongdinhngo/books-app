@@ -54,8 +54,6 @@ const { data, error } = await useAsyncData(
   }
 );
 
-console.log('data', data.value);
-
 function handlePageChange(newPage: number) {
   page.value = newPage;
   searchParams.value.page = newPage;

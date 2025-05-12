@@ -83,3 +83,12 @@ export interface OrderTimelineOptions {
   id?: number,
   orderId?: number
 }
+
+export interface WishlistOptions {
+  columns?: string,
+  id?: number,
+  readerId?: number,
+  bookId?: number,
+  page?: number,
+  size?: number
+}

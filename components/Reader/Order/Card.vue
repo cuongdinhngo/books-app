@@ -57,6 +57,7 @@
         </UButton>
         <UButton
           icon="lucide:audio-lines" size="md" color="primary" variant="solid"
+          @click="timelineModal = true"
         >
           Timeline Detail
         </UButton>
@@ -67,41 +68,53 @@
     <UModal
       :title="`#${props.order.id}: Extend Due date`"
       v-model:open="dueDateModal"
-      :close="{
-        color: 'primary',
-        variant: 'outline',
-        class: 'rounded-full'
-      }"
+      :close="{ color: 'primary', variant: 'outline', class: 'rounded-full' }"
     >
       <template #body>
         <div class="flex flex-col">
-          <UInput
-            type="date"
-            v-model="newDueDate"
-          />
-          <UTextarea
-            v-model="dueDateComment"
-            placeholder="Type something..." class="w-full my-5" variant="subtle"
-          />
-          <UButton
-            icon="lucide:badge-check"
-            label="Submit"
-            size="md"
-            color="primary"
-            variant="subtle"
-            class="text-right"
-            @click="extendDueDate"
-          />
+          <form @submit.prevent="extendDueDate">
+            <UInput
+              type="date"
+              v-model="newDueDate"
+            />
+            <UTextarea
+              v-model="dueDateComment"
+              placeholder="Type something..." class="w-full my-5" variant="subtle"
+            />
+            <UButton
+              icon="lucide:badge-check"
+              label="Submit"
+              size="md"
+              color="primary"
+              variant="subtle"
+              class="text-right"
+              @click="extendDueDate"
+            />
+          </form>
         </div>
+      </template>
+    </UModal>
+
+    <!-- Order Timeline Modal -->
+    <UModal
+      :title="`#${props.order.id}: Timeline`"
+      v-model:open="timelineModal"
+      :close="{ color: 'primary', variant: 'outline', class: 'rounded-full'}"
+    >
+      <template #body>
+        <UStepper orientation="vertical" :items="timelineItems" class="w-full" />
       </template>
     </UModal>
 
   </div>
 </template>
 <script setup lang="ts">
+import type { StepperItem } from '@nuxt/ui';
 import { BOOK_COPY_STATUS } from '~/constants/bookCopies';
 import { NOTIFICATION_TYPES, NOTIFICATION_MESSAGES } from '~/constants/notifications';
+import { ORDER_RENEWS_STATUS } from '~/constants/orderRenews';
 import { ORDER_STATUS, ORDER_STATUS_OPTIONS } from '~/constants/orders';
+import { TIMELINE_ACTIONS, TIMELINE_TYPES } from '~/constants/orderTimeline';
 
 const props = defineProps({
   order: {
@@ -119,15 +132,36 @@ const props = defineProps({
   bookCopies: {
     type: Array,
     required: true
+  },
+  orderRenews: {
+    type: Array,
+    required: true
+  },
+  timeline: {
+    type: Array,
+    required: true
   }
 });
 
 const dueDateModal = ref(false);
 const newDueDate = ref('');
 const dueDateComment = ref('');
+const timelineModal = ref(false);
 
 const { insert:sendNotification } = useNotifications();
 const { insert:insertNewDueDate } = useOrderRenews();
+const { insert:createOrderTimeline} = useOrderTimeline();
+const { userId } = useAuth();
+
+const timelineItems = computed(() => {
+  return (props.timeline as StepperItem[]).map((item) => {
+    const action = TIMELINE_ACTIONS.filter(action => item.action === action.type)[0];
+    return {
+      ...action,
+      description: action.description.replace('#dateTime', useDateFormat(action.created_at, 'MMMM Do, YYYY').value),
+    }
+  });
+});
 
 const items = computed(() => {
   if (props.order.book_copy_id) {
@@ -141,16 +175,16 @@ const items = computed(() => {
 const bookCopyId = ref(items.value[0]);
 
 const extendDueDate = () => {
-  console.log('Extend Due date');
-  const data = {
+  const dueDate = {
     order_id: props.order.id,
+    status: ORDER_RENEWS_STATUS.WAITING,
     new_due_date: newDueDate.value,
     old_due_date: props.order.due_date,
     request_note: dueDateComment.value
   }
 
   Promise.all([
-    insertNewDueDate(data)
+    insertNewDueDate(dueDate)
   ])
   .then(async({ error }) => {
     if (error) throw error;
@@ -163,7 +197,14 @@ const extendDueDate = () => {
         notifiable_type: 'orders'
       }
     );
-    if (notificationError) throw notificationError;
+
+    const { error:timelineError } = await createOrderTimeline(
+      {
+        order_id: props.order.id,
+        action: TIMELINE_TYPES.ORDER_REQUEST_DUE_DATE,
+        user_id: userId.value
+      }
+    );
 
     dueDateModal.value = false;
     newDueDate.value = '';
@@ -172,6 +213,4 @@ const extendDueDate = () => {
   })
   .catch((error) => useToastError(error));
 }
-
-console.log('Order:', props);
 </script>

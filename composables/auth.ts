@@ -6,7 +6,9 @@ export const useAuth = () => {
   const { get:verifyUser } = useUsers();
 
   const token = useCookie('token');
-  const userId = useCookie('userId');
+  const userId = useCookie('userId', {
+    default: () => null
+  });
   const user = ref(null);
   const isAuthenticated = ref(false);
   const error = ref('');
