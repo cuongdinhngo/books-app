@@ -24,7 +24,8 @@ export const useBooks = () => {
         'coverImage:cover_image',
         `publishers (id, name)`,
         `authors (id, name:full_name)`,
-        `categories (id, name)`
+        `categories (id, name)`,
+        `book_copies (count)`
       ],
       ids = null,
       title = null,

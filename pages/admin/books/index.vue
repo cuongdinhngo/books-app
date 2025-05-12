@@ -201,6 +201,11 @@ const columns = [
     cell: ({ row }) => `${row.getValue('authors').map(author => author.name).join(', ')}`
   },
   {
+    accessorKey: 'book_copies',
+    header: `Quantity`,
+    cell: ({ row }) => `${row.original.book_copies[0].count}`
+  },
+  {
     header: 'Actions',
     id: 'crud-actions',
   }
