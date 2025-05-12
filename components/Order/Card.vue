@@ -320,7 +320,6 @@ const orderActionOptions = computed(() => {
   }
 });
 
-// Updated handleNotificationAndTimeline to handle unknown error type
 async function handleNotificationAndTimeline({
   userId, orderId, action, type, message
 }: {
@@ -364,7 +363,7 @@ async function handleOrderRenew(){
     }
 
     await handleNotificationAndTimeline({
-      userId: userId.value,
+      userId: props.user.id,
       orderId: props.order.id,
       action: getTimelineTypeViaOrderStatus(NOTIFICATION_TYPES.REJECTED_REQUEST_DUE_DATE),
       type: NOTIFICATION_TYPES.REJECTED_REQUEST_DUE_DATE,
@@ -389,7 +388,7 @@ async function handleOrderRenew(){
   ])
   .then(async () => {
     await handleNotificationAndTimeline({
-      userId: userId.value,
+      userId: props.user.id,
       orderId: props.order.id,
       action: getTimelineTypeViaOrderStatus(NOTIFICATION_TYPES.APPROVED_EXTEND_DUE_DATE),
       type: NOTIFICATION_TYPES.APPROVED_EXTEND_DUE_DATE,
@@ -421,7 +420,7 @@ function extendDueDate() {
   ])
   .then(async () => {
     await handleNotificationAndTimeline({
-      userId: userId.value,
+      userId: props.user.id,
       orderId: props.order.id,
       action: getTimelineTypeViaOrderStatus(NOTIFICATION_TYPES.STAFF_EXTEND_DUE_DATE),
       type: NOTIFICATION_TYPES.STAFF_EXTEND_DUE_DATE,
@@ -463,7 +462,7 @@ function processOrder() {
     const { type, message } = getNotificationByOrderStatus(orderStatus.value);
 
     await handleNotificationAndTimeline({
-      userId: userId.value,
+      userId: props.user.id,
       orderId: props.order.id,
       action: getTimelineTypeViaOrderStatus(orderStatus.value),
       type: type,
