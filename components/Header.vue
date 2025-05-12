@@ -90,7 +90,7 @@ const items = ref([
 
 const { data:notifications, error } = await useAsyncData(
   `admin-notifications`,
-  () => useTable('notifications').select().is('user_id', null)
+  () => useTable('notifications').select().is('user_id', null).order('created_at', { ascending: false })
 );
 
 const unreadNotificaitons = computed(() => notifications.value.data.filter(item => !item.is_read));

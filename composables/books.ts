@@ -24,7 +24,8 @@ export const useBooks = () => {
         'coverImage:cover_image',
         `publishers (id, name)`,
         `authors (id, name:full_name)`,
-        `categories (id, name)`
+        `categories (id, name)`,
+        `book_copies (count)`
       ],
       ids = null,
       title = null,
@@ -63,8 +64,8 @@ export const useBooks = () => {
     }
 
     if (status && status.length > 0) {
-      selectColumns.push('book_items!inner(status)');
-      query = query.in('book_items.status', status);
+      selectColumns.push('book_copies!inner(status)');
+      query = query.in('book_copies.status', status);
     }
 
     if (page && size && page >= 1 && size >= 1) {
