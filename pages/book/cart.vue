@@ -5,7 +5,7 @@
     v-if="bookCart.length > 0"
     ref="table"
     v-model:row-selection="rowSelection"
-    :data="book?.data"
+    :data="data.books?.data"
     :columns="columns"
   >
     <template #select-header="{ table }">
@@ -76,7 +76,7 @@ import { ORDER_STATUS } from '~/constants/orders';
 import { TIMELINE_TYPES } from '~/constants/orderTimeline';
 
 const { bookCart, removeCartItem, reset: resetBookCart } = useBookCarts();
-const { index } = useBooks();
+const { index:getBooks } = useBooks();
 const { userId } = useAuth();
 const { insert, index:getOrders } = useOrders();
 const { insert:createOrderTimeline } = useOrderTimeline();
@@ -85,11 +85,23 @@ const table = useTemplateRef('table');
 const rowSelection = ref<Record<string, boolean>>({})
 const checkoutItems = ref([]);
 
-const { data: book, error, refresh } = useAsyncData(
-  'book-cart',
-  () => index({ ids: bookCart.value.map(id => (Number(id))) }),
-  { watch: [bookCart.value] }
+const { data, error, refresh } = await useAsyncData(
+  `reader/${userId.value}/book-cart`,
+  async() => {
+    const [books, orders] = await Promise.all([
+      getBooks({ ids: bookCart.value.map(id => (Number(id))) }),
+      getOrders({ status: [ORDER_STATUS.WAITING, ORDER_STATUS.BORROWING], readerId: userId.value })
+    ]);
+
+    return { books, orders };
+  }
 );
+
+const isBorrowable = computed(() => {
+  return data.value?.orders?.count < 2;
+});
+
+console.log('DATA => ', data);
 
 async function handleBorrow() {
   if (!userId.value) {
@@ -98,9 +110,19 @@ async function handleBorrow() {
     return;
   }
 
+  if (!isBorrowable.value) {
+    window.alert('You already borrowed 2 books. Please return one of them before borrowing another.');
+    return;
+  }
+
   checkoutItems.value = table?.value?.tableApi.getFilteredSelectedRowModel().rows.map(row => row.original.id);
   if (checkoutItems.value.length > 2) {
     window.alert('You can borrow only 2 books');
+    return;
+  }
+
+  if (checkoutItems.value.length === 0) {
+    window.alert('Please select at least one book to borrow');
     return;
   }
 
