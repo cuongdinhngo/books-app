@@ -45,6 +45,7 @@
       :book-copies="order.books.book_copies"
       :order-renews="order.order_renews"
       :timeline="order.order_timeline"
+      @refreshOrders="refresh"
     />
   </div>
   <h3 v-if="order?.count == 0" class="justify-center flex text-stone-900">No Data</h3>

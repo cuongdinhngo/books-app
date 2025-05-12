@@ -75,23 +75,25 @@
     >
       <template #body>
         <div class="flex flex-col">
-          <UInput
-            type="date"
-            v-model="newDueDate"
-          />
-          <UTextarea
-            v-model="dueDateComment"
-            placeholder="Type something..." class="w-full my-5" variant="subtle"
-          />
-          <UButton
-            icon="lucide:badge-check"
-            label="Submit"
-            size="md"
-            color="primary"
-            variant="subtle"
-            class="text-right"
-            @click="extendDueDate"
-          />
+          <form @submit.prevent="extendDueDate">
+            <UInput
+              type="date"
+              v-model="newDueDate"
+            />
+            <UTextarea
+              v-model="dueDateComment"
+              placeholder="Type something..." class="w-full my-5" variant="subtle"
+            />
+            <UButton
+              icon="lucide:badge-check"
+              label="Submit"
+              size="md"
+              color="primary"
+              variant="subtle"
+              class="text-right"
+              @click="extendDueDate"
+            />
+          </form>
         </div>
       </template>
     </UModal>
@@ -101,7 +103,9 @@
 <script setup lang="ts">
 import { BOOK_COPY_STATUS } from '~/constants/bookCopies';
 import { NOTIFICATION_TYPES, NOTIFICATION_MESSAGES } from '~/constants/notifications';
+import { ORDER_RENEWS_STATUS } from '~/constants/orderRenews';
 import { ORDER_STATUS, ORDER_STATUS_OPTIONS } from '~/constants/orders';
+import { TIMELINE_TYPES } from '~/constants/orderTimeline';
 
 const props = defineProps({
   order: {
@@ -128,6 +132,8 @@ const dueDateComment = ref('');
 
 const { insert:sendNotification } = useNotifications();
 const { insert:insertNewDueDate } = useOrderRenews();
+const { insert:createOrderTimeline} = useOrderTimeline();
+const { userId } = useAuth();
 
 const items = computed(() => {
   if (props.order.book_copy_id) {
@@ -142,15 +148,16 @@ const bookCopyId = ref(items.value[0]);
 
 const extendDueDate = () => {
   console.log('Extend Due date');
-  const data = {
+  const dueDate = {
     order_id: props.order.id,
+    status: ORDER_RENEWS_STATUS.WAITING,
     new_due_date: newDueDate.value,
     old_due_date: props.order.due_date,
     request_note: dueDateComment.value
   }
 
   Promise.all([
-    insertNewDueDate(data)
+    insertNewDueDate(dueDate)
   ])
   .then(async({ error }) => {
     if (error) throw error;
@@ -163,7 +170,14 @@ const extendDueDate = () => {
         notifiable_type: 'orders'
       }
     );
-    if (notificationError) throw notificationError;
+
+    const { error:timelineError } = await createOrderTimeline(
+      {
+        order_id: props.order.id,
+        action: TIMELINE_TYPES.ORDER_REQUEST_DUE_DATE,
+        user_id: userId.value
+      }
+    );
 
     dueDateModal.value = false;
     newDueDate.value = '';

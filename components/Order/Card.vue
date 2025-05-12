@@ -92,11 +92,7 @@
     <UModal
       :title="`#${props.order.id}: Extend Due date`"
       v-model:open="bookOrderModal"
-      :close="{
-        color: 'primary',
-        variant: 'outline',
-        class: 'rounded-full'
-      }"
+      :close="{ color: 'primary', variant: 'outline', class: 'rounded-full'}"
     >
       <template #body>
         <div class="flex flex-col">
@@ -129,11 +125,7 @@
     <UModal
       :title="`#${props.order.id}: Extend Due date`"
       v-model:open="dueDateModal"
-      :close="{
-        color: 'primary',
-        variant: 'outline',
-        class: 'rounded-full'
-      }"
+      :close="{ color: 'primary', variant: 'outline', class: 'rounded-full'}"
     >
       <template #body>
         <div class="flex flex-col">
@@ -162,11 +154,7 @@
     <UModal
       :title="`#${props.order.id}: Confirm Due date`"
       v-model:open="confirmDueDateModal"
-      :close="{
-        color: 'primary',
-        variant: 'outline',
-        class: 'rounded-full'
-      }"
+      :close="{ color: 'primary', variant: 'outline', class: 'rounded-full'}"
     >
       <template #body>
         <div class="flex flex-col">
@@ -214,11 +202,7 @@
     <UModal
       :title="`#${props.order.id}: Timeline`"
       v-model:open="timelineModal"
-      :close="{
-        color: 'primary',
-        variant: 'outline',
-        class: 'rounded-full'
-      }"
+      :close="{ color: 'primary', variant: 'outline', class: 'rounded-full'}"
     >
       <template #body>
         <UStepper orientation="vertical" :items="timelineItems" class="w-full" />
@@ -263,6 +247,10 @@ const props = defineProps({
   }
 });
 
+const emit = defineEmits(['refreshOrders']);
+
+console.log('ORDER CARD => ', props);
+
 const bookOrderModal = ref(false);
 const orderComment = ref('');
 const orderStatus = ref('');
@@ -284,6 +272,7 @@ const { userId } = useAuth();
 const timelineItems = computed(() => {
   return props.timeline.map((item: StepperItem) => {
     const action = TIMELINE_ACTIONS.filter(action => item.action === action.type)[0];
+    console.log('timeline action => ', action);
     return {
       ...action,
       description: action.description.replace('#dateTime', useDateFormat(action.created_at, 'MMMM Do, YYYY').value),
@@ -309,13 +298,42 @@ const requestOrderRenews = computed(() => {
 
   return newRequests.length > 0 ? newRequests[0] : null;
 });
-
 console.log('requestOrderRenews => ', requestOrderRenews.value);
+
+const orderActionOptions = computed(() => {
+  switch (props.order.status) {
+    case ORDER_STATUS.WAITING:
+      return [
+        {label: 'Approve', id: 'borrowing'},
+        {label: 'Reject', id: 'rejected'},
+      ];
+    case ORDER_STATUS.BORROWING:
+      return [
+        {label: 'Close', id: 'closed'},
+        {label: 'Lost', id: 'lost'},
+      ];
+    default:
+      return ORDER_STATUS_OPTIONS;
+  }
+});
 
 const handleOrderRenew = async() => {
   if (orderRenewStatus.value === ORDER_RENEWS_STATUS.REJECTED) {
     const { error } = await updateOrderRenew(props.order.id, { status: orderRenewStatus.value});
-    useToastError(error);
+    if (error) {
+      useToastError(error);
+      return;
+    }
+
+    const { error:timelineError } = await createOrderTimeline({
+      order_id: props.order.id,
+      action: getTimelineTypeViaOrderStatus(NOTIFICATION_TYPES.REJECTED_REQUEST_DUE_DATE),
+      user_id: userId.value
+    });
+
+    confirmDueDateModal.value = false;
+    useToastSuccess('Order renew request was rejected successfully!');
+    emit('refreshOrders');
     return;
   }
 
@@ -334,28 +352,17 @@ const handleOrderRenew = async() => {
       notifiable_type: 'orders'
     });
 
+    const { error:timelineError } = await createOrderTimeline({
+      order_id: props.order.id,
+      action: getTimelineTypeViaOrderStatus(NOTIFICATION_TYPES.APPROVED_EXTEND_DUE_DATE),
+      user_id: userId.value
+    });
+    useToastSuccess(`Order #${props.order.id} was rejected!`);
     confirmDueDateModal.value = false;
-    useToastSuccess();
+    emit('refreshOrders');
   })
   .catch((error) => useToastError(error));
 }
-
-const orderActionOptions = computed(() => {
-  switch (props.order.status) {
-    case ORDER_STATUS.WAITING:
-      return [
-        {label: 'Approve', id: 'borrowing'},
-        {label: 'Reject', id: 'rejected'},
-      ];
-    case ORDER_STATUS.BORROWING:
-      return [
-        {label: 'Close', id: 'closed'},
-        {label: 'Lost', id: 'lost'},
-      ];
-    default:
-      return ORDER_STATUS_OPTIONS;
-  }
-});
 
 const extendDueDate = () => {
   console.log('Extend Due date');
@@ -382,12 +389,18 @@ const extendDueDate = () => {
         notifiable_type: 'orders'
       }
     );
-    if (notificationError) throw notificationError;
+
+    const { error:timelineError } = await createOrderTimeline({
+      order_id: props.order.id,
+      action: getTimelineTypeViaOrderStatus(NOTIFICATION_TYPES.STAFF_EXTEND_DUE_DATE),
+      user_id: userId.value
+    });
 
     dueDateModal.value = false;
     newDueDate.value = '';
     dueDateComment.value = '';
     useToastSuccess(`Order #${props.order.id} was extended due date successfully!`);
+    emit('refreshOrders');
   })
   .catch((error) => useToastError(error));
 }
@@ -417,6 +430,7 @@ const processOrder = () => {
   ]).then(async() => {
     bookOrderModal.value = false;
     useToastSuccess(`Order #${props.order.id} was processed successfully!`)
+    emit('refreshOrders');
 
     const { type, message } = getBookCopyStatusViaOrderStatus(orderStatus.value);
     const { error:notificationError } = await sendNotification({
@@ -427,6 +441,13 @@ const processOrder = () => {
       notifiable_type: 'orders'
     });
     if (notificationError) throw notificationError;
+
+    const { error:timelineError } = await createOrderTimeline({
+      order_id: props.order.id,
+      action: getTimelineTypeViaOrderStatus(orderStatus.value),
+      user_id: userId.value
+    });
+    if (timelineError) throw timelineError;
   }).catch((error) => useToastError(error));
 }
 
@@ -439,8 +460,27 @@ function getBookCopyStatusViaOrderStatus(orderStatus: string) {
       return BOOK_COPY_STATUS.OPENING;
     case ORDER_STATUS.LOST:
       return BOOK_COPY_STATUS.LOST;
+    case ORDER_STATUS.CLOSE:
+      return BOOK_COPY_STATUS.OPENING;
   }
 }
 
-console.log('Order:', props);
+function getTimelineTypeViaOrderStatus(orderStatus: string) {
+  switch (orderStatus) {
+    case ORDER_STATUS.BORROWING:
+      return TIMELINE_TYPES.ORDER_APPROVED;
+    case ORDER_STATUS.REJECT:
+      return TIMELINE_TYPES.ORDER_REJECTED;
+    case ORDER_STATUS.LOST:
+      return TIMELINE_TYPES.ORDER_CLOSED;
+    case ORDER_STATUS.CLOSE:
+      return TIMELINE_TYPES.ORDER_CLOSED;
+    case NOTIFICATION_TYPES.STAFF_EXTEND_DUE_DATE:
+      return TIMELINE_TYPES.ORDER_EXTENDED;
+    case NOTIFICATION_TYPES.APPROVED_EXTEND_DUE_DATE:
+      return TIMELINE_TYPES.ORDER_REQUEST_APPROVED;
+    case NOTIFICATION_TYPES.REJECTED_REQUEST_DUE_DATE:
+      return TIMELINE_TYPES.ORDER_REQUEST_REJECTED
+  }
+}
 </script>
