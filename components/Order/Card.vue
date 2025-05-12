@@ -81,6 +81,7 @@
         </UButton>
         <UButton
           icon="lucide:audio-lines" size="md" color="primary" variant="solid"
+          @click="timelineModal = true"
         >
           Timeline Detail
         </UButton>
@@ -209,14 +210,31 @@
       </template>
     </UModal>
 
+    <!-- Order Timeline Modal -->
+    <UModal
+      :title="`#${props.order.id}: Timeline`"
+      v-model:open="timelineModal"
+      :close="{
+        color: 'primary',
+        variant: 'outline',
+        class: 'rounded-full'
+      }"
+    >
+      <template #body>
+        <UStepper orientation="vertical" :items="timelineItems" class="w-full" />
+      </template>
+    </UModal>
+
   </div>
 </template>
 <script setup lang="ts">
+import type { StepperItem } from '@nuxt/ui'
 import { BOOK_COPY_STATUS } from '~/constants/bookCopies';
 import { NOTIFICATION_TYPES, NOTIFICATION_MESSAGES } from '~/constants/notifications';
 import { ORDER_RENEWS_STATUS } from '~/constants/orderRenews';
 import { ORDER_STATUS, ORDER_STATUS_OPTIONS } from '~/constants/orders';
 import { BORROWING_PERIOD } from '~/constants/rules';
+import { TIMELINE_ACTIONS, TIMELINE_TYPES } from '~/constants/orderTimeline';
 
 const props = defineProps({
   order: {
@@ -238,6 +256,10 @@ const props = defineProps({
   orderRenews: {
     type: Array,
     required: true
+  },
+  timeline: {
+    type: Array,
+    required: true
   }
 });
 
@@ -250,11 +272,25 @@ const dueDateComment = ref('');
 const orderRenewStatus = ref('');
 const orderRenewComment = ref('');
 const confirmDueDateModal = ref(false);
+const timelineModal = ref(false);
 
 const { update:updateOrder } = useOrders();
 const { update:updateBookCopy } = useBookCopies();
 const { insert:sendNotification, getNotificationByOrderStatus } = useNotifications();
 const { insert:insertNewDueDate, update:updateOrderRenew } = useOrderRenews();
+const { insert:createOrderTimeline} = useOrderTimeline();
+const { userId } = useAuth();
+
+const timelineItems = computed(() => {
+  return props.timeline.map((item: StepperItem) => {
+    const action = TIMELINE_ACTIONS.filter(action => item.action === action.type)[0];
+    return {
+      ...action,
+      description: action.description.replace('#dateTime', useDateFormat(action.created_at, 'MMMM Do, YYYY').value),
+    }
+  });
+});
+console.log('timelineItems => ', timelineItems.value); 
 
 const items = computed(() => {
   if (props.order.book_copy_id) {

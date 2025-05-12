@@ -25,6 +25,15 @@
     @click="navigateTo('/book/cart')"
   />
 
+  <UButton
+    v-if="false === isAuthenticated"
+    icon="lucide:log-in"
+    color="neutral"
+    variant="outline"
+    class="ring-0 bg-primary-800 text-lg cursor-pointer"
+    @click="navigateTo('/login')"
+  />
+
   <USlideover title="" description="" v-if="isAuthenticated">
     <UChip
       v-if="unreadNotificaitons?.length > 0"

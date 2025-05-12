@@ -63,7 +63,7 @@ export type Database = {
             foreignKeyName: "book_copies_book_id_fkey"
             columns: ["book_id"]
             isOneToOne: false
-            referencedRelation: "book_copies"
+            referencedRelation: "books"
             referencedColumns: ["id"]
           },
         ]
@@ -221,17 +221,17 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "books_reviews_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "books_reviews_reader_id_fkey"
             columns: ["reader_id"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reviews_book_id_fkey"
-            columns: ["book_id"]
-            isOneToOne: false
-            referencedRelation: "books"
             referencedColumns: ["id"]
           },
         ]
@@ -336,6 +336,7 @@ export type Database = {
           old_due_date: string | null
           order_id: number
           request_note: string | null
+          status: string | null
         }
         Insert: {
           comment?: string | null
@@ -345,6 +346,7 @@ export type Database = {
           old_due_date?: string | null
           order_id: number
           request_note?: string | null
+          status?: string | null
         }
         Update: {
           comment?: string | null
@@ -354,6 +356,7 @@ export type Database = {
           old_due_date?: string | null
           order_id?: number
           request_note?: string | null
+          status?: string | null
         }
         Relationships: [
           {
@@ -361,6 +364,48 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_timeline: {
+        Row: {
+          action: string
+          comment: string | null
+          created_at: string
+          id: number
+          order_id: number
+          user_id: string
+        }
+        Insert: {
+          action: string
+          comment?: string | null
+          created_at?: string
+          id?: number
+          order_id: number
+          user_id: string
+        }
+        Update: {
+          action?: string
+          comment?: string | null
+          created_at?: string
+          id?: number
+          order_id?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_timeline_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_timeline_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]

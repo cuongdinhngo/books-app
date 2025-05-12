@@ -73,11 +73,13 @@ definePageMeta({
 })
 
 import { ORDER_STATUS } from '~/constants/orders';
+import { TIMELINE_TYPES } from '~/constants/orderTimeline';
 
 const { bookCart, removeCartItem, reset: resetBookCart } = useBookCarts();
 const { index } = useBooks();
 const { userId } = useAuth();
-const { insert, index: getOrders } = useOrders();
+const { insert, index:getOrders } = useOrders();
+const { insert:createOrderTimeline } = useOrderTimeline();
 
 const table = useTemplateRef('table');
 const rowSelection = ref<Record<string, boolean>>({})
@@ -111,6 +113,16 @@ async function handleBorrow() {
   return insert(orderItems)
     .then(async({ error }) => {
       if (error) throw error;
+
+      const { data:insertedOrders, error: orderError } = await getOrders({ status: [ORDER_STATUS.WAITING], readerId: userId.value });
+      if (orderError) throw orderError;
+      const orderTimelines = insertedOrders.map((order) => ({
+        order_id: order.id,
+        action: TIMELINE_TYPES.ORDER_CREATED,
+        user_id: userId.value
+      }));
+      console.log('orderTimelines', orderTimelines);
+      await createOrderTimeline(orderTimelines);
 
       resetBookCart(checkoutItems.value);
       useToastSuccess();
