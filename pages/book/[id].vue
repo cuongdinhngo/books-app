@@ -166,10 +166,7 @@ const { data, error, refresh } = await useAsyncData(
   }
 );
 
-console.log('BOOK => ', data.value);
-
 const isSubmittedReview = computed(() => {
-  console.log('COMPUTED => ', data.value?.reviews);
   if (!userId.value) {
     return true;
   }

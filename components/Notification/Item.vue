@@ -41,8 +41,6 @@ const props = defineProps({
   }
 });
 
-console.log('Notification => ', props.notification);
-
 const message = computed(() => props.notification.message?.replace('#{orderId}', `#${props.notification.notifiable_id}`));
 
 function getIcon() {

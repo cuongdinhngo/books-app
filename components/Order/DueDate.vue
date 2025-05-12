@@ -74,8 +74,6 @@ async function handleApprove(orderRenewId: number, newDueDate: string, readerId:
     .catch((error) => useToastError(error));
 }
 
-console.log('ORDER RENEWS => ', orderRenews);
-
 const columns = [
   {
     accessorKey: 'created_at',

@@ -162,7 +162,6 @@ const timelineItems = computed(() => {
     }
   });
 });
-console.log('timelineItems => ', timelineItems.value); 
 
 const items = computed(() => {
   if (props.order.book_copy_id) {
@@ -176,7 +175,6 @@ const items = computed(() => {
 const bookCopyId = ref(items.value[0]);
 
 const extendDueDate = () => {
-  console.log('Extend Due date');
   const dueDate = {
     order_id: props.order.id,
     status: ORDER_RENEWS_STATUS.WAITING,
@@ -215,6 +213,4 @@ const extendDueDate = () => {
   })
   .catch((error) => useToastError(error));
 }
-
-console.log('Order:', props);
 </script>

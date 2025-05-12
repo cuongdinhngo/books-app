@@ -39,8 +39,6 @@ const props = defineProps({
 const { remove } = useWishlists();
 const emit = defineEmits(['refreshWishlists']);
 
-console.log('Book:', props.book);
-
 const isAvailable = computed(() => {
   return props.book.book_copies.filter((copy) => {
     return copy.status === BOOK_COPY_STATUS.OPENING;
@@ -48,7 +46,6 @@ const isAvailable = computed(() => {
 });
 
 async function removeFromWishlist() {
-  console.log(`Removing book with ID ${props.wishlistId} from wishlist`);
   const result = window.confirm('Are you sure you want to remove this book from your wishlist?');
   if (!result) return;
 

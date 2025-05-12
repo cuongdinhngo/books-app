@@ -101,8 +101,6 @@ const isBorrowable = computed(() => {
   return data.value?.orders?.count < 2;
 });
 
-console.log('DATA => ', data);
-
 async function handleBorrow() {
   if (!userId.value) {
     window.alert('Please login to borrow books');
@@ -143,7 +141,7 @@ async function handleBorrow() {
         action: TIMELINE_TYPES.ORDER_CREATED,
         user_id: userId.value
       }));
-      console.log('orderTimelines', orderTimelines);
+
       await createOrderTimeline(orderTimelines);
 
       resetBookCart(checkoutItems.value);

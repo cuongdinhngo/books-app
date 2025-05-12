@@ -21,7 +21,6 @@ const name = ref(null);
 const categoryId = useRouteParams('id', null, { transform: Number });
 
 onMounted(async() => {
-  console.log('CATEGORY ID => ', categoryId.value);
   if (categoryId.value) {
     await get(categoryId.value)
       .then(({ data }) => {

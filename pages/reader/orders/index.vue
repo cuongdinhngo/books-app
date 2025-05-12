@@ -65,6 +65,4 @@ const handlePageChange = (newPage) => {
   page.value = newPage;
   searchParams.value.page = newPage;
 }
-
-console.log('Historical Orders => ', order);
 </script>

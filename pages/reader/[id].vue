@@ -72,8 +72,6 @@ const { data:wishlist, error, refresh } = await useAsyncData(
   }
 );
 
-console.log('WISHLIST =>', wishlist);
-
 async function handleUploadPhoto(event) {
   const file = event.target.files[0];
   if (file && file.type.startsWith("image/")) {

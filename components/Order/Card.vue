@@ -251,8 +251,6 @@ const props = defineProps({
 
 const emit = defineEmits(['refreshOrders']);
 
-console.log('ORDER CARD => ', props);
-
 const bookOrderModal = ref(false);
 const orderComment = ref('');
 const orderStatus = ref('');
@@ -280,7 +278,6 @@ const timelineItems = computed(() => {
     }
   });
 });
-console.log('timelineItems => ', timelineItems.value); 
 
 const items = computed(() => {
   if (props.order.book_copy_id) {
@@ -305,7 +302,6 @@ const requestOrderRenews = computed(() => {
 
   return newRequests.length > 0 ? newRequests[0] : null;
 });
-console.log('requestOrderRenews => ', requestOrderRenews.value);
 
 const orderActionOptions = computed(() => {
   switch (props.order.status) {
@@ -507,7 +503,6 @@ function getTimelineTypeViaOrderStatus(orderStatus: string): string {
 }
 
 function getBookCopyStatusViaOrderStatus(orderStatus: string) {
-  console.log('getBookCopyStatusViaOrderStatus => ', orderStatus);
   switch (orderStatus) {
     case ORDER_STATUS.BORROWING:
       return BOOK_COPY_STATUS.BORROWING;

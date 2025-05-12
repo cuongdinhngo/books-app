@@ -153,8 +153,6 @@ const { data, error:dashboardError } = await useAsyncData(
   }
 );
 
-console.log('DATA', data.value);
-
 overviewCards = overviewCards.map(card => {
   if (data.value?.statistics.data.hasOwnProperty(card.id)) {
     return {

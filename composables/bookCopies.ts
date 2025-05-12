@@ -14,8 +14,6 @@ const { insert, update } = useCrud(TABLE_NAME);
 export const useBookCopies = () => {
 
   const index = (options: GetBookItemsOptions = {}) => {
-
-    console.log('BOOK COPY OPTIONS => ', options);
     const {
       columns = '*',
       ids = [],
