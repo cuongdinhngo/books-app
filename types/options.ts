@@ -77,3 +77,9 @@ export interface OrderOptions {
   page?: number,
   size?: number
 }
+
+export interface OrderTimelineOptions {
+  columns?: string,
+  id?: number,
+  orderId?: number
+}
