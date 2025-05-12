@@ -214,7 +214,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import type { StepperItem } from '@nuxt/ui'
+import type { StepperItem } from '@nuxt/ui';
 import { BOOK_COPY_STATUS } from '~/constants/bookCopies';
 import { NOTIFICATION_TYPES, NOTIFICATION_MESSAGES } from '~/constants/notifications';
 import { ORDER_RENEWS_STATUS } from '~/constants/orderRenews';

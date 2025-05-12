@@ -10,9 +10,19 @@
       :book="order.books"
       :user="order.users"
       :book-copies="order.books.book_copies"
+      :order-renews="order.order_renews"
+      :timeline="order.order_timeline"
     />
   </div>
   <h3 v-if="order?.count == 0" class="justify-center flex text-stone-900">No Data</h3>
+
+  <Pagination
+    v-model="page"
+    v-if="order?.count > 0"
+    :totalCounts="order.count"
+    :items-per-page="pageSize"
+    @changePage="handlePageChange"
+  />
 </template>
 
 <script setup lang="ts">
@@ -20,7 +30,6 @@ definePageMeta({
   layout: 'main'
 })
 
-import { ORDER_ITEM_STATUS } from '~/composables/orderItems';
 import { useRouteQuery  } from '@vueuse/router'; 
 
 const { index } = useOrders();
@@ -36,7 +45,9 @@ const searchParams = ref({
     books!inner(
       id, title, cover_image,
       book_copies!inner(id, status)
-    )
+    ),
+    order_renews(*),
+    order_timeline(*)
   `,
   readerId: userId.value,
   id: orderId.value,
@@ -49,6 +60,11 @@ const { data: order, error, refresh, clear } = useAsyncData(
   () => index(searchParams.value),
   { watch: [searchParams.value] }
 );
+
+const handlePageChange = (newPage) => {
+  page.value = newPage;
+  searchParams.value.page = newPage;
+}
 
 console.log('Historical Orders => ', order);
 </script>
