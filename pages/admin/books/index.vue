@@ -37,6 +37,18 @@
           v-model="selectedAuthors"
         />
       </div>
+
+      <div class="my-2">
+        <label class="block text-sm font-medium text-gray-700">Status</label>
+        <USelectMenu
+          v-model="bookCopyStatus"
+          :items="BOOK_COPY_OPTION"
+          value-key="id"
+          variant="none"
+          placeholder="Select author"
+          class="w-full border text-stone-800 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
     </div>
 
     <div class="flex justify-between gap-4">
@@ -69,15 +81,16 @@
 </template>
 
 <script setup lang="ts">
-import type { Tables } from '~/types/database.types';
 import { useRouteParams, useRouteQuery } from '@vueuse/router';
+import { BOOK_COPY_OPTION } from '~/constants/bookCopies';
 
-const { index, remove } = useBooks();
+const { index:getBooks, remove } = useBooks();
 const { remove:deleteBooksAuthors } = useBooksAuthors();
 const { remove:deleteBooksCategories } = useBooksCategories();
 const { remove:deleteBooksPublishers } = useBooksPublishers();
 const { remove:deleteBookItems } = useBookCopies();
-const {query} = useRoute();
+const { query } = useRoute();
+const router = useRouter();
 
 const page = ref(useRouteParams('page', 1, { transform: Number }));
 const pageSize = 10;
@@ -86,12 +99,10 @@ const selectedAuthors = ref([]);
 const selectedCategories = ref([]);
 const selectedPublishers = ref([]);
 const showAdvancedSearch = ref(false);
-const bookItemStatus = ref([]);
+const bookCopyStatus = ref([]);
 const statusQuery = useRouteQuery('status', null).value;
 if (statusQuery) {
-  bookItemStatus.value = Array.isArray(statusQuery) ? statusQuery : [statusQuery];
-} else {
-  bookItemStatus.value = [];
+  bookCopyStatus.value = Array.isArray(statusQuery) ? statusQuery : [statusQuery];
 }
 
 const searchParams = ref({
@@ -99,14 +110,14 @@ const searchParams = ref({
   authorIds: selectedAuthors.value,
   categoryIds: selectedCategories.value,
   publisherIds: selectedPublishers.value,
-  status: bookItemStatus.value,
+  status: bookCopyStatus.value,
   page: page.value,
   size: pageSize
 });
 
 const { data: book, error, refresh, status, clear} = await useAsyncData(
   `books-query:${JSON.stringify(query)}`,
-  () => index(searchParams.value),
+  () => getBooks(searchParams.value),
   { watch: [searchParams.value] }
 );
 
@@ -117,9 +128,30 @@ const handleSearch = async() => {
   searchParams.value.categoryIds = selectedCategories.value;
   searchParams.value.publisherIds = selectedPublishers.value;
   searchParams.value.page = page.value;
-  useRouter().replace(`/admin/books?page=${page.value}#with-links`);
+  searchParams.value.status = [bookCopyStatus.value];
+  console.log('Current Query:', query);
+  console.log('New Query:', {
+    ...query,
+    title: title.value,
+    authorIds: selectedAuthors.value,
+    categoryIds: selectedCategories.value,
+    publisherIds: selectedPublishers.value,
+    status: bookCopyStatus.value,
+  });
+
+  router.push({
+    name: 'admin-books',
+    query: {
+      ...query,
+      title: title.value,
+      authorIds: selectedAuthors.value,
+      categoryIds: selectedCategories.value,
+      publisherIds: selectedPublishers.value,
+      status: bookCopyStatus.value,
+    },
+  });
   console.log('SEARCH PARAMS => ', searchParams.value);
-}
+};
 
 const handlePageChange = async(newPage) => {
   page.value = newPage;
