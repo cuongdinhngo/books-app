@@ -50,7 +50,7 @@ export const TIMELINE_ACTIONS = [
     type: TIMELINE_TYPES.ORDER_REQUEST_APPROVED,
     title: 'Request due date was approved',
     description: 'Approved at #dateTime',
-    icon: 'lucide:book-up'
+    icon: 'lucide:book-check'
   },
   {
     type: TIMELINE_TYPES.ORDER_REQUEST_REJECTED,
