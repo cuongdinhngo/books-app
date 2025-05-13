@@ -82,7 +82,7 @@ if (currentQuery) {
 
 const searchParams = ref({
   columns: `
-    id, status, book_id, book_copy_id, due_date, created_at,
+    id, status, book_id, book_copy_id, due_date, created_at, returned_at,
     users!inner(id, name, photo),
     books!inner(
       id, title, cover_image,

@@ -60,6 +60,7 @@
       <!-- Action Selection and Timeline Button -->
       <div class="mt-4 flex items-center space-x-4">
         <UButton
+          v-if="[ORDER_STATUS.WAITING, ORDER_STATUS.BORROWING].includes(order.status)"
           icon="lucide:send-horizontal" size="md" color="primary" variant="solid"
           @click="bookOrderModal = true"
         >
@@ -90,7 +91,7 @@
 
     <!-- Process Book Order Modal -->
     <UModal
-      :title="`#${props.order.id}: Extend Due date`"
+      :title="`#${props.order.id}: Process Order`"
       v-model:open="bookOrderModal"
       :close="{ color: 'primary', variant: 'outline', class: 'rounded-full'}"
     >
@@ -290,7 +291,6 @@ const items = computed(() => {
 });
 const bookCopyId = ref(items.value[0]);
 
-// Ensure requestOrderRenews includes all necessary properties
 const requestOrderRenews = computed(() => {
   const newRequests = (props.orderRenews as Array<{
     id: number;
@@ -321,13 +321,14 @@ const orderActionOptions = computed(() => {
 });
 
 async function handleNotificationAndTimeline({
-  userId, orderId, action, type, message
+  userId, orderId, action, type, message, comment
 }: {
   userId: string;
   orderId: number;
   action: string;
   type: string;
   message: string;
+  comment?: string;
 }) {
   try {
     const [notificationError, timelineError] = await Promise.all([
@@ -342,6 +343,7 @@ async function handleNotificationAndTimeline({
         order_id: orderId,
         action,
         user_id: userId,
+        comment
       }).then((res) => res.error),
     ]);
 
@@ -353,7 +355,6 @@ async function handleNotificationAndTimeline({
   }
 }
 
-// Updated handleOrderRenew
 async function handleOrderRenew(){
   if (orderRenewStatus.value === ORDER_RENEWS_STATUS.REJECTED) {
     const { error } = await updateOrderRenew(props.order.id, { status: orderRenewStatus.value });
@@ -405,7 +406,6 @@ async function handleOrderRenew(){
   });
 };
 
-// Updated extendDueDate
 function extendDueDate() {
   const data = {
     order_id: props.order.id,
@@ -439,16 +439,18 @@ function extendDueDate() {
   });
 };
 
-// Updated processOrder to handle bookCopyStatus properly
 function processOrder() {
   const currentDate = new Date();
   const dueDate = new Date();
   dueDate.setDate(currentDate.getDate() + BORROWING_PERIOD);
-  const updateOrderData = {
+  let updateOrderData = {
     book_copy_id: bookCopyId.value,
     status: orderStatus.value,
     due_date: dueDate.toISOString(),
   };
+  if (orderStatus.value === ORDER_STATUS.CLOSE) {
+    updateOrderData.returned_at = new Date().toISOString();
+  }
 
   const updateBookCopyData = {
     status: getBookCopyStatusViaOrderStatus(orderStatus.value),
@@ -467,6 +469,7 @@ function processOrder() {
       action: getTimelineTypeViaOrderStatus(orderStatus.value),
       type: type,
       message: message,
+      comment: orderComment.value,
     });
 
     bookOrderModal.value = false;
