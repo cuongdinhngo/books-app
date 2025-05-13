@@ -36,6 +36,7 @@ export const useUsers = () => {
   const index = (options: UserOptions = {}) => {
     const {
       columns = '*',
+      id = null,
       name = null,
       email = null,
       role = null,
@@ -44,6 +45,9 @@ export const useUsers = () => {
     } = options;
 
     let query = useTable(TABLE_NAME).select(columns, { count: 'exact'}).order('id', { ascending: false });
+    if (id) {
+      query = query.eq('id', id);
+    }
     if (name) {
       query = query.ilike('name', `%${name}%`);
     }

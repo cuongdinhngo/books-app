@@ -1,10 +1,26 @@
 <template>
   <form class="mb-6 space-y-4 w-1/2 mx-auto" @submit.prevent="handleSearch">
-    <FormInputDiv
-      v-model="orderId"
-      label-name="Order No"
-      placeholder="Enter Order's No"
-    />
+    <div>
+      <UModal>
+        <UButton
+          label="Looking for..."
+          variant="subtle"
+          icon="lucide-search"
+          class="w-full"
+        />
+
+        <template #content>
+          <UCommandPalette
+            v-model:search-term="searchTerm"
+            :groups="resultGroups"
+            loading
+            placeholder="Looking for order id, book copy id, book title, or reader name..."
+            class="h-80"
+            @keyup.enter="handleSearchTerm"
+          />
+        </template>
+      </UModal>
+    </div>
 
     <div class="flex space-x-40">
       <div class="flex-1">
@@ -62,8 +78,12 @@
 <script setup lang="ts">
 import { ORDER_STATUS, ORDER_STATUS_OPTIONS } from '~/constants/orders';
 import { useRouteQuery } from '@vueuse/router';
+import { USER_ROLE_READER } from '~/constants/users';
 
-const { index } = useOrders();
+const { index:getOrders } = useOrders();
+const { index:getBooks } = useBooks();
+const { index:getBookCopies } = useBookCopies();
+const { index:getReaders } = useUsers();
 const router = useRouter();
 
 const page = useRouteQuery('page', 1 , { transform: Number });
@@ -71,18 +91,20 @@ const pageSize = 5;
 const orderId = useRouteQuery('id', null);
 const from = ref(null);
 const to = ref(null);
+const searchTerm = ref(null);
+const resultGroups = ref<Array<any>>([])
 
 const selectedStatus = ref<string[]>([]);
-const currentQuery = useRouteQuery('status', null).value;
-if (currentQuery) {
-  selectedStatus.value = Array.isArray(currentQuery) ? currentQuery : [currentQuery];
+const statusQuery = useRouteQuery('status', null).value;
+if (statusQuery) {
+  selectedStatus.value = Array.isArray(statusQuery) ? statusQuery : [statusQuery];
 } else {
-  selectedStatus.value = [ORDER_STATUS.WAITING, ORDER_STATUS.BORROWING];
+  selectedStatus.value = [];
 }
 
 const searchParams = ref({
   columns: `
-    id, status, book_id, book_copy_id, due_date, created_at,
+    id, status, book_id, book_copy_id, due_date, created_at, returned_at,
     users!inner(id, name, photo),
     books!inner(
       id, title, cover_image,
@@ -92,6 +114,9 @@ const searchParams = ref({
     order_timeline(*)
   `,
   status: selectedStatus.value,
+  bookId: useRouteQuery('bookId', null).value,
+  bookCopyId: useRouteQuery('bookCopyId', null).value,
+  readerId: useRouteQuery('readerId', null).value,
   from: from.value,
   to: to.value,
   id: orderId.value,
@@ -99,15 +124,117 @@ const searchParams = ref({
   size: pageSize
 });
 
-const { data: order, error, refresh, clear } = useAsyncData(
+console.log('searchParams => ', searchParams.value);
+
+const { data:order, error, refresh, clear } = useAsyncData(
   `order-page-${page.value}`,
-  () => index(searchParams.value),
+  () => getOrders(searchParams.value),
   { watch: [searchParams.value] }
 );
 
-console.log('order', order);
+console.log('ORDER => ', order);
+console.log('ORDER ERROR => ', error);
 
-const handleSearch = () => {
+async function handleSearchTerm() {
+  console.log('searchTerm => ', searchTerm.value);
+  if (!searchTerm.value) {
+    resultGroups.value = [];
+    return;
+  };
+
+if (searchTerm.value) {
+  const searchFunctions = [];
+  const resultMap = {};
+
+  if (!isNaN(Number(searchTerm.value))) {
+    // If searchTerm is a number
+    searchFunctions.push(getOrders({ id: searchTerm.value }).then(result => resultMap.orders = result));
+    searchFunctions.push(getBookCopies({ ids: [searchTerm.value] }).then(result => resultMap.bookCopies = result));
+  }
+
+  if (searchTerm.value.length >= 2) {
+    // If searchTerm is an alphabet or string
+    searchFunctions.push(getBooks({ title: searchTerm.value }).then(result => resultMap.books = result));
+    searchFunctions.push(getReaders({ name: searchTerm.value, role: USER_ROLE_READER }).then(result => resultMap.readers = result));
+  }
+
+  await Promise.all(searchFunctions);
+
+  // Access results from resultMap
+  const { orders, bookCopies, books, readers } = resultMap;
+
+  console.log('Orders:', orders);
+  console.log('Book Copies:', bookCopies);
+  console.log('Books:', books);
+  console.log('Readers:', readers);
+    if (books && null === books.error && books?.count > 0) {
+    resultGroups.value.push({
+      id: 'books',
+      label: 'Books',
+      items: books.data.map(item => ({
+        id: item.id,
+        label: item.title,
+        to: `/admin/orders?bookId=${item.id}`,
+        target: '_blank',
+        avatar: {
+          src: item.coverImage
+        }
+      }))
+    });
+  }
+
+  if (orders && null === orders.error && orders?.count > 0) {
+    resultGroups.value.push({
+      id: 'orders',
+      label: 'Orders',
+      items: orders.data.map(item => ({
+        id: item.id,
+        label: item.id,
+        to: `/admin/orders?id=${item.id}`,
+        target: '_blank',
+        avatar: {
+          src: '/img/book.png'
+        }
+      }))
+    });
+  }
+
+  if (bookCopies && null === bookCopies.error && bookCopies?.count > 0) {
+    resultGroups.value.push({
+      id: 'bookCopies',
+      label: 'Hard Copy Id',
+      items: bookCopies.data.map(item => ({
+        id: item.id,
+        label: item.id,
+        to: `/admin/orders?bookCopyId=${item.id}`,
+        target: '_blank',
+        avatar: {
+          src: '/img/order.png'
+        }
+      }))
+    });
+  }
+
+  if (readers && null === readers.error && readers?.count > 0) {
+    resultGroups.value.push({
+      id: 'readers',
+      label: 'Readers',
+      items: readers.data.map(item => ({
+        id: item.id,
+        label: item.name,
+        to: `/admin/orders?readerId=${item.id}`,
+        target: '_blank',
+        avatar: {
+          src: `${item.photo || '/img/user.png'}` 
+        }
+      }))
+    });
+  }
+}
+
+}
+
+function handleSearch() {
   searchParams.value.id = orderId.value;
   searchParams.value.status = selectedStatus.value;
   searchParams.value.from = from.value;
@@ -118,7 +245,7 @@ const handleSearch = () => {
   });
 }
 
-const handlePageChange = (newPage) => {
+function handlePageChange(newPage) {
   page.value = newPage;
   searchParams.value.page = newPage;
 }

@@ -1,58 +1,48 @@
 <template>
   <div class="p-3">
     <UTable
-      v-if="orderItems.length > 0"
-      :data="orderItems"
+      v-if="data.count > 0"
+      :data="data.data"
       class="flex-1"
       :columns="[
         {
-          accessorKey: 'orderId',
-          header: 'Order No.',
-          id: 'orderId'
+          accessorKey: 'id',
+          header: 'Order No.'
         },
         {
-          accessorKey: 'orderItemStatus',
+          accessorKey: 'book_copy_id',
+          header: 'Hard Copy No.'
+        },
+        {
+          accessorKey: 'status',
           header: 'Status',
+          id: 'orderStatus'
         },
         {
-          accessorKey: 'orderCreatedAt',
+          accessorKey: 'created_at',
           header: 'Ordered at',
           id: 'orderCreatedAt'
         },
         {
-          accessorKey: 'orderReturnedAt',
+          accessorKey: 'returned_at',
           header: 'Returned at',
           id: 'orderReturnedAt',
         },
-        {
-          accessorKey: 'orderItemComment',
-          header: 'Comment',
-          id: 'orderItemComment'
-        }
       ]"
     >
-      <template #orderId-cell="{ row }">
-        <NuxtLink :to="{ name: 'admin-orders-id', params: { id: row.original.orderId }}" class="hover:text-primary-700 cursor-pointer">
-          {{ row.original.orderId }}
-        </NuxtLink>
-      </template>
 
-      <template #orderItemStatus-cell="{ row }">
-        <UBadge class="capitalize" variant="subtle" :color="orderItemStatusColor[row.original.orderItemStatus]">
-          {{ row.original.orderItemStatus }}
+      <template #orderStatus-cell="{ row }">
+        <UBadge class="capitalize" variant="subtle" :color="mapBadgeColor[row.original.status]">
+          {{ row.original.status }}
         </UBadge>
       </template>
 
       <template #orderCreatedAt-cell="{ row }">
-        <NuxtLink :to="{ name: 'admin-orders-id', params: { id: row.original.orderId }}" class="hover:text-primary-700 cursor-pointer">
-          {{ useDateFormat(row.original.orderCreatedAt, 'MMMM Do, YYYY') }}
-        </NuxtLink>
+        {{ useDateFormat(row.original.created_at, 'MMMM Do, YYYY') }}
       </template>
 
       <template #orderReturnedAt-cell="{ row }">
-        <NuxtLink :to="{ name: 'admin-orders-id', params: { id: row.original.orderId }}" class="hover:text-primary-700 cursor-pointer">
-          {{ row.original.orderReturnedAt ? useDateFormat(row.original.orderReturnedAt, 'MMMM Do, YYYY') : 'Not returned' }}
-        </NuxtLink>
+        {{ row.original.returned_at ? useDateFormat(row.original.returned_at, 'MMMM Do, YYYY') : 'Not returned' }}
       </template>
     </UTable>
 
@@ -68,23 +58,23 @@
 
 <script setup lang="ts">
 import { useRouteParams, useRouteQuery } from '@vueuse/router';
-const { index:getOrderItems} = useOrderItems();
+const { index:getOrders} = useOrders();
 
-const orderItems = ref([]);
 const bookId = useRouteParams('id', null, { transform: Number });
-const page = ref(useRouteQuery('page', 1, { transform: Number }));
+const page = useRouteQuery('page', 1, { transform: Number });
 const pageSize = 10;
 const searchParams = ref({
   bookId: bookId.value,
   page: page.value,
   pageSize: pageSize,
 });
-const orderItemStatusColor = {
-  openning: 'success',
+
+const mapBadgeColor = {
+  opening: 'success',
   pending: 'info',
-  borrowed: 'warning',
-  lost: 'neutral',
-  closed: 'neutral',
+  borrowing: 'warning',
+  lost: 'error',
+  closed: 'success',
   rejected: 'neutral',
 }
 
@@ -93,24 +83,12 @@ function handlePageChange(newPage) {
   searchParams.value.page = newPage;
 }
 
-const { data, error, refresh } = await useAsyncData(
+const { data, error } = await useAsyncData(
   `book/${bookId.value}/orders`,
-  () => getOrderItems({
-    columns: 'orderId:order_id, orderItemStatus:status, orderItemComment:comment, orders(*)',
-    ...searchParams.value
-  }),
-  {
-    watch: [searchParams.value]
-  }
+  () => getOrders({...searchParams.value}),
+  { watch: [searchParams.value] }
 );
-
-orderItems.value = data.value.data.map(item => {
-  return {
-    orderId: item.orderId,
-    orderItemComment: item.orderItemComment,
-    orderItemStatus: item.orderItemStatus,
-    orderCreatedAt: item.orders.created_at,
-    orderReturnedAt: item.orders.returned_at
-  }
-});
+if (error.value) {
+  useToastError(error.value);
+}
 </script>

@@ -10,6 +10,9 @@ const { insert, update, get, remove } = useCrud(TABLE_NAME);
 export const useOrders = () => {
 
   const index = (options: OrderOptions = {}) => {
+
+    console.log('ORDER OPTIONS => ', options);
+
     let {
       columns = '*',
       id = null,
