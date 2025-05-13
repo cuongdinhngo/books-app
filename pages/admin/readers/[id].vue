@@ -71,7 +71,7 @@
     </NuxtLink>
 
     <NuxtLink
-      :to="{ name: 'admin-orders', query: { status: [ ORDER_STATUS.REJECT ] } }"
+      :to="{ name: 'admin-orders', query: { status: [ ORDER_STATUS.LOST ] } }"
       class="w-30 text-sm font-medium text-gray-700 p-2 bg-gray-300 rounded-2xl cursor-pointer"
     >
       Lost: {{ orders?.lost || 0 }}
