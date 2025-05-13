@@ -68,6 +68,23 @@
     <p class=" text-gray-900">{{ data?.book.data.description }}</p>
   </div>
 
+  <h3 class="text-stone-800 font-bold mt-5 mb-2">
+    Same Categories
+  </h3>
+  <UCarousel
+    v-slot="{ item }"
+    loop
+    arrows
+    :items="filteredBookSameCategories"
+    :ui="{ item: 'basis-1/4', next: 'end-0', prev: 'start-0' }"
+    class="p-5 bg-primary-50"
+  >
+    <BookRatingItem
+      :book="item"
+      :class-value="`bg-white p-4 rounded-lg shadow text-stone-900 h-[250px]`"
+    />
+  </UCarousel>
+
   <!-- Review Form -->
   <div
     class="mt-6"
@@ -142,7 +159,7 @@ import { useRouteParams } from '@vueuse/router';
 const { userId } = useAuth();
 const { addToCart } = useBookCarts();
 const { insert, index:getBookReviews } = useBooksReviews();
-const { get:getBookDetails } = useBooks();
+const { get:getBookDetails, index:getBooks } = useBooks();
 const { insert:addToWishlist } = useWishlists();
 const { index:getBorrowedBookCounts } = useOrders();
 
@@ -165,6 +182,30 @@ const { data, error, refresh } = await useAsyncData(
     return { book, reviews, rating, borrowedCounts}
   }
 );
+
+console.log('DATA => ', data.value);
+
+const categories = computed(() => {
+  return data.value?.book.data.categories.map(item => item.id);
+});
+
+const { data:bookSameCategories, error:bookError } = await useAsyncData(
+  `book-same-category-${categories.value.toString()}`,
+  () => getBooks({
+    columns: 'book_id:id, book_title:title, book_image:cover_image',
+    categoryIds: categories.value,
+    page: 1,
+    size: 10
+  })
+); 
+
+const filteredBookSameCategories = bookSameCategories.value.data
+  .filter(item => item.book_id !== bookId.value)
+  .map(item => {
+    return {
+      ...item,
+    }
+  });
 
 const isSubmittedReview = computed(() => {
   if (!userId.value) {
