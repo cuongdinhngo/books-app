@@ -5,7 +5,7 @@
 
       <UModal>
         <UButton
-          label="Search"
+          label="Searching..."
           color="neutral"
           variant="subtle"
           icon="lucide-search"
@@ -16,7 +16,8 @@
           <UCommandPalette
             v-model:search-term="searchTerm"
             :groups="resultGroups"
-            placeholder="Search users..."
+            loading
+            placeholder="Looking for books, categories, or publishers..."
             class="h-80"
             @keyup.enter="handleSearch"
           />
@@ -37,7 +38,23 @@ const { index:getCategories } = useCategories();
 const { index:getPublishers } = usePublishers();
 
 const searchTerm = ref<string>('');
-const resultGroups = ref<Array<any>>([]);
+const resultGroups = ref<Array<any>>([
+  {
+    id: 'books',
+    label: 'Books',
+    items: []
+  },
+ {
+    id: 'categories',
+    label: 'Categories',
+    items: []
+  },
+  {
+    id: 'publishers',
+    label: 'Publishers',
+    items: []
+  }
+]);
 
 function handleSearch() {
   Promise.all([

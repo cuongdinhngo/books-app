@@ -39,6 +39,13 @@ export default defineAppConfig({
           subtle: 'bg-white text-stone-900 ring-gray-300'
         }
       }
+    },
+    button: {
+      variants: {
+        variant: {
+          subtle: 'bg-white text-stone-900 ring-gray-300'
+        }
+      }
     }
   }
 })
