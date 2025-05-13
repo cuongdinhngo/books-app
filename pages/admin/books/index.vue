@@ -121,6 +121,8 @@ const { data: book, error, refresh, status, clear} = await useAsyncData(
   { watch: [searchParams.value] }
 );
 
+console.log('BOOKS => ', book.value);
+
 const handleSearch = async() => {
   page.value = 1;
   searchParams.value.title = title.value;
@@ -199,11 +201,6 @@ const columns = [
     accessorKey: 'authors',
     header: `Authors`,
     cell: ({ row }) => `${row.getValue('authors').map(author => author.name).join(', ')}`
-  },
-  {
-    accessorKey: 'book_copies',
-    header: `Quantity`,
-    cell: ({ row }) => `${row.original.book_copies[0].count}`
   },
   {
     header: 'Actions',
