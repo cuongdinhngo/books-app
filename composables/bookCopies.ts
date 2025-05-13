@@ -9,7 +9,7 @@ interface GetBookItemsOptions {
 
 const TABLE_NAME = 'book_copies';
 
-const { insert, update } = useCrud(TABLE_NAME);
+const { insert, update, upsert } = useCrud(TABLE_NAME);
 
 export const useBookCopies = () => {
 
@@ -44,6 +44,7 @@ export const useBookCopies = () => {
   return {
     insert,
     index,
-    update
+    update,
+    upsert,
   }
 }

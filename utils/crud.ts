@@ -16,10 +16,15 @@ export const useCrud = (tableName: string) => {
     return useTable(tableName).delete().eq('id', id);
   }
 
+  const upsert = (data: any) => {
+    return useTable(tableName).upsert(data);
+  }
+
   return {
     insert,
     get,
     update,
-    remove
+    remove,
+    upsert
   };
 }

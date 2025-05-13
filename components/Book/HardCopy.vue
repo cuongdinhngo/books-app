@@ -164,10 +164,9 @@ import { useRouteParams, useRouteQuery } from '@vueuse/router';
 import { BOOK_COPY_STATUS } from '~/constants/bookCopies';
 
 const { index, update, upsert } = useBookCopies();
-const router = useRouter();
 
 const bookId = useRouteParams('id', null, {transform: Number});
-const page = ref(useRouteQuery('page', 1, { transform: Number }));
+const page = useRouteQuery('page', 1, { transform: Number });
 const pageSize = 5;
 
 const table = useTemplateRef('table');
@@ -188,7 +187,7 @@ const searchParams = ref({
 const { data:bookCopies, error, refresh } = await useAsyncData(
   `book/${bookId.value}/items/page/${page.value}`,
   async() => {
-    const [ all, perPage] = await Promise.all([
+    const [ all, perPage ] = await Promise.all([
       index({ bookIds: [bookId.value] }),
       index(searchParams.value)
     ]);
@@ -235,7 +234,7 @@ function handlePageChange (newPage: number) {
   searchParams.value.page = newPage;
 }
 
-const submitItems = async() => {
+async function submitItems() {
   if (quantity.value <= 0) {
     useToastError(null, 'Please enter a valid quantity.');
     return;
@@ -243,7 +242,7 @@ const submitItems = async() => {
 
   const newItems = Array.from({ length: quantity.value }, () => ({
     book_id: bookId.value,
-    status: 'pending',
+    status: BOOK_COPY_STATUS.PENDING,
     created_at: new Date().toISOString(),
   }));
 
@@ -262,18 +261,21 @@ const submitItems = async() => {
 };
 
 
-const enableAll = async() => {
+async function enableAll() {
   const selectedRows = table?.value?.tableApi.getFilteredSelectedRowModel().rows;
   if (selectedRows.length === 0) {
     useToastError('Please select at least one item to enable.');
     return;
   }
 
-  const updatedItems = selectedRows.map((row: any) => {
-    row.original.status = 'opening';
-    row.original.updated_at = new Date().toISOString();
-    return row.original;
-  });
+  const updatedItems = selectedRows
+    .filter((row: any) => [BOOK_COPY_STATUS.PENDING].includes(row.original.status))
+    .map((row: any) => {
+      row.original.status = BOOK_COPY_STATUS.OPENING;
+      row.original.updated_at = new Date().toISOString();
+
+      return row.original;
+    });
 
   await upsert(updatedItems)
     .then(({ error }) => {
@@ -289,7 +291,7 @@ const enableAll = async() => {
 };
 
 const handleStatusChange = async(row: any, value: boolean) => {
-  const newStatus = value ? 'opening' : 'pending';
+  const newStatus = value ? BOOK_COPY_STATUS.OPENING : BOOK_COPY_STATUS.PENDING;
   row.original.status = newStatus;
   await update(row.original.id, { status: newStatus })
     .then(({ error }) => {
