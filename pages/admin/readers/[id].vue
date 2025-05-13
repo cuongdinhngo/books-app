@@ -43,35 +43,35 @@
     </NuxtLink>
 
     <NuxtLink
-      :to="{ name: 'admin-orders', query: { status: [ ORDER_STATUS.WAITING ] } }"
+      :to="{ name: 'admin-orders', query: { status: [ ORDER_STATUS.WAITING ], readerId: readerId } }"
       class="w-30 text-sm font-medium text-gray-700 p-2 bg-violet-300 rounded-2xl cursor-pointer"
     >
       Waiting: {{ orders?.waiting || 0 }}
     </NuxtLink>
 
     <NuxtLink
-      :to="{ name: 'admin-orders', query: { status: [ ORDER_STATUS.BORROWING ] } }"
+      :to="{ name: 'admin-orders', query: { status: [ ORDER_STATUS.BORROWING ], readerId: readerId } }"
       class="w-30 text-sm font-medium text-gray-700 p-2 bg-green-200 rounded-2xl cursor-pointer"
     >
       Borrowing: {{ orders?.borrowing || 0 }}
     </NuxtLink>
 
     <NuxtLink
-      :to="{ name: 'admin-orders', query: { status: [ ORDER_STATUS.CLOSE ] } }"
+      :to="{ name: 'admin-orders', query: { status: [ ORDER_STATUS.CLOSE ], readerId: readerId } }"
       class="w-30 text-sm font-medium text-gray-700 p-2 bg-orange-200 rounded-2xl cursor-pointer"
     >
       Closed: {{ orders?.closed || 0 }}
     </NuxtLink>
 
     <NuxtLink
-      :to="{ name: 'admin-orders', query: { status: [ ORDER_STATUS.REJECT ] } }"
+      :to="{ name: 'admin-orders', query: { status: [ ORDER_STATUS.REJECT ], readerId: readerId } }"
       class="w-30 text-sm font-medium text-gray-700 p-2 bg-pink-200 rounded-2xl cursor-pointer"
     >
       Rejected: {{ orders?.rejected || 0 }}
     </NuxtLink>
 
     <NuxtLink
-      :to="{ name: 'admin-orders', query: { status: [ ORDER_STATUS.LOST ] } }"
+      :to="{ name: 'admin-orders', query: { status: [ ORDER_STATUS.LOST ], readerId: readerId } }"
       class="w-30 text-sm font-medium text-gray-700 p-2 bg-gray-300 rounded-2xl cursor-pointer"
     >
       Lost: {{ orders?.lost || 0 }}
