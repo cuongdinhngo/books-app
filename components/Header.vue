@@ -70,7 +70,6 @@
 <script setup>
 import { DialogTitle, VisuallyHidden, DialogDescription } from 'reka-ui';
 
-const { index:getNotifications } = useNotifications();
 const { signout, userId } = useAuth();
 const items = ref([
   {
@@ -82,7 +81,7 @@ const items = ref([
     label: 'Logout',
     icon: 'lucide:log-out',
     async onSelect() {
-      signout();
+      await signout();
       navigateTo('/login')
     }
   }
