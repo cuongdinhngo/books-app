@@ -53,15 +53,27 @@
     </template>
 
     <template #cartActions-cell="{ row }">
-      <UButton
-        icon="lucide:trash-2"
-        size="md"
-        color="warning"
-        variant="subtle"
-        @click="handleRemoveCartItem(Number(row.original.id))"
-      >
-        Remove
-      </UButton>
+      <div class="flex items-center gap-2">
+        <UButton
+          icon="lucide:trash-2"
+          size="md"
+          color="warning"
+          variant="subtle"
+          @click="handleRemoveCartItem(Number(row.original.id))"
+        >
+          Remove
+        </UButton>
+
+        <UButton
+          icon="lucide:book-heart"
+          size="md"
+          color="primary"
+          variant="subtle"
+          @click="handleWishlist(Number(row.original.id))"
+        >
+          Add to Wishlist
+        </UButton>
+      </div>
     </template>
   </UTable>
 
@@ -100,6 +112,7 @@ const { userId } = useAuth();
 const { insert, index:getOrders } = useOrders();
 const { insert:createOrderTimeline } = useOrderTimeline();
 const { insert:sendNotification } = useNotifications();
+const { wishlists, loadWishlists, addBookToWishlist } = useWishlistActions();
 
 const table = useTemplateRef('table');
 const rowSelection = ref<Record<string, boolean>>({})
@@ -113,6 +126,10 @@ const { data, error, refresh } = await useAsyncData(
       getOrders({ status: [ORDER_STATUS.WAITING, ORDER_STATUS.BORROWING], readerId: userId.value })
     ]);
 
+    if (userId.value) {
+      await loadWishlists();
+    }
+    
     return { books, orders };
   }
 );
@@ -188,6 +205,10 @@ async function handleBorrow() {
 function handleRemoveCartItem(bookId: number) {
   removeCartItem(bookId);
   refresh();
+}
+
+async function handleWishlist(bookId: number) {
+  await addBookToWishlist(bookId);
 }
 
 const columns = [

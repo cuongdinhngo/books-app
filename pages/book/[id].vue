@@ -18,8 +18,6 @@
             :rating="data?.rating.data.average_rating ?? 0"
             :is-show-value="true"
           />
-          <!-- <span class="text-yellow-500">{{  }}</span> -->
-          <!-- <span class="ml-2 text-yellow-500">{{ generateRating(data?.rating.data.average_rating ?? 0) }}</span> <span class="ml-2"> {{ data?.rating.data.average_rating ?? 0 }} / 5 ({{ data?.rating.data.review_count }} reviews)</span> -->
         </div>
         <div class="text-sm font-medium mt-1">
           <label class="inline text-gray-600">Borrowed Counts:</label>
@@ -164,14 +162,13 @@ const { userId } = useAuth();
 const { addToCart } = useBookCarts();
 const { insert, index:getBookReviews } = useBooksReviews();
 const { get:getBookDetails, index:getBooks } = useBooks();
-const { insert:addToWishlist } = useWishlists();
 const { index:getBorrowedBookCounts } = useOrders();
+const { wishlists, addBookToWishlist } = useWishlistActions();
 
 const supabase = useSupabaseClient();
 const bookId = useRouteParams('id', null, { transform: Number });
 const rating = ref('');
 const content = ref('');
-const wishlists = ref([]);
 
 const { data, error, refresh } = await useAsyncData(
   `book-${bookId.value}`,
@@ -181,7 +178,12 @@ const { data, error, refresh } = await useAsyncData(
       getBookReviews({ columns: 'id,rating,content,created_at,users(id,name)', bookId: bookId.value }),
       supabase.rpc('get_average_rating_by_book', { p_book_id: bookId.value }).single(),
       getBorrowedBookCounts({ bookId: bookId.value, isHead: true })
-    ])
+    ]);
+
+    // Load user wishlist data for this book
+    if (userId.value) {
+      wishlists.value = book.data.wishlists;
+    }
 
     return { book, reviews, rating, borrowedCounts}
   }
@@ -222,25 +224,7 @@ const isSubmittedReview = computed(() => {
 wishlists.value = data.value?.book.data.wishlists;
 
 async function handleWishlist() {
-  if (!userId.value) {
-    useToastError('Unauthenticated User','Please login to add to wishlist');
-    return;
-  }
-
-  const current = wishlists.value.filter(item => (item.book_id === bookId.value));
-  if (current.length > 0) {
-    return;
-  }
-
-  await addToWishlist({ reader_id: userId.value, book_id: bookId.value })
-    .then(({ error }) => {
-      if (error) throw error;
-
-      wishlists.value.push({ reader_id: userId.value, book_id: bookId.value });
-      refresh();
-      useToastSuccess();
-    })
-    .catch((error) => useToastError(error));
+  await addBookToWishlist(bookId.value);
 }
 
 async function submitReview() {
