@@ -26,7 +26,9 @@
             </p>
             <p>
               <span class="font-semibold">Status:</span>
-              {{ order.status }}
+              <UBadge class="capitalize ml-2" variant="subtle" :color="mapBadgeColor(order.status)">
+                {{ order.status }}
+              </UBadge>
             </p>
         </div>
         <!-- Second Column: Ordered Date, Due Date, Returned Date -->

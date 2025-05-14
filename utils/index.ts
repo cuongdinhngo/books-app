@@ -77,3 +77,17 @@ export function generateRating(length: number, filledChar: string = '★', empty
 
   return filled + empty;
 }
+
+export function mapBadgeColor(status: string) {
+  const color = {
+    waiting: 'primary',
+    opening: 'success',
+    pending: 'primary',
+    borrowing: 'warning',
+    lost: 'error',
+    rejected: 'neutral',
+    closed: 'success',
+  }
+
+  return color[status] || 'neutral';
+}

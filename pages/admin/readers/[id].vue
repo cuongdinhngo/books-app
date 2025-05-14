@@ -33,50 +33,11 @@
     </div>
   </div>
 
-  <!-- Order Statistics -->
-  <div class="grid grid-cols-6 gap-2 my-4">
-    <NuxtLink
-      :to="{ name: 'admin-orders', query: { readerId: readerId } }"
-      class="w-30 text-sm font-medium text-gray-700 p-2 bg-blue-200 rounded-2xl cursor-pointer"
-    >
-      Total: {{ orders?.total || 0 }}
-    </NuxtLink>
-
-    <NuxtLink
-      :to="{ name: 'admin-orders', query: { status: [ ORDER_STATUS.WAITING ], readerId: readerId } }"
-      class="w-30 text-sm font-medium text-gray-700 p-2 bg-violet-300 rounded-2xl cursor-pointer"
-    >
-      Waiting: {{ orders?.waiting || 0 }}
-    </NuxtLink>
-
-    <NuxtLink
-      :to="{ name: 'admin-orders', query: { status: [ ORDER_STATUS.BORROWING ], readerId: readerId } }"
-      class="w-30 text-sm font-medium text-gray-700 p-2 bg-green-200 rounded-2xl cursor-pointer"
-    >
-      Borrowing: {{ orders?.borrowing || 0 }}
-    </NuxtLink>
-
-    <NuxtLink
-      :to="{ name: 'admin-orders', query: { status: [ ORDER_STATUS.CLOSE ], readerId: readerId } }"
-      class="w-30 text-sm font-medium text-gray-700 p-2 bg-orange-200 rounded-2xl cursor-pointer"
-    >
-      Closed: {{ orders?.closed || 0 }}
-    </NuxtLink>
-
-    <NuxtLink
-      :to="{ name: 'admin-orders', query: { status: [ ORDER_STATUS.REJECT ], readerId: readerId } }"
-      class="w-30 text-sm font-medium text-gray-700 p-2 bg-pink-200 rounded-2xl cursor-pointer"
-    >
-      Rejected: {{ orders?.rejected || 0 }}
-    </NuxtLink>
-
-    <NuxtLink
-      :to="{ name: 'admin-orders', query: { status: [ ORDER_STATUS.LOST ], readerId: readerId } }"
-      class="w-30 text-sm font-medium text-gray-700 p-2 bg-gray-300 rounded-2xl cursor-pointer"
-    >
-      Lost: {{ orders?.lost || 0 }}
-    </NuxtLink>
-  </div>
+  <OrderStats
+    :orders="reader.data?.orders"
+    :route-name="'admin-orders'"
+    :reader-id="readerId"
+  />
 </template>
 <script setup lang="ts">
 import { useRouteParams, useRouteQuery } from '@vueuse/router';
@@ -109,29 +70,6 @@ const {data:reader, error, refresh } = await useAsyncData(
 if (error.value) {
   useToastError(error.value);
 }
-
-const orders = computed(() => {
-  const items = reader.value?.data?.orders.reduce((acc, item) => {
-    acc[item.status] = (acc[item.status] || 0) + 1;
-    return acc;
-  }, {});
-
-  const total = Number(items.waiting || 0) +
-    Number(items.borrowing || 0) +
-    Number(items.closed || 0) +
-    Number(items.lost || 0) +
-    Number(items.rejected || 0)
-  ;
-
-  return {
-    total,
-    waiting: items.waiting || 0,
-    borrowing: items.borrowing || 0,
-    closed: items.closed || 0,
-    rejected: items.rejected || 0,
-    lost: items.lost || 0
-  };
-});
 
 async function handleUploadPhoto(event: Event) {
   const file = event.target.files[0];

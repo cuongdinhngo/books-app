@@ -33,11 +33,16 @@
           </p>
           <p>
             <span class="font-semibold">Reader:</span>
-            {{ user.name }}
+            <NuxtLink :to="{ name: 'admin-readers-id', params: { id: user.id } }" class="capitalize ml-2 text-primary-400 hover:text-primary-600">
+              {{ user.name }}
+            </NuxtLink>
+            
           </p>
           <p>
             <span class="font-semibold">Status:</span>
-            {{ order.status }}
+            <UBadge class="capitalize ml-2" variant="subtle" :color="mapBadgeColor(order.status)">
+              {{ order.status }}
+            </UBadge>
           </p>
         </div>
         <!-- Second Column: Ordered Date, Due Date, Returned Date -->

@@ -84,11 +84,9 @@ const { index:getOrders } = useOrders();
 const { index:getBooks } = useBooks();
 const { index:getBookCopies } = useBookCopies();
 const { index:getReaders } = useUsers();
+
 const route = useRoute();
 const currentQuery = useRoute().query;
-
-console.log('currentQuery => ', currentQuery, 'route => ', route);
-
 const page = useRouteQuery('page', 1 , { transform: Number });
 const pageSize = 5;
 const orderId = useRouteQuery('id', null);
@@ -127,16 +125,11 @@ const searchParams = ref({
   size: pageSize
 });
 
-console.log('searchParams => ', searchParams.value);
-
 const { data:order, error, refresh, clear } = useAsyncData(
   `orders-${JSON.stringify(searchParams.value)}`,
   () => getOrders(searchParams.value),
   { watch: [searchParams.value] }
 );
-
-console.log('ORDER => ', order);
-console.log('ORDER ERROR => ', error);
 
 async function handleSearchTerm() {
   if (!searchTerm.value) {
@@ -272,17 +265,10 @@ function handleSearch() {
   searchParams.value.status = selectedStatus.value;
   searchParams.value.from = from.value;
   searchParams.value.to = to.value;
-  router.replace({
-    name: 'admin-orders',
-    query: { id: orderId.value, status: selectedStatus.value, from: from.value, to: to.value }
-  });
 }
 
 function handlePageChange(newPage) {
   page.value = newPage;
   searchParams.value.page = newPage;
 }
-
-
-
 </script>
