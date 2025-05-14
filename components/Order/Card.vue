@@ -102,27 +102,23 @@
     >
       <template #body>
         <div class="flex flex-col">
-          <USelectMenu
-            v-model="orderStatus"
-            :items="orderActionOptions"
-            value-key="id"
-            variant="subtle"
-            placeholder="Order Status"
-            class="w-50 bg-white border text-stone-800 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
           <UTextarea
             v-model="orderComment"
-            placeholder="Type something..." class="w-full my-5" variant="subtle"
+            placeholder="Leave some comments ..." class="w-full my-2" variant="subtle"
           />
-          <UButton
-            icon="lucide:badge-check"
-            label="Submit"
-            size="md"
-            color="primary"
-            variant="subtle"
-            class="text-right"
-            @click="processOrder"
-          />
+          <div class="flex justify-center gap-4">
+            <UButton
+              v-for="option in orderActionOptions"
+              :key="option.id"
+              :icon="option.icon"
+              :label="option.label"
+              size="md"
+              color="primary"
+              variant="subtle"
+              class="text-right"
+              @click="processOrder(option.id)"
+            />
+          </div>
         </div>
       </template>
     </UModal>
@@ -312,13 +308,13 @@ const orderActionOptions = computed(() => {
   switch (props.order.status) {
     case ORDER_STATUS.WAITING:
       return [
-        {label: 'Approve', id: 'borrowing'},
-        {label: 'Reject', id: 'rejected'},
+        {label: 'Approve this request', id: 'borrowing', icon: 'lucide:check'},
+        {label: 'Reject this request', id: 'rejected', icon: 'lucide:x'},
       ];
     case ORDER_STATUS.BORROWING:
       return [
-        {label: 'Close', id: 'closed'},
-        {label: 'Lost', id: 'lost'},
+        {label: 'Close this order', id: 'closed', icon: 'lucide:check'},
+        {label: 'Mark this book as Lost', id: 'lost', icon: 'lucide:x'},
       ];
     default:
       return ORDER_STATUS_OPTIONS;
@@ -444,21 +440,21 @@ function extendDueDate() {
   });
 };
 
-function processOrder() {
+function processOrder(selectedStatus: string) {
   const currentDate = new Date();
   const dueDate = new Date();
   dueDate.setDate(currentDate.getDate() + BORROWING_PERIOD);
   let updateOrderData = {
     book_copy_id: bookCopyId.value,
-    status: orderStatus.value,
+    status: selectedStatus,
     due_date: dueDate.toISOString(),
   };
-  if (orderStatus.value === ORDER_STATUS.CLOSE) {
+  if (selectedStatus === ORDER_STATUS.CLOSE) {
     updateOrderData.returned_at = new Date().toISOString();
   }
 
   const updateBookCopyData = {
-    status: getBookCopyStatusViaOrderStatus(orderStatus.value),
+    status: getBookCopyStatusViaOrderStatus(selectedStatus),
   };
 
   Promise.all([
@@ -466,12 +462,12 @@ function processOrder() {
     updateBookCopy(bookCopyId.value, updateBookCopyData),
   ])
   .then(async () => {
-    const { type, message } = getNotificationByOrderStatus(orderStatus.value);
+    const { type, message } = getNotificationByOrderStatus(selectedStatus);
 
     await handleNotificationAndTimeline({
       userId: props.user.id,
       orderId: props.order.id,
-      action: getTimelineTypeViaOrderStatus(orderStatus.value),
+      action: getTimelineTypeViaOrderStatus(selectedStatus),
       type: type,
       message: message,
       comment: orderComment.value,

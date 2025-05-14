@@ -180,7 +180,6 @@ const { data, error, refresh } = await useAsyncData(
       getBorrowedBookCounts({ bookId: bookId.value, isHead: true })
     ]);
 
-    // Load user wishlist data for this book
     if (userId.value) {
       wishlists.value = book.data.wishlists;
     }

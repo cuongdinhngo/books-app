@@ -68,6 +68,10 @@ export const useNotifications = () => {
         type = NOTIFICATION_TYPES.ORDER_REJECTED;
         message = NOTIFICATION_MESSAGES.ORDER_REJECTED;
         break;
+      case ORDER_STATUS.LOST:
+        type = NOTIFICATION_TYPES.ORDER_LOST;
+        message = NOTIFICATION_MESSAGES.ORDER_LOST;
+        break;
     }
   
     return {

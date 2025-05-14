@@ -5,6 +5,7 @@ export const NOTIFICATION_TYPES = {
   ORDER_REJECTED: 'order_rejected',
   ORDER_CLOSED: 'order_closed',
   ORDER_OVERDUE: 'order_overdue',
+  ORDER_LOST: 'order_lost',
 
   BOOK_WISHLIST: 'book_wishlist',
 
@@ -21,6 +22,7 @@ export const NOTIFICATION_MESSAGES = {
   ORDER_REJECTED: 'Your order #{orderId} was rejected. Please check it!',
   ORDER_APPROVED: 'Your order #{orderId} was approved. Please check it!',
   ORDER_CLOSED: 'Your order #{orderId} was closed. Please check it!',
+  ORDER_LOST: 'The book in order #{orderId} was lost and the order was closed.',
 
   BOOK_WISHLIST: 'Your book is available. Please make an order soon!',
 

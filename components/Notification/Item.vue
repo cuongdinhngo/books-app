@@ -66,6 +66,9 @@ function getIcon() {
     case NOTIFICATION_TYPES.REJECTED_REQUEST_DUE_DATE:
       icon = 'img/reject.png';
       break;
+    case NOTIFICATION_TYPES.ORDER_LOST:
+      icon = 'img/alert.png';
+      break;
   }
 
   return publicAsset(icon);
@@ -80,6 +83,7 @@ function getLink() {
     case NOTIFICATION_TYPES.ORDER_REJECTED:
     case NOTIFICATION_TYPES.ORDER_OVERDUE:
     case NOTIFICATION_TYPES.ORDER_CLOSED:
+    case NOTIFICATION_TYPES.ORDER_LOST:
     case NOTIFICATION_TYPES.STAFF_EXTEND_DUE_DATE:
       link = { name: 'reader-orders', query: { id: props.notification.notifiable_id} };
       break;
