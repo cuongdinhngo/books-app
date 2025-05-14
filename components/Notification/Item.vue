@@ -80,6 +80,7 @@ function getLink() {
     case NOTIFICATION_TYPES.ORDER_REJECTED:
     case NOTIFICATION_TYPES.ORDER_OVERDUE:
     case NOTIFICATION_TYPES.ORDER_CLOSED:
+    case NOTIFICATION_TYPES.STAFF_EXTEND_DUE_DATE:
       link = { name: 'reader-orders', query: { id: props.notification.notifiable_id} };
       break;
     case NOTIFICATION_TYPES.BOOK_WISHLIST:
