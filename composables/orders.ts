@@ -24,6 +24,7 @@ export const useOrders = () => {
       to = null,
       isOverdue = false,
       isHead = false,
+      createdAt = null,
       page = null,
       size = null
     } = options;
@@ -44,6 +45,9 @@ export const useOrders = () => {
     }
     if (bookCopyId) {
       query = query.eq('book_copy_id', bookCopyId);
+    }
+    if (createdAt) {
+      query = query.eq('created_at', createdAt);
     }
 
     //overdue filter requires that status must be borrowing

@@ -144,35 +144,38 @@ async function handleBorrow() {
     return;
   }
 
+  const currentDatetime = new Date().toISOString();
   const orderItems = checkoutItems.value.map(id => ({
     reader_id: userId.value,
     book_id: id,
     status:ORDER_STATUS.WAITING,
+    created_at: currentDatetime,
   }));
+
+  console.log('orderItems => ', orderItems);
 
   return insert(orderItems)
     .then(async({ error }) => {
       if (error) throw error;
 
-      const { data:insertedOrders, error: orderError } = await getOrders({ status: [ORDER_STATUS.WAITING], readerId: userId.value }).single();
+      const { data:insertedOrders, error: orderError } = await getOrders({ status: [ORDER_STATUS.WAITING], readerId: userId.value, createdAt: currentDatetime });
       if (orderError) throw orderError;
       console.log('insertedOrders => ', insertedOrders);
-      const orderTimelines ={
-        order_id: insertedOrders.id,
+      const orderTimelines = insertedOrders.map(order => ({
+        order_id: order.id,
         action: TIMELINE_TYPES.ORDER_CREATED,
         user_id: userId.value
-      };
+      }));
 
-      const notificationItems = {
+      const notificationItems = insertedOrders.map(order => ({
         type: NOTIFICATION_TYPES.NEW_ORDER,
-        notifiable_id: insertedOrders.id,
+        notifiable_id: order.id,
         notifiable_type: 'orders',
         message: NOTIFICATION_MESSAGES.NEW_ORDER
-      };
+      }));
 
       await createOrderTimeline(orderTimelines);
-      const {error:notificationErr} = await sendNotification(notificationItems);
-      if (notificationErr) throw notificationErr;
+      await sendNotification(notificationItems);
 
       resetBookCart(checkoutItems.value);
       useToastSuccess();

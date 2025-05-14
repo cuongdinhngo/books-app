@@ -74,6 +74,7 @@ export interface OrderOptions {
   to?: string,
   isOverdue?: boolean,
   isHead?: boolean,
+  createdAt?: string,
   page?: number,
   size?: number
 }
