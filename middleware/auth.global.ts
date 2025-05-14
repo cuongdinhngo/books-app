@@ -1,5 +1,6 @@
 export default defineNuxtRouteMiddleware((to, from) => {
   const auth = useAuth();
+  const isStaff = auth.userRole.value === 'staff';
   const isAdminRoute = to.path.includes('/admin');
   const isLoginRoute = to.path === '/login';
   const isAuthenticated = !!auth.userId.value;
@@ -8,8 +9,13 @@ export default defineNuxtRouteMiddleware((to, from) => {
   console.log('[AUTH MIDDLEWARE] => ', {
     isAuthenticated,
     isLoginRoute,
-    isAdminRoute
+    isAdminRoute,
+    isStaff
   });
+
+  if (!isStaff && isAdminRoute) {
+    return navigateTo('/');
+  }
 
   if (publicRoutes.some(route => to.path.startsWith(route))) {
     return;
@@ -24,7 +30,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
   }
   
   if (isAuthenticated && isAdminRoute) {
-    return auth.userType.value === 'staff' ? undefined : navigateTo('/');
+    return auth.userRole.value === 'staff' ? undefined : navigateTo('/');
   }
 
   return;
