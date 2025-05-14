@@ -84,7 +84,10 @@ const { index:getOrders } = useOrders();
 const { index:getBooks } = useBooks();
 const { index:getBookCopies } = useBookCopies();
 const { index:getReaders } = useUsers();
-const router = useRouter();
+const route = useRoute();
+const currentQuery = useRoute().query;
+
+console.log('currentQuery => ', currentQuery, 'route => ', route);
 
 const page = useRouteQuery('page', 1 , { transform: Number });
 const pageSize = 5;
@@ -127,7 +130,7 @@ const searchParams = ref({
 console.log('searchParams => ', searchParams.value);
 
 const { data:order, error, refresh, clear } = useAsyncData(
-  `order-page-${page.value}`,
+  `orders-${JSON.stringify(searchParams.value)}`,
   () => getOrders(searchParams.value),
   { watch: [searchParams.value] }
 );
@@ -136,103 +139,133 @@ console.log('ORDER => ', order);
 console.log('ORDER ERROR => ', error);
 
 async function handleSearchTerm() {
-  console.log('searchTerm => ', searchTerm.value);
   if (!searchTerm.value) {
     resultGroups.value = [];
     return;
   };
 
-if (searchTerm.value) {
-  const searchFunctions = [];
-  const resultMap = {};
+  if (searchTerm.value) {
+    const searchFunctions = [];
+    const resultMap = {};
 
-  if (!isNaN(Number(searchTerm.value))) {
-    // If searchTerm is a number
-    searchFunctions.push(getOrders({ id: searchTerm.value }).then(result => resultMap.orders = result));
-    searchFunctions.push(getBookCopies({ ids: [searchTerm.value] }).then(result => resultMap.bookCopies = result));
-  }
+    if (!isNaN(Number(searchTerm.value))) {
+      searchFunctions.push(getOrders({ id: searchTerm.value })
+        .then(result => resultMap.orders = result));
+      searchFunctions.push(getBookCopies({ ids: [searchTerm.value] })
+        .then(result => resultMap.bookCopies = result));
+    }
 
-  if (searchTerm.value.length >= 2) {
-    // If searchTerm is an alphabet or string
-    searchFunctions.push(getBooks({ title: searchTerm.value }).then(result => resultMap.books = result));
-    searchFunctions.push(getReaders({ name: searchTerm.value, role: USER_ROLE_READER }).then(result => resultMap.readers = result));
-  }
+    if (searchTerm.value.length >= 2) {
+      searchFunctions.push(getBooks({ title: searchTerm.value })
+        .then(result => resultMap.books = result));
+      searchFunctions.push(getReaders({ name: searchTerm.value, role: USER_ROLE_READER })
+        .then(result => resultMap.readers = result));
+    }
 
-  await Promise.all(searchFunctions);
+    await Promise.all(searchFunctions);
+    const { orders, bookCopies, books, readers } = resultMap;
 
-  // Access results from resultMap
-  const { orders, bookCopies, books, readers } = resultMap;
-
-  console.log('Orders:', orders);
-  console.log('Book Copies:', bookCopies);
-  console.log('Books:', books);
-  console.log('Readers:', readers);
     if (books && null === books.error && books?.count > 0) {
-    resultGroups.value.push({
-      id: 'books',
-      label: 'Books',
-      items: books.data.map(item => ({
-        id: item.id,
-        label: item.title,
-        to: `/admin/orders?bookId=${item.id}`,
-        target: '_blank',
-        avatar: {
-          src: item.coverImage
-        }
-      }))
-    });
-  }
+      resultGroups.value.push({
+        id: 'books',
+        label: 'Books',
+        items: books.data.map(item => ({
+          id: item.id,
+          label: item.title,
+          to: `/admin/orders?bookId=${item.id}`,
+          target: '_blank',
+          avatar: {
+            src: item.coverImage
+          }
+        }))
+      });
+    }
 
-  if (orders && null === orders.error && orders?.count > 0) {
-    resultGroups.value.push({
-      id: 'orders',
-      label: 'Orders',
-      items: orders.data.map(item => ({
-        id: item.id,
-        label: item.id,
-        to: `/admin/orders?id=${item.id}`,
-        target: '_blank',
-        avatar: {
-          src: '/img/book.png'
-        }
-      }))
-    });
-  }
+    if (orders && null === orders.error && orders?.count > 0) {
+      resultGroups.value.push({
+        id: 'orders',
+        label: 'Orders',
+        items: orders.data.map(item => ({
+          id: item.id,
+          label: item.id,
+          to: `/admin/orders?id=${item.id}`,
+          target: '_blank',
+          avatar: {
+            src: '/img/book.png'
+          }
+        }))
+      });
+    }
 
-  if (bookCopies && null === bookCopies.error && bookCopies?.count > 0) {
-    resultGroups.value.push({
-      id: 'bookCopies',
-      label: 'Hard Copy Id',
-      items: bookCopies.data.map(item => ({
-        id: item.id,
-        label: item.id,
-        to: `/admin/orders?bookCopyId=${item.id}`,
-        target: '_blank',
-        avatar: {
-          src: '/img/order.png'
-        }
-      }))
-    });
-  }
+    if (bookCopies && null === bookCopies.error && bookCopies?.count > 0) {
+      resultGroups.value.push({
+        id: 'bookCopies',
+        label: 'Hard Copy Id',
+        items: bookCopies.data.map(item => ({
+          id: item.id,
+          label: item.id,
+          to: `/admin/orders?bookCopyId=${item.id}`,
+          target: '_blank',
+          avatar: {
+            src: '/img/order.png'
+          }
+        }))
+      });
+    }
 
-  if (readers && null === readers.error && readers?.count > 0) {
-    resultGroups.value.push({
-      id: 'readers',
-      label: 'Readers',
-      items: readers.data.map(item => ({
-        id: item.id,
-        label: item.name,
-        to: `/admin/orders?readerId=${item.id}`,
-        target: '_blank',
-        avatar: {
-          src: `${item.photo || '/img/user.png'}` 
-        }
-      }))
-    });
+    if (readers && null === readers.error && readers?.count > 0) {
+      resultGroups.value.push({
+        id: 'readers',
+        label: 'Readers',
+        items: readers.data.map(item => ({
+          id: item.id,
+          label: item.name,
+          to: `/admin/orders?readerId=${item.id}`,
+          target: '_blank',
+          avatar: {
+            src: `${item.photo || '/img/user.png'}` 
+          }
+        }))
+      });
+    }
   }
 }
 
-}
+watch(
+  () => useRoute().query,
+  (newQuery) => {
+    console.log('NEW QUERIES => ', newQuery);
+    if (newQuery.page) {
+      page.value = Number(newQuery.page);
+      searchParams.value.page = Number(newQuery.page);
+    }
+    if (newQuery.id) {
+      orderId.value = newQuery.id;
+      searchParams.value.id = newQuery.id;
+    }
+    if (newQuery.bookId) {
+      searchParams.value.bookId = newQuery.bookId;
+    }
+    if (newQuery.bookCopyId) {
+      searchParams.value.bookCopyId = newQuery.bookCopyId;
+    }
+    if (newQuery.readerId) {
+      searchParams.value.readerId = newQuery.readerId;
+    }
+    if (newQuery.status) {
+      selectedStatus.value = Array.isArray(newQuery.status) ? newQuery.status : [newQuery.status];
+      searchParams.value.status = selectedStatus.value;
+    }
+    if (newQuery.from) {
+      from.value = newQuery.from;
+      searchParams.value.from = newQuery.from;
+    }
+    if (newQuery.to) {
+      to.value = newQuery.to;
+      searchParams.value.to = newQuery.to;
+    }
+  }
+);
 
 function handleSearch() {
   searchParams.value.id = orderId.value;
@@ -249,5 +282,7 @@ function handlePageChange(newPage) {
   page.value = newPage;
   searchParams.value.page = newPage;
 }
+
+
 
 </script>

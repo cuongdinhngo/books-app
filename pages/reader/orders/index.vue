@@ -65,4 +65,12 @@ const handlePageChange = (newPage) => {
   page.value = newPage;
   searchParams.value.page = newPage;
 }
+
+watch(
+  () => orderId.value,
+  (newOrderId) => {
+    console.log('Order ID changed:', newOrderId);
+    searchParams.value.id = newOrderId;
+  }
+);
 </script>

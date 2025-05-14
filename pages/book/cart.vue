@@ -6,7 +6,25 @@
     ref="table"
     v-model:row-selection="rowSelection"
     :data="data.books?.data"
-    :columns="columns"
+    :columns="[
+      {
+        id: 'select'
+      },
+      {
+        accessorKey: 'coverImage',
+        header: 'Book',
+        id: 'coverImage'
+      },
+      {
+        accessorKey: 'authors',
+        header: `Authors`,
+        cell: ({ row }) => `${row.getValue('authors').map(author => author.name).join(', ')}`
+      },
+      {
+        header: 'Actions',
+        id: 'cartActions'
+      }
+    ]"
   >
     <template #select-header="{ table }">
       <UCheckbox
@@ -72,6 +90,7 @@ definePageMeta({
   layout: 'main'
 })
 
+import { NOTIFICATION_MESSAGES, NOTIFICATION_TYPES } from '~/constants/notifications';
 import { ORDER_STATUS } from '~/constants/orders';
 import { TIMELINE_TYPES } from '~/constants/orderTimeline';
 
@@ -80,6 +99,7 @@ const { index:getBooks } = useBooks();
 const { userId } = useAuth();
 const { insert, index:getOrders } = useOrders();
 const { insert:createOrderTimeline } = useOrderTimeline();
+const { insert:sendNotification } = useNotifications();
 
 const table = useTemplateRef('table');
 const rowSelection = ref<Record<string, boolean>>({})
@@ -134,15 +154,25 @@ async function handleBorrow() {
     .then(async({ error }) => {
       if (error) throw error;
 
-      const { data:insertedOrders, error: orderError } = await getOrders({ status: [ORDER_STATUS.WAITING], readerId: userId.value });
+      const { data:insertedOrders, error: orderError } = await getOrders({ status: [ORDER_STATUS.WAITING], readerId: userId.value }).single();
       if (orderError) throw orderError;
-      const orderTimelines = insertedOrders.map((order) => ({
-        order_id: order.id,
+      console.log('insertedOrders => ', insertedOrders);
+      const orderTimelines ={
+        order_id: insertedOrders.id,
         action: TIMELINE_TYPES.ORDER_CREATED,
         user_id: userId.value
-      }));
+      };
+
+      const notificationItems = {
+        type: NOTIFICATION_TYPES.NEW_ORDER,
+        notifiable_id: insertedOrders.id,
+        notifiable_type: 'orders',
+        message: NOTIFICATION_MESSAGES.NEW_ORDER
+      };
 
       await createOrderTimeline(orderTimelines);
+      const {error:notificationErr} = await sendNotification(notificationItems);
+      if (notificationErr) throw notificationErr;
 
       resetBookCart(checkoutItems.value);
       useToastSuccess();
@@ -158,22 +188,6 @@ function handleRemoveCartItem(bookId: number) {
 }
 
 const columns = [
-  {
-    id: 'select'
-  },
-  {
-    accessorKey: 'coverImage',
-    header: 'Book',
-    id: 'coverImage'
-  },
-  {
-    accessorKey: 'authors',
-    header: `Authors`,
-    cell: ({ row }) => `${row.getValue('authors').map(author => author.name).join(', ')}`
-  },
-  {
-    header: 'Actions',
-    id: 'cartActions'
-  }
+
 ]
 </script>
