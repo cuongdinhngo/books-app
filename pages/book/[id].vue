@@ -14,8 +14,12 @@
       <div>
         <p class="text-lg font-semibold text-gray-900">{{ data?.book.data.title }}</p>
         <div class="flex items-center text-sm text-gray-900 mt-1">
-          <span class="text-yellow-500">{{  }}</span>
-          <span class="ml-2 text-yellow-500">{{ generateRating(data?.rating.data.average_rating ?? 0) }}</span> <span class="ml-2"> {{ data?.rating.data.average_rating ?? 0 }} / 5 ({{ data?.rating.data.review_count }} reviews)</span>
+          <BookStarRating
+            :rating="data?.rating.data.average_rating ?? 0"
+            :is-show-value="true"
+          />
+          <!-- <span class="text-yellow-500">{{  }}</span> -->
+          <!-- <span class="ml-2 text-yellow-500">{{ generateRating(data?.rating.data.average_rating ?? 0) }}</span> <span class="ml-2"> {{ data?.rating.data.average_rating ?? 0 }} / 5 ({{ data?.rating.data.review_count }} reviews)</span> -->
         </div>
         <div class="text-sm font-medium mt-1">
           <label class="inline text-gray-600">Borrowed Counts:</label>
