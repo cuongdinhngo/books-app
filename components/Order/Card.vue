@@ -441,6 +441,13 @@ function extendDueDate() {
 };
 
 function processOrder(selectedStatus: string) {
+  if (selectedStatus === ORDER_STATUS.REJECT) {
+    const response = confirm('Are you sure you want to reject this order?');
+    if (!response) {
+      return;
+    }
+  }
+
   const currentDate = new Date();
   const dueDate = new Date();
   dueDate.setDate(currentDate.getDate() + BORROWING_PERIOD);
