@@ -78,12 +78,12 @@
     loop
     arrows
     :items="filteredBookSameCategories"
-    :ui="{ item: 'basis-1/4', next: 'end-0', prev: 'start-0' }"
+    :ui="{ item: 'basis-1/6', next: 'end-0', prev: 'start-0' }"
     class="p-5 bg-primary-50"
   >
     <BookRatingItem
       :book="item"
-      :class-value="`bg-white p-4 rounded-lg shadow text-stone-900 h-[250px]`"
+      :class-value="`bg-white p-4 rounded-lg shadow text-stone-900 h-[300px]`"
     />
   </UCarousel>
 
@@ -157,6 +157,7 @@ definePageMeta({
 })
 
 import { useRouteParams } from '@vueuse/router';
+import { breadcrumbItems } from '~/composables/breadcrumbs';
 
 const { userId } = useAuth();
 const { addToCart } = useBookCarts();
@@ -164,6 +165,7 @@ const { insert, index:getBookReviews } = useBooksReviews();
 const { get:getBookDetails, index:getBooks } = useBooks();
 const { index:getBorrowedBookCounts } = useOrders();
 const { wishlists, addBookToWishlist } = useWishlistActions();
+const { setBreadcrumbs } = useBreadcrumbs(); 
 
 const supabase = useSupabaseClient();
 const bookId = useRouteParams('id', null, { transform: Number });
@@ -243,4 +245,38 @@ function handleBorrow() {
   addToCart(bookId.value);
   useToastSuccess();
 }
+
+watchEffect(() => {
+  if (data.value?.book?.data) {
+    console.log('BOOK CHANGING => ', data.value.book.data);
+    setBreadcrumbs([
+      //Category
+      {
+        label: data.value.book.data.categories[0].name,
+        icon: 'lucide-book',
+        to: { name: 'index', query: { category: data.value.book.data.categories[0].id } }
+      },
+      //Publisher
+      {
+        label: data.value.book.data.publishers[0].name,
+        icon: 'lucide:building-2',
+        to: { name: 'index', query: { publisher: data.value.book.data.publishers[0].id } }
+      },
+      //Author
+      {
+        label: data.value.book.data.authors[0].name,
+        icon: 'lucide-user',
+        to: { name: 'index', query: { author: data.value.book.data.authors[0].id } }
+      },
+      //Book
+      {
+        label: data.value.book.data.title,
+        icon: 'i-lucide-book-open',
+        to: { name: 'book-id', params: { id: bookId.value } }
+      }
+    ]);
+
+    console.log('NEW BREADCRUMBS => ', breadcrumbItems.value);
+  }
+});
 </script>

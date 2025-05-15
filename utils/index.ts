@@ -91,3 +91,13 @@ export function mapBadgeColor(status: string) {
 
   return color[status] || 'neutral';
 }
+
+export function isExistedQueries(queries: string[]) {
+  const currentQueries = Object.keys(useRoute().query);
+  return currentQueries.filter(query => queries.includes(query)).length > 0;
+}
+
+export function isExistedParams() {
+  const currentParams = Object.keys(useRoute().params);
+  return currentParams.length > 0;
+}
