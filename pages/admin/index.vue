@@ -32,6 +32,10 @@
     </div>
   </div>
 
+  <div class="mb-8">
+    <ChartDailyOrderCount />
+  </div>
+
   <h3
     v-if="data?.topOrders.data.length > 0"
     class="text-stone-800 font-bold mb-1">Top Orders</h3>
