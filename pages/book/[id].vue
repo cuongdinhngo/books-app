@@ -157,7 +157,6 @@ definePageMeta({
 })
 
 import { useRouteParams } from '@vueuse/router';
-import { breadcrumbItems } from '~/composables/breadcrumbs';
 
 const { userId } = useAuth();
 const { addToCart } = useBookCarts();
@@ -189,8 +188,6 @@ const { data, error, refresh } = await useAsyncData(
     return { book, reviews, rating, borrowedCounts}
   }
 );
-
-console.log('DATA => ', data.value);
 
 const categories = computed(() => {
   return data.value?.book.data.categories.map(item => item.id);
@@ -246,9 +243,8 @@ function handleBorrow() {
   useToastSuccess();
 }
 
-watchEffect(() => {
+onMounted(() => {
   if (data.value?.book?.data) {
-    console.log('BOOK CHANGING => ', data.value.book.data);
     setBreadcrumbs([
       //Category
       {
@@ -275,8 +271,6 @@ watchEffect(() => {
         to: { name: 'book-id', params: { id: bookId.value } }
       }
     ]);
-
-    console.log('NEW BREADCRUMBS => ', breadcrumbItems.value);
   }
 });
 </script>

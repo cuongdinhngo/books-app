@@ -81,21 +81,28 @@ const searchParams = ref({
 const {data:books, error } = await useAsyncData(
   `index:${JSON.stringify(searchParams.value)}`,
   async() => {
-    const [all, topRatings ] = await Promise.all([
+    const [all, topRatings, categories, publishers, authors ] = await Promise.all([
       getAllBooks(searchParams.value),
       getTopRatings(),
+      getCategories(),
+      getPublishers(),
+      getAuthors()
     ]);
 
     return {
       all: all.data,
       allCount: all.count,
       topRatings: topRatings.data,
+      categories: categories.data,
+      publishers: publishers.data,
+      authors: authors.data
     };
   },
   { watch: [searchParams.value] }
 );
 
 async function updateBreadCrumbs(query: Object) {
+  resetBreadcrumbs();
   if (query.category) {
     addBreadcrumb({
       slot: 'dropdown' as const,
@@ -150,7 +157,6 @@ async function updateBreadCrumbs(query: Object) {
 }
 
 onMounted(() => {
-  resetBreadcrumbs();
   if (hasQueries.value) {
     updateBreadCrumbs(useRoute().query);
   }
@@ -159,7 +165,6 @@ onMounted(() => {
 watch(
   () => useRoute().query,
   async(newQuery) => {
-    resetBreadcrumbs();
     if (isExistedQueries(['category', 'publisher', 'author'])) {
       updateBreadCrumbs(newQuery);
     }
