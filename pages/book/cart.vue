@@ -210,8 +210,4 @@ function handleRemoveCartItem(bookId: number) {
 async function handleWishlist(bookId: number) {
   await addBookToWishlist(bookId);
 }
-
-const columns = [
-
-]
 </script>

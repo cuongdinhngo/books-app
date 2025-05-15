@@ -81,27 +81,19 @@ const searchParams = ref({
 const {data:books, error } = await useAsyncData(
   `index:${JSON.stringify(searchParams.value)}`,
   async() => {
-    const [all, topRatings, categories, publishers, authors ] = await Promise.all([
+    const [all, topRatings ] = await Promise.all([
       getAllBooks(searchParams.value),
       getTopRatings(),
-      getCategories(),
-      getPublishers(),
-      getAuthors()
     ]);
 
     return {
       all: all.data,
       allCount: all.count,
       topRatings: topRatings.data,
-      categories: categories.data,
-      publishers: publishers.data,
-      authors: authors.data
     };
   },
   { watch: [searchParams.value] }
 );
-
-console.log('BOOKS => ', books.value);
 
 async function updateBreadCrumbs(query: Object) {
   if (query.category) {
@@ -157,47 +149,9 @@ async function updateBreadCrumbs(query: Object) {
   }
 }
 
-function generateBreadcrumbs() {
-  if (books.value.categories.length > 0) {
-    addBreadcrumb({
-      slot: 'dropdown' as const,
-      label: 'Categories',
-      icon: 'lucide:book',
-      children: books.value.categories.map((category) => ({
-        label: category.name,
-        to: { name: 'index', query: { category: category.id } }
-      }))
-    });
-  }
-  if (books.value.publishers.length > 0) {
-    addBreadcrumb({
-      slot: 'dropdown' as const,
-      label: 'Publishers',
-      icon: 'lucide:building-2',
-      children: books.value.publishers.map((publisher) => ({
-        label: publisher.name,
-        to: { name: 'index', query: { publisher: publisher.id } }
-      }))
-    });
-  }
-  if (books.value.authors.length > 0) {
-    addBreadcrumb({
-      slot: 'dropdown' as const,
-      label: 'Authors',
-      icon: 'lucide:user',
-      children: books.value.authors.map((author) => ({
-        label: author.full_name,
-        to: { name: 'index', query: { author: author.id } }
-      }))
-    });
-  } 
-}
-
 onMounted(() => {
   resetBreadcrumbs();
-  if (hasQueries.value === false) {
-    generateBreadcrumbs();
-  } else {
+  if (hasQueries.value) {
     updateBreadCrumbs(useRoute().query);
   }
 });
@@ -208,8 +162,6 @@ watch(
     resetBreadcrumbs();
     if (isExistedQueries(['category', 'publisher', 'author'])) {
       updateBreadCrumbs(newQuery);
-    } else {
-      generateBreadcrumbs();
     }
 
     if (newQuery.page) {
