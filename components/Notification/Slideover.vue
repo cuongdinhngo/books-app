@@ -88,6 +88,7 @@
 </template>
 <script setup lang="ts">
 import { DialogTitle, VisuallyHidden, DialogDescription } from 'reka-ui';
+import { USER_ROLE_STAFF } from '~/constants/users';
 
 const props = defineProps({
   toStaff: {
@@ -101,6 +102,7 @@ const props = defineProps({
 });
 
 const { index:getNotifications } = useNotifications();
+const { userRole } = useAuth();
 
 const page = ref(1);
 const pageSize = ref<Number>(15);
@@ -109,10 +111,11 @@ const notificationOptions = ref({
   page: page.value,
   size: pageSize.value,
   toStaff: props.toStaff,
+  readerId: props.userId,
 });
 
 const { data:notifications, error, status } = useAsyncData(
-  computed(() => `notifications/user/${props.userId || 'admin'}/size/${pageSize.value}`).value,
+  computed(() => `notifications/user/${props.userId || userRole.value}/size/${pageSize.value}`).value,
   () => getNotifications(notificationOptions.value),
   { watch: [ notificationOptions.value ] }
 );
@@ -155,4 +158,28 @@ const filteredNotifications = computed(() => {
   
   return notifications.value.data;
 });
+
+const channels = useSupabaseClient().channel('notification-insert-channel')
+  .on(
+    'postgres_changes',
+    {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'notifications',
+    },
+    (payload) => {
+      if (payload.new && 
+        (
+          payload.new.user_id === props.userId ||
+          (payload.new.user_id === null && userRole.value === USER_ROLE_STAFF)
+        )
+      ) {
+        console.log('Notification received:', payload);
+        if (notifications.value?.data) {
+          notifications.value.data.unshift(payload.new);
+        }
+      }
+    }
+  )
+  .subscribe();
 </script>
