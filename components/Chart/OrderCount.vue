@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-wrap items-center justify-between mb-4">
-    <h2 class="text-xl font-bold text-gray-900">Daily Order Chart</h2>
+    <h2 class="text-xl font-bold text-gray-900">Order Counts</h2>
     <div class="w-48">
       <USelect
         v-model="period"
@@ -45,7 +45,7 @@ const supabase = useSupabaseClient();
 const period = ref(7);
 
 const { data:dailyOrderData, error, status, refresh } = useAsyncData(
-  `daily-order-count`,
+  computed(() => `order-counts/period/${period.value}`).value,
   () => supabase.rpc('get_daily_order_counts', { period: period.value }),
   {
     transform: (data) => {

@@ -1,6 +1,6 @@
 <template>
   <div class="mb-8">
-    <h2 class="text-xl font-bold text-gray-900 mb-4">Overview</h2>
+    <h2 class="text-xl font-bold text-gray-900 mb-4">Overview Information</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
       <AdminCard
         v-for="item in overviewCards"
@@ -11,7 +11,7 @@
   </div>
 
   <div class="mb-8">
-    <h2 class="text-xl font-bold text-gray-900 mb-4">Orders Stats</h2>
+    <h2 class="text-xl font-bold text-gray-900 mb-4">Overview Orders</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
       <AdminCard
         v-for="item in orderStats"
@@ -20,20 +20,16 @@
       />
     </div>
   </div>
-
+  
   <div class="mb-8">
-    <h2 class="text-xl font-bold text-gray-900 mb-4">Book Stats</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-      <AdminCard
-        v-for="item in bookStats"
-        :key="item.id"
-        :card="item"
-      />
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <ChartOrderStats title="Order Stats" />
+      <ChartBookStats title="Book Stats"/>
     </div>
   </div>
 
   <div class="mb-8">
-    <ChartDailyOrderCount />
+    <ChartOrderCount />
   </div>
 
   <h3
@@ -107,13 +103,13 @@ let orderStats = [
   {
     id: 'borrowed_orders',
     to: { name: "admin-orders", query: { status: ORDER_STATUS.CLOSE } },
-    label: 'Borrowed Orders',
+    label: 'Closed Orders',
     count: 0
   },
   {
     id: 'borrowing_orders',
     to: { name: "admin-orders", query: { status: ORDER_STATUS.BORROWING } },
-    label: 'Open Orders',
+    label: 'Borrowing Orders',
     count: 0
   },
   {
