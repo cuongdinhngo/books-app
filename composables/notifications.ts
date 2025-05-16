@@ -17,14 +17,18 @@ export const useNotifications = () => {
       isRead = null,
       notifiableId = null,
       notifiableType = null,
+      toStaff = null,
       page = null,
       size = null
     } = options;
 
-    let query = useTable(TABLE_NAME).select(column, { count: 'exact'});
+    let query = useTable(TABLE_NAME).select(column, { count: 'exact'}).order('created_at', { ascending: false });
 
     if (id) {
       query = query.eq('id', id);
+    }
+    if (toStaff) {
+      query = query.is('user_id', null);
     }
     if (readerId) {
       query = query.eq('user_id', readerId);

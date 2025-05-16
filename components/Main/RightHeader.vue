@@ -34,52 +34,11 @@
     @click="navigateTo('/login')"
   />
 
-  <USlideover title="" description="" v-if="isAuthenticated">
-    <UChip
-      v-if="unreadNotificaitons?.length > 0"
-      :text="unreadNotificaitons?.length"
-      size="3xl"
-      color="neutral"
-      :ui="{
-        base: 'text-stone-900 bg-primary-50',
-      }"
-    >
-      <UButton
-        icon="lucide:bell"
-        color="neutral"
-        variant="outline"
-        class="ring-0 bg-primary-800 text-lg cursor-pointer"
-      />
-    </UChip>
-    <UButton
-      v-else
-      icon="lucide:bell"
-      color="neutral"
-      variant="outline"
-      class="ring-0 bg-primary-800 text-lg cursor-pointer"
-    />
-
-    <template #header>
-      <div>
-        <DialogTitle class="text-lg font-semibold mb-2">Notifications</DialogTitle>
-        <VisuallyHidden>
-          <DialogDescription>This panel shows notification filters and recent alerts.</DialogDescription>
-        </VisuallyHidden>
-        <div class="flex space-x-4">
-          <p class="cursor-pointer hover:bg-blue-300 bg-blue-200 px-3 rounded-lg text-blue-500 font-bold">All</p>
-          <p class="cursor-pointer hover:text-blue-500">Unread</p>
-        </div>
-      </div>
-    </template>
-
-    <template #body>
-      <NotificationItem
-        v-for="notification in notifications.data"
-        :key="notification.id"
-        :notification="notification"
-      />
-    </template>
-  </USlideover>
+  <NotificationSlideover
+    v-if="isAuthenticated"
+    :to-staff="false"
+    :user-id="userId"
+  />
 
   <UDropdownMenu
     v-if="isAuthenticated"

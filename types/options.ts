@@ -42,6 +42,7 @@ export interface NotificationOptions {
   isRead?: boolean,
   notifiableId?: number,
   notifiableType?: string,
+  toStaff?: boolean,
   page?: number,
   size?: number
 }
