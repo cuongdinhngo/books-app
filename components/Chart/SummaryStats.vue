@@ -37,7 +37,6 @@ const props = defineProps({
 });
 
 const getItemColor = (item) => {
-  console.log('item', item);
   const label = props.labels.find(label => label.id === item.id);
   return label?.color || '#cccccc';
 };

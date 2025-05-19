@@ -3,9 +3,15 @@
     <h2 class="text-xl font-bold text-gray-900 mb-4">Overview Information</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
       <AdminCard
-        v-for="item in overviewCards"
+        v-if="status === 'success'"
+        v-for="item in overviewStats"
         :key="item.id"
         :card="item"
+      />
+      <LoadingCard
+        v-if="status === 'pending'"
+        :quantity="5"
+        :class-value="`h-16 w-full rounded-lg bg-gray-200`"
       />
     </div>
   </div>
@@ -14,9 +20,15 @@
     <h2 class="text-xl font-bold text-gray-900 mb-4">Overview Orders</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
       <AdminCard
+        v-if="status === 'success'"
         v-for="item in orderStats"
         :key="item.id"
         :card="item"
+      />
+      <LoadingCard
+        v-if="status === 'pending'"
+        :quantity="5"
+        :class-value="`h-16 w-full rounded-lg bg-gray-200`"
       />
     </div>
   </div>
@@ -93,7 +105,7 @@ let overviewCards = [
   },
 ];
 
-let orderStats = [
+let orderCards = [
   {
     id: 'total_orders',
     to: { name: "admin-orders", query: { status: [ORDER_STATUS.CLOSE, ORDER_STATUS.BORROWING, ORDER_STATUS.WAITING, ORDER_STATUS.REJECT] } },
@@ -101,15 +113,21 @@ let orderStats = [
     count: 0
   },
   {
-    id: 'borrowed_orders',
-    to: { name: "admin-orders", query: { status: ORDER_STATUS.CLOSE } },
-    label: 'Closed Orders',
+    id: 'waiting_orders',
+    to: { name: "admin-orders", query: { status: ORDER_STATUS.WAITING } },
+    label: 'Waiting Orders',
     count: 0
   },
   {
     id: 'borrowing_orders',
     to: { name: "admin-orders", query: { status: ORDER_STATUS.BORROWING } },
     label: 'Borrowing Orders',
+    count: 0
+  },
+  {
+    id: 'borrowed_orders',
+    to: { name: "admin-orders", query: { status: ORDER_STATUS.CLOSE } },
+    label: 'Closed Orders',
     count: 0
   },
   {
@@ -121,27 +139,7 @@ let orderStats = [
   },
 ];
 
-let bookStats = [
-  {
-    id: 'total_book_copies',
-    to: { name: "admin-books" },
-    label: 'Hard Copies',
-    count: 0
-  },
-  {
-    id: 'available_books',
-    to: { name: "admin-books", query: { status: BOOK_COPY_STATUS.OPENING } },
-    label: 'Available Copies',
-    count: 0
-  },
-  {
-    id: 'lost_books',
-    to: { name: "admin-books", query: { status: BOOK_COPY_STATUS.LOST } },
-    label: 'Lost Copies',
-    count: 0
-  },
-]
-const { data, error:dashboardError } = await useAsyncData(
+const { data, error:dashboardError, status } = useAsyncData(
   'admin-dashboard',
   async() => {
     const[statistics, topOrders] = await Promise.all([
@@ -153,33 +151,27 @@ const { data, error:dashboardError } = await useAsyncData(
   }
 );
 
-overviewCards = overviewCards.map(card => {
-  if (data.value?.statistics.data.hasOwnProperty(card.id)) {
-    return {
-      ...card,
-      count: data.value?.statistics.data[card.id]
-    };
-  }
-  return card;
+const overviewStats = computed(() => {
+  return overviewCards.map(card => {
+    if (data.value?.statistics.data.hasOwnProperty(card.id)) {
+      return {
+        ...card,
+        count: data.value?.statistics.data[card.id]
+      };
+    }
+    return card;
+  });
 });
 
-orderStats = orderStats.map(card => {
-  if (data.value?.statistics.data.hasOwnProperty(card.id)) {
-    return {
-      ...card,
-      count: data.value?.statistics.data[card.id]
-    };
-  }
-  return card;
-});
-
-bookStats = bookStats.map(card => {
-  if (data.value?.statistics.data.hasOwnProperty(card.id)) {
-    return {
-      ...card,
-      count: data.value?.statistics.data[card.id]
-    };
-  }
-  return card;
+const orderStats = computed(() => {
+  return orderCards.map(card => {
+    if (data.value?.statistics.data.hasOwnProperty(card.id)) {
+      return {
+        ...card,
+        count: data.value?.statistics.data[card.id]
+      };
+    }
+    return card;
+  });
 });
 </script>
