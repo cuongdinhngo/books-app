@@ -49,6 +49,7 @@ const statusLabels = [
   { id: BOOK_COPY_STATUS.BORROWING, name: capitalize(BOOK_COPY_STATUS.BORROWING), color: '#f59e0b', to: { name: 'admin-books', query: { status: [BOOK_COPY_STATUS.BORROWING]}} }, // Amber
   { id: BOOK_COPY_STATUS.PENDING, name: capitalize(BOOK_COPY_STATUS.PENDING), color: '#14b8a6', to: { name: 'admin-books', query: { status: [BOOK_COPY_STATUS.PENDING]}} }, // Teal
   { id: BOOK_COPY_STATUS.LOST, name: capitalize(BOOK_COPY_STATUS.LOST), color: '#ef4444', to: { name: 'admin-books', query: { status: [BOOK_COPY_STATUS.LOST]}} }, // Red
+  { id: BOOK_COPY_STATUS.RETIRED, name: capitalize(BOOK_COPY_STATUS.RETIRED), color: '#a1a1aa', to: { name: 'admin-books', query: { status: [BOOK_COPY_STATUS.RETIRED]}} }, // Gray
 ];
 
 const { data:bookStats, error, status, refresh } = useAsyncData(

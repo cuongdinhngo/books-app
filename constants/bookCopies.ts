@@ -3,6 +3,7 @@ export const BOOK_COPY_STATUS = {
   OPENING: 'opening',
   BORROWING: 'borrowing',
   LOST: 'lost',
+  RETIRED: 'retired',
   UNAVAILABLE: 'unavailable',
   AVAILABLE: 'available'
 };
@@ -12,4 +13,5 @@ export const BOOK_COPY_OPTION = [
   { id: BOOK_COPY_STATUS.OPENING, label: capitalize(BOOK_COPY_STATUS.OPENING) },
   { id: BOOK_COPY_STATUS.BORROWING, label: capitalize(BOOK_COPY_STATUS.BORROWING) },
   { id: BOOK_COPY_STATUS.LOST, label: capitalize(BOOK_COPY_STATUS.LOST) },
+  { id: BOOK_COPY_STATUS.RETIRED, label: capitalize(BOOK_COPY_STATUS.RETIRED) },
 ];

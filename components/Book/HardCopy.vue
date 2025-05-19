@@ -21,49 +21,63 @@
     </div>
 
     <!-- INVENTORY -->
-    <div class="grid grid-cols-5 gap-4 my-3">
+    <div class="grid grid-cols-6 gap-4 my-3">
       <label
-        class="w-40 text-sm font-medium text-gray-700 p-2 bg-blue-200 rounded-2xl cursor-pointer"
+        class="w-30 text-sm font-medium text-gray-700 p-2 bg-blue-200 rounded-2xl cursor-pointer"
         @click="searchByStatus('')"
       >
         Total: {{ totalCounts }}
       </label>
       <label
-        class="w-40 text-sm font-medium text-gray-700 p-2 bg-violet-300 rounded-2xl cursor-pointer"
+        class="w-30 text-sm font-medium text-gray-700 p-2 bg-violet-300 rounded-2xl cursor-pointer"
         @click="searchByStatus(BOOK_COPY_STATUS.PENDING)"
       >
         Pending: {{ pendingCounts }}
       </label>
       <label
-        class="w-40 text-sm font-medium text-gray-700 p-2 bg-green-200 rounded-2xl cursor-pointer"
+        class="w-30 text-sm font-medium text-gray-700 p-2 bg-green-200 rounded-2xl cursor-pointer"
         @click="searchByStatus(BOOK_COPY_STATUS.OPENING)"
       >
         Opening: {{ openingCounts }}
       </label>
       <label
-        class="w-40 text-sm font-medium text-gray-700 p-2 bg-orange-200 rounded-2xl cursor-pointer"
+        class="w-30 text-sm font-medium text-gray-700 p-2 bg-orange-200 rounded-2xl cursor-pointer"
         @click="searchByStatus(BOOK_COPY_STATUS.BORROWING)"
       >
         Borrowing: {{ borrowingCounts }}
       </label>
       <label
-        class="w-40 text-sm font-medium text-gray-700 p-2 bg-gray-300 rounded-2xl cursor-pointer"
+        class="w-30 text-sm font-medium text-gray-700 p-2 bg-gray-300 rounded-2xl cursor-pointer"
         @click="searchByStatus(BOOK_COPY_STATUS.LOST)"
       >
         Lost: {{ lostCounts }}
+      </label>
+      <label
+        class="w-30 text-sm font-medium text-gray-700 p-2 bg-purple-400 rounded-2xl cursor-pointer"
+        @click="searchByStatus(BOOK_COPY_STATUS.RETIRED)"
+      >
+        Retired: {{ retiredCounts }}
       </label>
     </div>
 
     <div
       v-if="itemStatus.length > 0 ? bookCopies?.perPage.count : bookCopies?.all.count"
-      class="flex justify-start mt-10"
+      class="flex justify-start mt-10 gap-4"
     >
       <UButton
-        label="Enable All"
+        label="Enable"
         icon="lucide:handshake"
         color="primary"
         size="lg"
-        @click="enableAll"
+        @click="updateMultipleCopies(BOOK_COPY_STATUS.OPENING)"
+      />
+
+      <UButton
+        label="Retire"
+        icon="lucide:book-lock"
+        color="primary"
+        size="lg"
+        @click="updateMultipleCopies(BOOK_COPY_STATUS.RETIRED)"
       />
     </div>
 
@@ -125,7 +139,7 @@
 
       <template #actions-cell="{ row }">
         <USwitch
-          v-if="row.original.status !== BOOK_COPY_STATUS.LOST && row.original.status !== BOOK_COPY_STATUS.BORROWING"
+          v-if="[BOOK_COPY_STATUS.OPENING, BOOK_COPY_STATUS.PENDING].includes(row.original.status)"
           :ui="{
             label: 'text-stone-900'
           }"
@@ -175,6 +189,7 @@ const pendingCounts = ref(0);
 const openingCounts = ref(0);
 const borrowingCounts = ref(0);
 const lostCounts = ref(0);
+const retiredCounts = ref(0);
 const quantity = ref(0);
 const itemStatus = ref<string[]>([]);
 const searchParams = ref({
@@ -226,6 +241,7 @@ function processItems (data: any[]) {
   openingCounts.value = items.opening || 0;
   borrowingCounts.value = items.borrowing || 0;
   lostCounts.value = items.lost || 0;
+  retiredCounts.value = items.retired || 0;
   totalCounts.value = bookCopies.value?.all.count || 0;
 }
 
@@ -261,21 +277,35 @@ async function submitItems() {
 };
 
 
-async function enableAll() {
+async function updateMultipleCopies(selectedStatus: string) {
   const selectedRows = table?.value?.tableApi.getFilteredSelectedRowModel().rows;
   if (selectedRows.length === 0) {
     useToastError('Please select at least one item to enable.');
     return;
   }
 
-  const updatedItems = selectedRows
-    .filter((row: any) => [BOOK_COPY_STATUS.PENDING].includes(row.original.status))
-    .map((row: any) => {
-      row.original.status = BOOK_COPY_STATUS.OPENING;
-      row.original.updated_at = new Date().toISOString();
+  let updatedItems = [];
+  if (selectedStatus === BOOK_COPY_STATUS.OPENING) {
+    updatedItems = selectedRows
+      .filter((row: any) => [BOOK_COPY_STATUS.PENDING, BOOK_COPY_STATUS.RETIRED].includes(row.original.status))
+      .map((row: any) => {
+        row.original.status = BOOK_COPY_STATUS.OPENING;
+        row.original.updated_at = new Date().toISOString();
 
-      return row.original;
-    });
+        return row.original;
+      });
+  }
+
+  if (selectedStatus === BOOK_COPY_STATUS.RETIRED) {
+    updatedItems = selectedRows
+      .filter((row: any) => [BOOK_COPY_STATUS.OPENING, BOOK_COPY_STATUS.PENDING].includes(row.original.status))
+      .map((row: any) => {
+        row.original.status = BOOK_COPY_STATUS.RETIRED;
+        row.original.updated_at = new Date().toISOString();
+
+        return row.original;
+      });
+  }
 
   await upsert(updatedItems)
     .then(({ error }) => {
@@ -312,5 +342,6 @@ const bookItemStatusColor = {
   lost: 'error',
   rejected: 'neutral',
   closed: 'neutral',
+  retired: 'neutral',
 }
 </script>
