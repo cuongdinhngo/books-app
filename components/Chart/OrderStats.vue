@@ -23,22 +23,21 @@
     </div>
 
     <!-- Chart -->
-    <div class="chart-wrapper flex items-center justify-center">      <DonutChart
+    <div class="chart-wrapper flex items-center justify-center">
+      <DonutChart
         v-if="status === 'success' && sortedOrderStats.length > 0"
         :data="sortedOrderStats.map(i => i.value)"
         :height="275"
         :radius="0"
         :type="'full'"
         :labels="filteredStatusLabels"
-      ><div class="absolute text-center">
-          <div class="text-stone-800">
-            <p
-              v-for="item in sortedOrderStats"
-              :key="item.name"
-            >
-              {{ item.name }}: {{ item.value }} 
-            </p>
-          </div>
+        :hide-legend="true"
+      >
+        <div class="absolute text-center">
+          <ChartSummaryStats
+            :data="sortedOrderStats"
+            :labels="filteredStatusLabels"
+          />
         </div>
       </DonutChart>
 
@@ -68,11 +67,11 @@ const supabase = useSupabaseClient();
 const localPeriod = ref(props.period);
 
 const statusLabels = [
-  { id: ORDER_STATUS.WAITING, name: capitalize(ORDER_STATUS.WAITING), color: '#3b82f6' }, // Blue
-  { id: ORDER_STATUS.BORROWING, name: capitalize(ORDER_STATUS.BORROWING), color: '#f59e0b' }, // Amber
-  { id: ORDER_STATUS.CLOSE, name: capitalize(ORDER_STATUS.CLOSE), color: '#14b8a6' }, // Teal
-  { id: ORDER_STATUS.REJECT, name: capitalize(ORDER_STATUS.REJECT), color: '#6b7280' }, // Gray
-  { id: ORDER_STATUS.LOST, name: capitalize(ORDER_STATUS.LOST), color: '#ef4444' }, // Red
+  { id: ORDER_STATUS.WAITING, name: capitalize(ORDER_STATUS.WAITING), color: '#3b82f6', to: { name: 'admin-orders', query: { status:[ORDER_STATUS.WAITING]}} }, // Blue
+  { id: ORDER_STATUS.BORROWING, name: capitalize(ORDER_STATUS.BORROWING), color: '#f59e0b', to: { name: 'admin-orders', query: { status:[ORDER_STATUS.BORROWING]}} }, // Amber
+  { id: ORDER_STATUS.CLOSE, name: capitalize(ORDER_STATUS.CLOSE), color: '#14b8a6', to: { name: 'admin-orders', query: { status:[ORDER_STATUS.CLOSE]}} }, // Teal
+  { id: ORDER_STATUS.REJECT, name: capitalize(ORDER_STATUS.REJECT), color: '#6b7280', to: { name: 'admin-orders', query: { status:[ORDER_STATUS.REJECT]}} }, // Gray
+  { id: ORDER_STATUS.LOST, name: capitalize(ORDER_STATUS.LOST), color: '#ef4444', to: { name: 'admin-orders', query: { status:[ORDER_STATUS.LOST]}} }, // Red
 ];
 
 const { data:orderStats, error, status, refresh } = useAsyncData(

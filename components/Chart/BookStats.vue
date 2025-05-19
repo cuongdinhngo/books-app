@@ -14,16 +14,13 @@
         :radius="0"
         :type="'full'"
         :labels="filteredStatusLabels"
+        :hide-legend="true"
       >
         <div class="absolute text-center">
-          <div class="text-stone-800">
-            <p
-              v-for="item in sortedBookStats"
-              :key="item.name"
-            >
-              {{ item.name }}: {{ item.value }} 
-            </p>
-          </div>
+          <ChartSummaryStats
+            :data="sortedBookStats"
+            :labels="filteredStatusLabels"
+          />
         </div>
       </DonutChart>
 
@@ -48,10 +45,10 @@ const supabase = useSupabaseClient();
 
 // Define all possible status labels
 const statusLabels = [
-  { id: BOOK_COPY_STATUS.OPENING, name: capitalize(BOOK_COPY_STATUS.OPENING), color: '#3b82f6' }, // Blue
-  { id: BOOK_COPY_STATUS.BORROWING, name: capitalize(BOOK_COPY_STATUS.BORROWING), color: '#f59e0b' }, // Amber
-  { id: BOOK_COPY_STATUS.PENDING, name: capitalize(BOOK_COPY_STATUS.PENDING), color: '#14b8a6' }, // Teal
-  { id: BOOK_COPY_STATUS.LOST, name: capitalize(BOOK_COPY_STATUS.LOST), color: '#ef4444' }, // Red
+  { id: BOOK_COPY_STATUS.OPENING, name: capitalize(BOOK_COPY_STATUS.OPENING), color: '#3b82f6', to: { name: 'admin-books', query: { status: [BOOK_COPY_STATUS.OPENING]}} }, // Blue
+  { id: BOOK_COPY_STATUS.BORROWING, name: capitalize(BOOK_COPY_STATUS.BORROWING), color: '#f59e0b', to: { name: 'admin-books', query: { status: [BOOK_COPY_STATUS.BORROWING]}} }, // Amber
+  { id: BOOK_COPY_STATUS.PENDING, name: capitalize(BOOK_COPY_STATUS.PENDING), color: '#14b8a6', to: { name: 'admin-books', query: { status: [BOOK_COPY_STATUS.PENDING]}} }, // Teal
+  { id: BOOK_COPY_STATUS.LOST, name: capitalize(BOOK_COPY_STATUS.LOST), color: '#ef4444', to: { name: 'admin-books', query: { status: [BOOK_COPY_STATUS.LOST]}} }, // Red
 ];
 
 const { data:bookStats, error, status, refresh } = useAsyncData(
