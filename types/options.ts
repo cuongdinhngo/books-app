@@ -43,6 +43,7 @@ export interface NotificationOptions {
   notifiableId?: number,
   notifiableType?: string,
   toStaff?: boolean,
+  isHead?: boolean,
   page?: number,
   size?: number
 }

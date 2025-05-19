@@ -1,17 +1,16 @@
 <template>
   <USlideover title="" description="">
     <UChip
-      v-if="unreadNotifications.length > 0"
-      :text="unreadNotifications.length"
+      v-if="unreadCounts > 0"
       size="3xl"
-      color="neutral"
-      :ui="{ base: 'text-stone-900 bg-primary-50' }"
+      color="success"
     >
       <UButton
         icon="lucide:bell"
         color="neutral"
         variant="outline"
         class="ring-0 bg-primary-800 text-lg cursor-pointer"
+        @click=""
       />
     </UChip>
     <UButton
@@ -36,7 +35,7 @@
                 ? 'hover:bg-blue-300 bg-blue-200 px-3 rounded-lg text-blue-500 font-bold' 
                 : 'hover:text-blue-500'
             ]"
-            @click="setNotificationFilter('all')"
+            @click="fetchNotifications('all')"
           >
             All
           </p>
@@ -47,7 +46,7 @@
                 ? 'hover:bg-blue-300 bg-blue-200 px-3 rounded-lg text-blue-500 font-bold' 
                 : 'hover:text-blue-500'
             ]"
-            @click="setNotificationFilter('unread')"
+            @click="fetchNotifications('unread')"
           >
             Unread
           </p>
@@ -58,12 +57,12 @@
     <template #body>
       <div v-if="status === 'success'">
         <NotificationItem
-          v-for="notification in filteredNotifications"
+          v-for="notification in notifications.data"
           :key="notification.id"
           :notification="notification"
         />
-        <div v-if="filteredNotifications.length === 0" class="text-center py-4 text-gray-500">
-          No notifications to display.
+        <div v-if="notifications.count === 0" class="text-center py-4 text-gray-500">
+          No notifications.
         </div>
       </div>
       <div
@@ -98,32 +97,51 @@ const props = defineProps({
   userId: {
     type: String,
     default: null
+  },
+  unreadCounts: {
+    type: Number,
+    default: 0
   }
 });
 
 const { index:getNotifications } = useNotifications();
 const { userRole } = useAuth();
 
-const page = ref(1);
-const pageSize = ref<Number>(15);
+const page = ref<Number|null>(1);
+const pageSize = ref<Number|null>(15);
+const isRead = ref<Boolean|null>(null);
 const notificationFilter = ref('all');
 const notificationOptions = ref({
   page: page.value,
   size: pageSize.value,
   toStaff: props.toStaff,
   readerId: props.userId,
+  isRead: isRead.value
 });
 
-const { data:notifications, error, status } = useAsyncData(
-  computed(() => `notifications/user/${props.userId || userRole.value}/size/${pageSize.value}`).value,
+const { data:notifications, error, status } = await useAsyncData(
+  computed(() => `notifications/${JSON.stringify(notificationOptions.value)}`).value,
   () => getNotifications(notificationOptions.value),
   { watch: [ notificationOptions.value ] }
 );
 
+function fetchNotifications(status: 'all' | 'unread') {
+  if (status === 'unread') {
+    notificationFilter.value = 'unread';
+    notificationOptions.value.isRead = false;
+    notificationOptions.value.page = null;
+    notificationOptions.value.size = null;
+  } else {
+    notificationFilter.value = 'all';
+    notificationOptions.value.isRead = null;
+  }
+}
+
 const unreadNotifications = computed(() => {
-  return status.value === 'success' && notifications.value?.data ? 
-    notifications.value.data.filter((item: { is_read: boolean }) => !item.is_read) : 
-    [];
+  if (status.value === 'success' && notifications.value?.unread) {
+    return notifications.value?.unread;
+  }
+  return 0;
 });
 
 const hasAllNotificationsLoaded = ref(false);
@@ -144,20 +162,6 @@ function loadPreviousNotifications() {
     }
   }, 1000);
 }
-
-function setNotificationFilter(filter: 'all' | 'unread') {
-  notificationFilter.value = filter;
-}
-
-const filteredNotifications = computed(() => {
-  if (!notifications.value?.data) return [];
-  
-  if (notificationFilter.value === 'unread') {
-    return notifications.value.data.filter((item: { is_read: boolean }) => !item.is_read);
-  }
-  
-  return notifications.value.data;
-});
 
 const channels = useSupabaseClient().channel('notification-insert-channel')
   .on(

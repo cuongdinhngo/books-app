@@ -18,11 +18,12 @@ export const useNotifications = () => {
       notifiableId = null,
       notifiableType = null,
       toStaff = null,
+      isHead = false,
       page = null,
       size = null
     } = options;
 
-    let query = useTable(TABLE_NAME).select(column, { count: 'exact'}).order('created_at', { ascending: false });
+    let query = useTable(TABLE_NAME).select(column, { count: 'exact', head: isHead }).order('created_at', { ascending: false });
 
     if (id) {
       query = query.eq('id', id);
@@ -36,8 +37,8 @@ export const useNotifications = () => {
     if (type) {
       query = query.eq('type', type);
     }
-    if (isRead) {
-      query = query.eq('is_read', isRead);
+    if (isRead === true || isRead === false) {
+      query = query.is('is_read', isRead);
     }
     if (notifiableId && notifiableType) {
       query = query.match({ notifiable_id: notifiableId, notifiable_type: notifiableType });

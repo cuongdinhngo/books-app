@@ -38,6 +38,7 @@
     v-if="isAuthenticated"
     :to-staff="false"
     :user-id="userId"
+    :unread-counts="unreadNotificaitons.count"
   />
 
   <UDropdownMenu
@@ -82,21 +83,22 @@ import { DialogTitle, VisuallyHidden, DialogDescription } from 'reka-ui';
 const { signout } = useAuth();
 const { userId } = useAuth();
 const { bookCart } = useBookCarts();
-const { get:getNotifications } = useNotifications();
+const { index:getNotifications } = useNotifications();
 
 const bookCounts = computed(() => bookCart.value.length);
 const isAuthenticated = computed(() => !!userId.value);
 
-const { data:notifications, error } = await useAsyncData(
-  `reader/${userId.value}/notifications`,
+console.log('USER ID => ', userId.value);
+
+const { data:unreadNotificaitons, error } = await useAsyncData(
+  `reader/${userId.value}/unreadNotificaitons`,
   async() => {
     if (userId.value) {
-      return await getNotifications(userId.value)
+      return await getNotifications({ isRead: false, isHead: true, readerId: userId.value });
     } else {
-      return { data: [] }
+      return { count: 0, data: [] }
     }
   }
 );
 
-const unreadNotificaitons = computed(() => notifications.value.data?.filter(item => !item.is_read));
 </script>

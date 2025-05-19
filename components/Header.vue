@@ -28,6 +28,7 @@
     <div class="flex items-center space-x-4">
       <NotificationSlideover
         :to-staff="true"
+        :unread-counts="unreadNotifications.count"
       />
 
       <UDropdownMenu
@@ -59,7 +60,7 @@
 <script setup lang="ts">
 import { USER_ROLE_READER } from '~/constants/users';
 
-const { signout, userId } = useAuth();
+const { signout, userId, userRole } = useAuth();
 const { index:getBooks } = useBooks();
 const { index:getOrders } = useOrders();
 const { index:getReaders } = useUsers();
@@ -67,9 +68,15 @@ const { index:getBookCopies } = useBookCopies();
 const { index:getCategories } = useCategories();
 const { index:getPublishers } = usePublishers();
 const { index:getAuthors } = useAuthors();
+const { index:getNotifications } = useNotifications();
 
 const searchTerm = ref<string>('');
 const resultGroups = ref<Array<any>>([]);
+
+const { data:unreadNotifications, error, status } = await useAsyncData(
+  computed(() => `notifications/user/${userId.value || userRole.value}/unread`).value,
+  () => getNotifications({ toStaff: true, isRead: false, isHead: true })
+);
 
 async function handleSearch() {
   if (!searchTerm.value) {
@@ -102,7 +109,6 @@ async function handleSearch() {
 
   await Promise.all(searchFunctions);
   const { orders, bookCopies, books, readers, authors, categories, publishers } = resultMap;
-  console.log('RESULT MAP => ', resultMap);
 
   if (orders && null === orders.error && orders?.count > 0) {
     resultGroups.value.push({
