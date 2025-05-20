@@ -17,11 +17,14 @@
   </form>
 
   <DataTable
-    v-if="publisher?.data"
+    v-if="status === 'success'"
     :data="publisher?.data"
     :columns="columns"
     edit-link="admin-publishers-id"
     :delete-item="deletePublisher"
+  />
+  <LoadingProcess
+    v-if="status === 'pending'"
   />
 
   <Pagination
@@ -47,7 +50,7 @@ const searchParams = ref({
   size: pageSize
 });
 
-const { data: publisher, error, refresh } = await useAsyncData(
+const { data: publisher, error, refresh, status } = useAsyncData(
   `publisher-page-${page.value}`,
   () => index(searchParams.value),
   { watch: [searchParams.value] }

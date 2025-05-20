@@ -16,8 +16,8 @@ export default defineNuxtRouteMiddleware(async(to, from) => {
 
   resetBreadcrumbs();
 
-  await useAsyncData(
-    `default-breadcrumb`,
+  useAsyncData(
+    `${ to.name }/default-breadcrumb`,
     async() => {
       const [categories, publishers, authors ] = await Promise.all([
         useCategories().index(),

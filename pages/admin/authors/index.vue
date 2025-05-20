@@ -18,10 +18,14 @@
   </form>
 
   <DataTable
+    v-if="status === 'success'"
     :data="author?.data"
     :columns="columns"
     editLink="admin-authors-id"
     :delete-item="deleteAuthor"
+  />
+  <LoadingProcess
+    v-if="status === 'pending'"
   />
 
   <Pagination
@@ -46,7 +50,7 @@ const searchParams = ref({
   size: pageSize
 });
 
-const { data: author, error, refresh } = await useAsyncData(
+const { data: author, error, refresh, status } = useAsyncData(
   `author-page-${page.value}`,
   () => index(searchParams.value),
   {

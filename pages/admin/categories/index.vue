@@ -17,11 +17,14 @@
   </form>
 
   <DataTable
-    v-if="category?.data"
+    v-if="status === 'success'"
     :data="category?.data"
     :columns="columns"
     edit-link="admin-categories-id"
     :delete-item="deleteCategory"
+  />
+  <LoadingProcess
+    v-if="status === 'pending'"
   />
 
   <Pagination
@@ -34,7 +37,6 @@
 </template>
 
 <script setup lang="ts">
-import type { Tables } from '~/types/database.types'
 import { useRouteQuery } from '@vueuse/router';
 
 const { index, remove } = useCategories();
@@ -48,7 +50,7 @@ const searchParams = ref({
   size: pageSize
 });
 
-const { data: category, refresh } = await useAsyncData(
+const { data: category, refresh, status } = useAsyncData(
   `categories-page-${page.value}`,
   () => index(searchParams.value),
   {

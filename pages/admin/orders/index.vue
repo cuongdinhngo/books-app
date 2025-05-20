@@ -52,7 +52,7 @@
 
   <div class="w-full">
     <OrderCard
-      v-if="order?.count > 0"
+      v-if="status === 'success'"
       v-for="order in order?.data"
       :key="order.id"
       :order="order"
@@ -62,6 +62,11 @@
       :order-renews="order.order_renews"
       :timeline="order.order_timeline"
       @refreshOrders="refresh"
+    />
+    <LoadingCard
+      v-if="status === 'pending'"
+      :quantity="5"
+      :class-value="`h-[200px] w-full my-5`"
     />
   </div>
   <h3 v-if="order?.count == 0" class="justify-center flex text-stone-900">No Data</h3>
@@ -128,7 +133,7 @@ const searchParams = ref({
   size: pageSize
 });
 
-const { data:order, error, refresh, clear } = useAsyncData(
+const { data:order, error, refresh, status } = useAsyncData(
   `orders-${JSON.stringify(searchParams.value)}`,
   () => getOrders(searchParams.value),
   { watch: [searchParams.value] }
@@ -264,10 +269,12 @@ watch(
 );
 
 function handleSearch() {
+  page.value = 1;
   searchParams.value.id = orderId.value;
   searchParams.value.status = selectedStatus.value;
   searchParams.value.from = from.value;
   searchParams.value.to = to.value;
+  searchParams.value.page = 1;
 }
 
 function handlePageChange(newPage) {
