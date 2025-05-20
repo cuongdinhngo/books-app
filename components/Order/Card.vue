@@ -202,7 +202,12 @@
       :close="{ color: 'primary', variant: 'outline', class: 'rounded-full'}"
     >
       <template #body>
-        <UStepper orientation="vertical" :items="timelineItems" class="w-full" />
+        <UStepper
+          orientation="vertical"
+          :items="timelineItems"
+          :default-value="timelineItems.length"
+          class="w-full"
+        />
       </template>
     </UModal>
 
@@ -273,7 +278,7 @@ const timelineItems = computed(() => {
     
     return {
       ...action,
-      description,
+      description
     }
   });
 });
