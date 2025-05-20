@@ -174,30 +174,23 @@
               {{ requestOrderRenews?.request_note || 'No note provided' }}
             </p>
           </div>
-          <USelectMenu
-            v-model="orderRenewStatus"
-            :items="[
-              {label: 'Approve', id: 'approved'},
-              {label: 'Reject', id: 'rejected'},
-            ]"
-            value-key="id"
-            variant="subtle"
-            placeholder="Approve or Reject"
-            class="w-50 my-1 bg-white border text-stone-800 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
           <UTextarea
             v-model="orderRenewComment"
             placeholder="Leave comment ..." class="w-full my-5" variant="subtle"
           />
-          <UButton
-            icon="lucide:badge-check"
-            label="Submit"
-            size="md"
-            color="primary"
-            variant="subtle"
-            class="text-right"
-            @click="handleOrderRenew"
-          />
+          <div class="flex justify-center gap-4">
+            <UButton
+              v-for="option in confirmDueDateActions"
+              :key="option.id"
+              :icon="option.icon"
+              :label="option.label"
+              size="md"
+              color="primary"
+              variant="subtle"
+              class="text-right"
+              @click="handleOrderRenew(option.id)"
+            />
+          </div>
         </div>
       </template>
     </UModal>
@@ -321,10 +314,15 @@ const orderActionOptions = computed(() => {
   }
 });
 
+const confirmDueDateActions = [
+  {label: 'Approve this request', id: ORDER_RENEWS_STATUS.APPROVED, icon: 'lucide:check'},
+  {label: 'Reject this request', id: ORDER_RENEWS_STATUS.REJECTED, icon: 'lucide:x'},
+];
+
 async function handleNotificationAndTimeline({
-  userId, orderId, action, type, message, comment
+  readerId, orderId, action, type, message, comment
 }: {
-  userId: string;
+  readerId: string;
   orderId: number;
   action: string;
   type: string;
@@ -334,7 +332,7 @@ async function handleNotificationAndTimeline({
   try {
     const [notificationError, timelineError] = await Promise.all([
       sendNotification({
-        user_id: userId,
+        user_id: readerId,
         type,
         message,
         notifiable_id: orderId,
@@ -343,7 +341,7 @@ async function handleNotificationAndTimeline({
       createOrderTimeline({
         order_id: orderId,
         action,
-        user_id: userId,
+        user_id: userId.value,
         comment
       }).then((res) => res.error),
     ]);
@@ -356,16 +354,21 @@ async function handleNotificationAndTimeline({
   }
 }
 
-async function handleOrderRenew(){
-  if (orderRenewStatus.value === ORDER_RENEWS_STATUS.REJECTED) {
-    const { error } = await updateOrderRenew(props.order.id, { status: orderRenewStatus.value });
+async function handleOrderRenew(orderRenewStatus: string){
+  if (!requestOrderRenews.value) {
+    useToastError('No renew request found.');
+    return;
+  }
+
+  if (orderRenewStatus === ORDER_RENEWS_STATUS.REJECTED) {
+    const { error } = await updateOrderRenew(requestOrderRenews.value.id, { status: orderRenewStatus });
     if (error) {
       useToastError(error);
       return;
     }
 
     await handleNotificationAndTimeline({
-      userId: props.user.id,
+      readerId: props.user.id,
       orderId: props.order.id,
       action: getTimelineTypeViaOrderStatus(NOTIFICATION_TYPES.REJECTED_REQUEST_DUE_DATE),
       type: NOTIFICATION_TYPES.REJECTED_REQUEST_DUE_DATE,
@@ -379,18 +382,13 @@ async function handleOrderRenew(){
     return;
   }
 
-  if (!requestOrderRenews.value) {
-    useToastError('No renew request found.');
-    return;
-  }
-
   Promise.all([
     updateOrder(props.order.id, { due_date: requestOrderRenews.value.new_due_date }),
-    updateOrderRenew(requestOrderRenews.value.id, { status: orderRenewStatus.value, comment: orderRenewComment.value }),
+    updateOrderRenew(requestOrderRenews.value.id, { status: orderRenewStatus, comment: orderRenewComment.value }),
   ])
   .then(async () => {
     await handleNotificationAndTimeline({
-      userId: props.user.id,
+      readerId: props.user.id,
       orderId: props.order.id,
       action: getTimelineTypeViaOrderStatus(NOTIFICATION_TYPES.APPROVED_EXTEND_DUE_DATE),
       type: NOTIFICATION_TYPES.APPROVED_EXTEND_DUE_DATE,
@@ -421,7 +419,7 @@ function extendDueDate() {
   ])
   .then(async () => {
     await handleNotificationAndTimeline({
-      userId: props.user.id,
+      readerId: props.user.id,
       orderId: props.order.id,
       action: getTimelineTypeViaOrderStatus(NOTIFICATION_TYPES.STAFF_EXTEND_DUE_DATE),
       type: NOTIFICATION_TYPES.STAFF_EXTEND_DUE_DATE,
@@ -472,7 +470,7 @@ function processOrder(selectedStatus: string) {
     const { type, message } = getNotificationByOrderStatus(selectedStatus);
 
     await handleNotificationAndTimeline({
-      userId: props.user.id,
+      readerId: props.user.id,
       orderId: props.order.id,
       action: getTimelineTypeViaOrderStatus(selectedStatus),
       type: type,
