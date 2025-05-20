@@ -2,14 +2,20 @@
   <h3 class="text-stone-900">Historical Orders</h3>
 
   <OrderStats
+    v-if="status === 'success'"
     :orders="data.allOrders"
     :route-name="'reader-orders'"
     :reader-id="userId"
   />
+  <LoadingCard
+    v-if="status === 'pending'"
+    :quantity="1"
+    :class-value="`w-full h-10`"
+  />
 
   <div class="w-full">
     <ReaderOrderCard
-      v-if="sortedOrders.length > 0"
+      v-if="status === 'success'"
       v-for="order in sortedOrders"
       :key="order.id"
       :order="order"
@@ -19,12 +25,17 @@
       :order-renews="order.order_renews"
       :timeline="order.order_timeline"
     />
+    <LoadingCard
+      v-if="status === 'pending'"
+      :quantity="5"
+      :class-value="`w-full h-[300px] my-5`"
+    />
   </div>
-  <h3 v-if="data.filteredCount == 0" class="justify-center flex text-stone-900">No Data</h3>
+  <h3 v-if="status === 'success' && data.filteredCount == 0" class="justify-center flex text-stone-900">No Data</h3>
 
   <Pagination
     v-model="page"
-    v-if="data.filteredCount > 0"
+    v-if="status === 'success' && data.filteredCount > 0"
     :totalCounts="data.filteredCount"
     :items-per-page="pageSize"
     @changePage="handlePageChange"
@@ -71,7 +82,7 @@ const searchParams = ref({
   size: pageSize
 });
 
-const { data, error, refresh, clear } = await useAsyncData(
+const { data, error, refresh, status } = useAsyncData(
   `reader/${userId.value}/historical-order-${JSON.stringify(useRoute().query)}`,
   async() => {
     const [allOrders, filteredOrders] = await Promise.all([

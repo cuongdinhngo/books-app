@@ -31,7 +31,7 @@
   </div>
 
   <UTable
-    v-if="reader?.count > 0"
+    v-if="status === 'success'"
     :data="reader.data"
     :columns="columns"
     class="flex-1"
@@ -53,7 +53,10 @@
       </NuxtLink>
     </template>
   </UTable>
-  <h3 v-else class="justify-center flex text-stone-900">No Data</h3>
+  <LoadingProcess
+    v-if="status === 'pending'"
+  />
+  <h3 v-if="reader?.count == 0" class="justify-center flex text-stone-900">No Data</h3>
 
   <Pagination
     v-model="page"
@@ -83,7 +86,7 @@ const searchParams = ref({
   role: USER_ROLE_READER
 });
 
-const { data: reader, error, refresh } = await useAsyncData(
+const { data: reader, error, refresh, status } = useAsyncData(
   `reader-page-${page.value}`,
   () => index(searchParams.value),
   { watch: [searchParams.value] }

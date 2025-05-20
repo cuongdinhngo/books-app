@@ -63,13 +63,16 @@
   </form>
 
   <DataTable
-    v-if="book?.data"
+    v-if="status === 'success'"
     :data="book?.data"
     :columns="columns"
     :delete-item="deleteBook"
     edit-link="admin-books-id"
   />
-  <h3 v-else class="justify-center flex text-stone-900">No Data</h3>
+  <LoadingProcess
+    v-if="status === 'pending'"
+  />
+  <h3 v-if="book?.count == 0" class="justify-center flex text-stone-900">No Data</h3>
 
   <Pagination
     v-model="page"
@@ -115,7 +118,7 @@ const searchParams = ref({
   size: pageSize
 });
 
-const { data: book, error, refresh, status, clear} = await useAsyncData(
+const { data: book, error, refresh, status, clear} = useAsyncData(
   `books-query:${JSON.stringify(query)}`,
   () => getBooks(searchParams.value),
   { watch: [searchParams.value] }

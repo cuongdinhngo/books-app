@@ -1,7 +1,7 @@
 <template>
   <div class="p-3">
     <UTable
-      v-if="data.count > 0"
+      v-if="status === 'success'"
       :data="data.data"
       class="flex-1"
       :columns="[
@@ -45,10 +45,11 @@
         {{ row.original.returned_at ? useDateFormat(row.original.returned_at, 'MMMM Do, YYYY') : 'Not returned' }}
       </template>
     </UTable>
+    <LoadingProcess v-if="status === 'pending'" />
 
     <Pagination
       v-model="page"
-      v-if="data.count > 0"
+      v-if="status === 'success' && data.count > 0"
       :totalCounts="data.count"
       :items-per-page="pageSize"
       @changePage="handlePageChange"
@@ -83,7 +84,7 @@ function handlePageChange(newPage) {
   searchParams.value.page = newPage;
 }
 
-const { data, error } = await useAsyncData(
+const { data, error, status } = useAsyncData(
   `book/${bookId.value}/orders`,
   () => getOrders({...searchParams.value}),
   { watch: [searchParams.value] }

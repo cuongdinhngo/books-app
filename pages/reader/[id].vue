@@ -2,11 +2,20 @@
   <div class="bg-white rounded-lg flex w-full">
     <!-- Left: Profile Photo -->
     <ProfilePhotoBlock
+      v-if="status === 'success'"
       :data="wishlist.reader?.data"
       :handle-upload-photo="handleUploadPhoto"
     />
+    <LoadingCard
+      v-if="status === 'pending'"
+      :quantity="1"
+      :class-value="`w-1/3 h-55`"
+    />
     <!-- Right: Information Details -->
-    <div class="w-2/3 p-6 flex flex-col justify-between">
+    <div
+      v-if="status === 'success'"
+      class="w-2/3 p-6 flex flex-col justify-between"
+    >
         <div class="space-y-4">
             <div>
                 <span class="text-gray-600">Full Name:</span>
@@ -26,18 +35,34 @@
             </div>
         </div>
     </div>
+    <LoadingCard
+      v-if="status === 'pending'"
+      :quantity="1"
+      :class-value="`w-2/3 h-55`"
+    />
   </div>
-  <div class="p-4">
+  <div class="p-4" v-if="status === 'success'">
     <h3 class="text-lg font-semibold text-gray-800 mb-2">Your wishlists: {{ wishlist.books.count }} books</h3>
   </div>
+  <LoadingCard
+    v-if="status === 'pending'"
+    :quantity="1"
+    :class-value="`w-full h-10`"
+  />
 
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+  <div class="grid grid-cols-1 sm:grid-cols-5 gap-6">
     <BookCard
+      v-if="status === 'success'"
       v-for="book in wishlist.books.data"
       :key="book.id"
       :book="book.books"
       :wishlistId="book.id"
       @refreshWishlists="refresh"
+    />
+    <LoadingCard
+      v-if="status === 'pending'"
+      :quantity="5"
+      :class-value="`w-full h-[340px]`"
     />
   </div>
 </template>
@@ -60,7 +85,7 @@ const columns = `
     book_copies(*)
   )
 `;
-const { data:wishlist, error, refresh } = await useAsyncData(
+const { data:wishlist, error, refresh, status } = useAsyncData(
   `reader/${readerId.value}`,
   async() => {
     const [reader, books] = await Promise.all([

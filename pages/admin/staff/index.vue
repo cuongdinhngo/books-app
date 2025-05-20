@@ -37,7 +37,7 @@
   </div>
 
   <UTable
-    v-if="staff?.count > 0"
+    v-if="status === 'success'"
     :data="staff.data"
     :columns="columns"
     class="flex-1"
@@ -59,7 +59,10 @@
       </NuxtLink>
     </template>
   </UTable>
-  <h3 v-else class="justify-center flex text-stone-900">No Data</h3>
+  <LoadingProcess
+    v-if="status === 'pending'"
+  />
+  <h3 v-if="staff?.count == 0" class="justify-center flex text-stone-900">No Data</h3>
 
   <Pagination
     v-model="page"
@@ -89,7 +92,7 @@ const searchParams = ref({
   role: USER_ROLE_STAFF
 });
 
-const { data: staff, error, refresh } = await useAsyncData(
+const { data: staff, error, refresh, status } = useAsyncData(
   `staff-page-${page.value}`,
   () => index(searchParams.value),
   { watch: [searchParams.value] }

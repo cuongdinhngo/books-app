@@ -12,7 +12,7 @@
       <img
         :src="book.coverImage"
         alt="Book Cover"
-        class="w-full h-64 object-cover rounded-md mb-4"
+        class="w-full h-64 object-contain rounded-md mb-4"
       >
     </NuxtLink>
     <div class="flex flex-col">

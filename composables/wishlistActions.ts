@@ -24,6 +24,7 @@ export const useWishlistActions = () => {
     }
     
     if (isInWishlist(bookId)) {
+      useToastSuccess('Book has been added to your wishlist');
       return { success: true };
     }
     

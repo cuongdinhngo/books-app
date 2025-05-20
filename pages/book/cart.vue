@@ -2,7 +2,7 @@
   <h3 class="text-stone-900">Your book cart</h3>
   <h3 v-if="bookCart.length === 0" class="text-primary-900">Enjoy your time and choose your love books</h3>
   <UTable
-    v-if="bookCart.length > 0"
+    v-if="status === 'success' && bookCart.length > 0"
     ref="table"
     v-model:row-selection="rowSelection"
     :data="data.books?.data"
@@ -78,7 +78,7 @@
   </UTable>
 
   <div
-    v-if="bookCart.length > 0"
+    v-if="status === 'success' && bookCart.length > 0"
     class="px-4 py-3.5 border-t border-accented text-sm text-muted text-stone-800"
   >
     {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
@@ -87,7 +87,7 @@
 
   <div class="flex justify-end mt-4">
     <UButton
-      v-if="bookCart.length > 0"
+      v-if="status === 'success' && bookCart.length > 0"
       label="Borrow"
       icon="lucide:handshake"
       color="primary"
@@ -95,6 +95,10 @@
       @click="handleBorrow"
     />
   </div>
+
+  <LoadingProcess
+    v-if="status === 'pending'"
+  />
 </template>
 
 <script setup lang="ts">
@@ -118,7 +122,7 @@ const table = useTemplateRef('table');
 const rowSelection = ref<Record<string, boolean>>({})
 const checkoutItems = ref([]);
 
-const { data, error, refresh } = await useAsyncData(
+const { data, error, refresh, status } = useAsyncData(
   `reader/${userId.value}/book-cart`,
   async() => {
     const [books, orders] = await Promise.all([

@@ -5,21 +5,23 @@
         Top Ratings
       </h3>
       <UCarousel
+        v-if="status === 'success'"
         v-slot="{ item }"
         loop
         arrows
         :items="books?.topRatings"
-        :ui="{
-          item: 'basis-1/6',
-          next: 'end-0',
-          prev: 'start-0'
-        }"
+        :ui="{ item: 'basis-1/6', next: 'end-0', prev: 'start-0' }"
         class="p-5 bg-primary-50"
       >
         <BookRatingItem
           :book="item"
         />
       </UCarousel>
+      <LoadingCard
+        v-if="status === 'pending'"
+        :quantity="1"
+        :class-value="`w-full h-[340px]`"
+      />
     </div>
 
     <div class="flex-grow">
@@ -31,9 +33,15 @@
       </h3>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 my-5">
         <BookItem
+          v-if="status === 'success'"
           v-for="item in books.all"
           :key="item.id"
           :book="item"
+        />
+        <LoadingCard
+          v-if="status === 'pending'"
+          :quantity="15"
+          :class-value="`w-full h-[340px]`"
         />
       </div>
       <div class="mt-auto pt-4">
@@ -78,7 +86,7 @@ const searchParams = ref({
   authorIds: author.value ? [author.value] : [],
 });
 
-const {data:books, error } = await useAsyncData(
+const {data:books, error, status } = await useAsyncData(
   `index:${JSON.stringify(searchParams.value)}`,
   async() => {
     const [all, topRatings, categories, publishers, authors ] = await Promise.all([

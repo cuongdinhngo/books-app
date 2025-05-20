@@ -1,5 +1,5 @@
 <template>
-  <div class="p-3">
+  <div class="p-3" v-if="status === 'success'">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
       <div class="flex items-center space-x-2">
         <label class="block text-sm font-medium text-gray-700">Quantity</label>
@@ -21,7 +21,10 @@
     </div>
 
     <!-- INVENTORY -->
-    <div class="grid grid-cols-6 gap-4 my-3">
+    <div
+      v-if="status === 'success'"
+      class="grid grid-cols-6 gap-4 my-3"
+    >
       <label
         class="w-30 text-sm font-medium text-gray-700 p-2 bg-blue-200 rounded-2xl cursor-pointer"
         @click="searchByStatus('')"
@@ -59,6 +62,9 @@
         Retired: {{ retiredCounts }}
       </label>
     </div>
+    <LoadingProcess
+      v-if="status === 'pending'"
+    />
 
     <div
       v-if="itemStatus.length > 0 ? bookCopies?.perPage.count : bookCopies?.all.count"
@@ -171,6 +177,9 @@
     />
     <h3 v-else class="flex justify-center text-stone-900 mt-5">No Data</h3>
   </div>
+  <LoadingProcess
+    v-if="status === 'pending'"
+  />
 </template>
 
 <script setup lang="ts">
@@ -199,7 +208,7 @@ const searchParams = ref({
   size: pageSize
 });
 
-const { data:bookCopies, error, refresh } = await useAsyncData(
+const { data:bookCopies, error, refresh, status } = await useAsyncData(
   `book/${bookId.value}/items/page/${page.value}`,
   async() => {
     const [ all, perPage ] = await Promise.all([
@@ -213,8 +222,6 @@ const { data:bookCopies, error, refresh } = await useAsyncData(
     watch: [searchParams.value]
   }
 );
-
-console.log('bookCopies', bookCopies.value);
 
 processItems(bookCopies.value?.all.data);
 
@@ -232,7 +239,6 @@ function searchByStatus (status: string) {
 }
 
 function processItems (data: any[]) {
-  console.log('processItems', data);
   const items = data.reduce((acc, item) => {
     acc[item.status] = (acc[item.status] || 0) + 1;
     return acc;
