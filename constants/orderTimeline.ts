@@ -19,25 +19,25 @@ export const TIMELINE_ACTIONS = [
   {
     type: TIMELINE_TYPES.ORDER_APPROVED,
     title: 'Order was approved',
-    description: 'Approved at #dateTime',
+    description: 'Approved by #staffName at #dateTime',
     icon: 'lucide:book-check'
   },
   {
     type: TIMELINE_TYPES.ORDER_REJECTED,
     title: 'Order was rejected',
-    description: 'Rejected at #dateTime',
+    description: 'Rejected by #staffName at #dateTime',
     icon: 'lucide:book-x'
   },
   {
     type: TIMELINE_TYPES.ORDER_CLOSED,
     title: 'Order was closed',
-    description: 'Closed at #dateTime',
+    description: 'Closed by #staffName at #dateTime',
     icon: 'lucide:book-lock'
   },
   {
     type: TIMELINE_TYPES.ORDER_EXTENDED,
     title: 'Due date was extended',
-    description: 'Extended at #dateTime',
+    description: 'Extended by #staffName at #dateTime',
     icon: 'lucide:book-up'
   },
   {
@@ -49,13 +49,13 @@ export const TIMELINE_ACTIONS = [
   {
     type: TIMELINE_TYPES.ORDER_REQUEST_APPROVED,
     title: 'Request due date was approved',
-    description: 'Approved at #dateTime',
+    description: 'Approved by #staffName at #dateTime',
     icon: 'lucide:book-check'
   },
   {
     type: TIMELINE_TYPES.ORDER_REQUEST_REJECTED,
-    title: 'Request due date was approved',
-    description: 'Approved at #dateTime',
+    title: 'Request due date was rejected',
+    description: 'Rejected by #staffName at #dateTime',
     icon: 'lucide:book-check'
   },
 ];

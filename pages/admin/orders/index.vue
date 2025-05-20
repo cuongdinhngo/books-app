@@ -112,7 +112,10 @@ const searchParams = ref({
       book_copies!inner(id, status)
     ),
     order_renews(*),
-    order_timeline(*)
+    order_timeline(
+      *,
+      users!inner(id, name, role)
+    )
   `,
   status: selectedStatus.value,
   bookId: useRouteQuery('bookId', null).value,
