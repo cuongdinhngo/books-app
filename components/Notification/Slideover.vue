@@ -62,7 +62,7 @@
           :notification="notification"
         />
         <div v-if="notifications.count === 0" class="text-center py-4 text-gray-500">
-          No notifications.
+          No unread notifications.
         </div>
       </div>
       <div
@@ -120,7 +120,7 @@ const notificationOptions = ref({
 });
 
 const { data:notifications, error, status } = await useAsyncData(
-  computed(() => `notifications/${JSON.stringify(notificationOptions.value)}`).value,
+  `notifications/${JSON.stringify(notificationOptions.value)}`,
   () => getNotifications(notificationOptions.value),
   { watch: [ notificationOptions.value ] }
 );
@@ -134,6 +134,8 @@ function fetchNotifications(status: 'all' | 'unread') {
   } else {
     notificationFilter.value = 'all';
     notificationOptions.value.isRead = null;
+    notificationOptions.value.page = page.value;
+    notificationOptions.value.size = pageSize.value;
   }
 }
 
