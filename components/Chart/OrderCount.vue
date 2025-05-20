@@ -33,9 +33,10 @@
       :curve-type="CurveType.Linear"
       :legend-position="LegendPosition.Top"
     />
-    <USkeleton
+    <LoadingCard
       v-if="status === 'pending'"
-      class="h-[250px] w-full"
+      :quantity="1"
+      :class-value="`h-[250px] w-full`"
     />
   </div>
 </template>
@@ -45,7 +46,7 @@ const supabase = useSupabaseClient();
 const period = ref(7);
 
 const { data:dailyOrderData, error, status, refresh } = useAsyncData(
-  computed(() => `order-counts/period/${period.value}`).value,
+  `order-counts/period/${period.value}`,
   () => supabase.rpc('get_daily_order_counts', { period: period.value }),
   {
     transform: (data) => {

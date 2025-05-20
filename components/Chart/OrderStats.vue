@@ -25,7 +25,7 @@
     <!-- Chart -->
     <div class="chart-wrapper flex items-center justify-center">
       <DonutChart
-        v-if="status === 'success' && sortedOrderStats.length > 0"
+        v-if="orderStatus === 'success'"
         :data="sortedOrderStats.map(i => i.value)"
         :height="275"
         :radius="0"
@@ -41,9 +41,10 @@
         </div>
       </DonutChart>
 
-      <USkeleton
-        v-if="status === 'pending'"
-        class="h-[250px] w-[250px] rounded-full"
+      <LoadingCard
+        v-if="orderStatus === 'pending'"
+        :quantity="1"
+        :class-value="`h-[250px] w-[250px] rounded-full`"
       />
     </div>
   </div>
@@ -52,10 +53,6 @@
 import { ORDER_STATUS } from '~/constants/orders';
 
 const props = defineProps({
-  period: {
-    type: Number,
-    default: 7
-  },
   title: {
     type: String,
     default: ''
@@ -64,7 +61,7 @@ const props = defineProps({
 
 const supabase = useSupabaseClient();
 
-const localPeriod = ref(props.period);
+const localPeriod = ref(7);
 
 const statusLabels = [
   { id: ORDER_STATUS.WAITING, name: capitalize(ORDER_STATUS.WAITING), color: '#3b82f6', to: { name: 'admin-orders', query: { status:[ORDER_STATUS.WAITING]}} }, // Blue
@@ -74,8 +71,8 @@ const statusLabels = [
   { id: ORDER_STATUS.LOST, name: capitalize(ORDER_STATUS.LOST), color: '#ef4444', to: { name: 'admin-orders', query: { status:[ORDER_STATUS.LOST]}} }, // Red
 ];
 
-const { data:orderStats, error, status, refresh } = useAsyncData(
-  computed(() => `order-stats/period/${localPeriod.value}`).value,
+const { data:orderStats, error, status:orderStatus, refresh } = await useAsyncData(
+  `order-stats/period/${localPeriod.value}`,
   () => supabase.rpc('get_order_status_stats', { period: localPeriod.value }),
   {
     transform: (data) => {

@@ -8,7 +8,7 @@
     <!-- Chart -->
     <div class="chart-wrapper flex items-center justify-center">
       <DonutChart
-        v-if="status === 'success' && sortedBookStats.length > 0"
+        v-if="bookStatus === 'success'"
         :data="sortedBookStats.map(i => i.value)"
         :height="275"
         :radius="0"
@@ -24,9 +24,10 @@
         </div>
       </DonutChart>
 
-      <USkeleton
-        v-if="status === 'pending'"
-        class="h-[250px] w-[250px] rounded-full"
+      <LoadingCard
+        v-if="bookStatus === 'pending'"
+        :quantity="1"
+        :class-value="`h-[250px] w-[250px] rounded-full`"
       />
     </div>
   </div>
@@ -52,8 +53,8 @@ const statusLabels = [
   { id: BOOK_COPY_STATUS.RETIRED, name: capitalize(BOOK_COPY_STATUS.RETIRED), color: '#a1a1aa', to: { name: 'admin-books', query: { status: [BOOK_COPY_STATUS.RETIRED]}} }, // Gray
 ];
 
-const { data:bookStats, error, status, refresh } = useAsyncData(
-  computed(() => `book-stats`).value,
+const { data:bookStats, error, status:bookStatus, refresh } = useAsyncData(
+  `book-stats/${props.title}`,
   () => supabase.rpc('get_book_stats'),
   {
     transform: (data) => {

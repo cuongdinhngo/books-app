@@ -3,13 +3,13 @@
     <h2 class="text-xl font-bold text-gray-900 mb-4">Overview Information</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
       <AdminCard
-        v-if="status === 'success'"
+        v-if="dashboardStatus === 'success'"
         v-for="item in overviewStats"
         :key="item.id"
         :card="item"
       />
       <LoadingCard
-        v-if="status === 'pending'"
+        v-if="dashboardStatus === 'pending'"
         :quantity="5"
         :class-value="`h-16 w-full rounded-lg bg-gray-200`"
       />
@@ -20,13 +20,13 @@
     <h2 class="text-xl font-bold text-gray-900 mb-4">Overview Orders</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
       <AdminCard
-        v-if="status === 'success'"
+        v-if="dashboardStatus === 'success'"
         v-for="item in orderStats"
         :key="item.id"
         :card="item"
       />
       <LoadingCard
-        v-if="status === 'pending'"
+        v-if="dashboardStatus === 'pending'"
         :quantity="5"
         :class-value="`h-16 w-full rounded-lg bg-gray-200`"
       />
@@ -36,7 +36,7 @@
   <div class="mb-8">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
       <ChartOrderStats title="Order Stats" />
-      <ChartBookStats title="Book Stats"/>
+      <ChartBookStats title="Book Stats" />
     </div>
   </div>
 
@@ -53,11 +53,7 @@
     loop
     arrows
     :items="data?.topOrders.data"
-    :ui="{
-      item: 'basis-1/4',
-      next: 'end-0',
-      prev: 'start-0'
-    }"
+    :ui="{ item: 'basis-1/4', next: 'end-0', prev: 'start-0'}"
     class="p-5 bg-primary-50"
   >
     <BookRatingItem
@@ -67,7 +63,6 @@
 </template>
 
 <script setup lang="ts">
-import { BOOK_COPY_STATUS } from '~/constants/bookCopies';
 import { ORDER_STATUS } from '~/constants/orders';
 
 const supabase = useSupabaseClient();
@@ -139,7 +134,7 @@ let orderCards = [
   },
 ];
 
-const { data, error:dashboardError, status } = useAsyncData(
+const { data, error:dashboardError, status:dashboardStatus } = useAsyncData(
   'admin-dashboard',
   async() => {
     const[statistics, topOrders] = await Promise.all([
