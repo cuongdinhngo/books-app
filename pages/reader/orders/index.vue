@@ -73,7 +73,10 @@ const searchParams = ref({
       book_copies!inner(id, status)
     ),
     order_renews(*),
-    order_timeline(*)
+    order_timeline(
+      *,
+      users!inner(id, name, role)
+    )
   `,
   readerId: userId.value,
   id: orderId.value,

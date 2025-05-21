@@ -104,7 +104,12 @@
       :close="{ color: 'primary', variant: 'outline', class: 'rounded-full'}"
     >
       <template #body>
-        <UStepper orientation="vertical" :items="timelineItems" class="w-full" />
+        <UStepper
+          orientation="vertical"
+          :items="timelineItems"
+          :default-value="timelineItems.length"
+          class="w-full"
+        />
       </template>
     </UModal>
 
@@ -158,9 +163,13 @@ const { userId } = useAuth();
 const timelineItems = computed(() => {
   return (props.timeline as StepperItem[]).map((item) => {
     const action = TIMELINE_ACTIONS.filter(action => item.action === action.type)[0];
+    const description = action.description
+      .replace('#dateTime', useDateFormat(item.created_at, ' HH:mm MMMM Do, YYYY').value)
+      .replace('#staffName', item.users.name);
+    
     return {
       ...action,
-      description: action.description.replace('#dateTime', useDateFormat(action.created_at, 'MMMM Do, YYYY').value),
+      description
     }
   });
 });
