@@ -2,15 +2,21 @@
   <div class="flex flex-col md:flex-row gap-6">
     <!-- Book Cover -->
     <div class="w-full md:w-1/3 flex justify-center">
-      <img 
+      <img
+        v-if="status === 'success'"
         :src="data?.book.data.coverImage"
         alt="Book Cover" 
         class="w-80 h-100 object-cover rounded-lg shadow"
       />
+      <LoadingCard
+        v-if="status === 'pending'"
+        :quantity="1"
+        :class-value="`w-80 h-100`"
+      />
     </div>
 
     <!-- Book Info -->
-    <div class="w-full md:w-2/3 space-y-4">
+    <div class="w-full md:w-2/3 space-y-4" v-if="status === 'success'">
       <div>
         <p class="text-lg font-semibold text-gray-900">{{ data?.book.data.title }}</p>
         <div class="flex items-center text-sm text-gray-900 mt-1">
@@ -62,18 +68,29 @@
         </UButton>
       </div>
     </div>
+    <LoadingCard
+      v-if="status === 'pending'"
+      :quantity="1"
+      :class-value="`w-full md:w-2/3`"
+    />
   </div>
 
   <!-- Description -->
-  <div class="mt-6 text-sm font-medium">
+  <div class="mt-6 text-sm font-medium" v-if="status === 'success'">
     <label class="block text-gray-600">Description</label>
     <p class=" text-gray-900">{{ data?.book.data.description }}</p>
   </div>
+  <LoadingCard
+    v-if="status === 'pending'"
+    :quantity="1"
+    :class-value="`w-full h-[200px] my-4`"
+  />
 
   <h3 class="text-stone-800 font-bold mt-5 mb-2">
     Same Categories
   </h3>
   <UCarousel
+    v-if="status === 'success'"
     v-slot="{ item }"
     loop
     arrows
@@ -86,6 +103,9 @@
       :class-value="`bg-white p-4 rounded-lg shadow text-stone-900 h-[300px]`"
     />
   </UCarousel>
+  <LoadingProcessing
+    v-if="status === 'pending'"
+  />
 
   <!-- Review Form -->
   <div
@@ -141,13 +161,18 @@
       No Reader Reviews
     </h3>
 
-    <div class="space-y-4">
+    <div class="space-y-4" v-if="status === 'success'">
       <BookReview
         v-for="review in data?.reviews.data"
         :key="review.id"
         :review="review"
       />
     </div>
+    <LoadingCard
+      v-if="status === 'pending'"
+      :quantity="1"
+      :class-value="`w-full h-[200px]`"
+    />
   </div>
 </template>
 
@@ -156,7 +181,8 @@ definePageMeta({
   layout: 'main'
 })
 
-import { useRouteParams } from '@vueuse/router';
+import { get } from '@nuxt/ui/runtime/utils/index.js';
+import { useRouteParams, useRouteQuery } from '@vueuse/router';
 
 const { userId } = useAuth();
 const { addToCart } = useBookCarts();
@@ -168,48 +194,43 @@ const { setBreadcrumbs } = useBreadcrumbs();
 
 const supabase = useSupabaseClient();
 const bookId = useRouteParams('id', null, { transform: Number });
+const categoryIds = useRouteQuery('category', null);
 const rating = ref('');
 const content = ref('');
 
-const { data, error, refresh } = await useAsyncData(
+const { data, error, refresh, status } = useAsyncData(
   `book-${bookId.value}`,
   async () => {
-    const [book, reviews, rating, borrowedCounts] = await Promise.all([
+    const [book, reviews, rating, borrowedCounts, bookSameCategories] = await Promise.all([
       getBookDetails(bookId.value, 'wishlists(id, book_id)'),
       getBookReviews({ columns: 'id,rating,content,created_at,users(id,name)', bookId: bookId.value }),
       supabase.rpc('get_average_rating_by_book', { p_book_id: bookId.value }).single(),
-      getBorrowedBookCounts({ bookId: bookId.value, isHead: true })
+      getBorrowedBookCounts({ bookId: bookId.value, isHead: true }),
+      getBooks({
+        columns: 'book_id:id, book_title:title, book_image:cover_image',
+        categoryIds: categoryIds.value,
+        page: 1,
+        size: 10
+      })
     ]);
 
     if (userId.value) {
       wishlists.value = book.data.wishlists;
     }
 
-    return { book, reviews, rating, borrowedCounts}
+    return { book, reviews, rating, borrowedCounts, bookSameCategories}
   }
 );
 
-const categories = computed(() => {
-  return data.value?.book.data.categories.map(item => item.id);
-});
-
-const { data:bookSameCategories, error:bookError } = await useAsyncData(
-  `book-same-category-${categories.value.toString()}`,
-  () => getBooks({
-    columns: 'book_id:id, book_title:title, book_image:cover_image',
-    categoryIds: categories.value,
-    page: 1,
-    size: 10
-  })
-); 
-
-const filteredBookSameCategories = bookSameCategories.value.data
+const filteredBookSameCategories = computed(() => {
+  return data.value?.bookSameCategories.data
   .filter(item => item.book_id !== bookId.value)
   .map(item => {
     return {
       ...item,
     }
   });
+});
 
 const isSubmittedReview = computed(() => {
   if (!userId.value) {

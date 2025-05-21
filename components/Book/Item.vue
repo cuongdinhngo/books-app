@@ -1,5 +1,5 @@
 <template>
-  <NuxtLink :to="`/book/${book?.id}`">
+  <NuxtLink :to="{ name: 'book-id', params: { id: book?.id }, query: { category: book?.categories.map(c => c.id) } }">  
     <div class="bg-white p-4 rounded-lg shadow text-stone-900 h-[340px]">
       <img :src="`${book?.coverImage}`" :alt="book?.title" class="w-full h-48 object-scale-down mb-2">
       <div class="flex-grow">

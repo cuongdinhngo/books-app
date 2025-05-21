@@ -1,45 +1,33 @@
 <template>
-  <div class="bg-white rounded-lg flex w-full">
+  <div class="bg-white rounded-lg flex w-full" v-if="status === 'success'">
     <!-- Left: Profile Photo -->
     <ProfilePhotoBlock
-      v-if="status === 'success'"
       :data="wishlist.reader?.data"
       :handle-upload-photo="handleUploadPhoto"
     />
-    <LoadingCard
-      v-if="status === 'pending'"
-      :quantity="1"
-      :class-value="`w-1/3 h-55`"
-    />
     <!-- Right: Information Details -->
     <div
-      v-if="status === 'success'"
       class="w-2/3 p-6 flex flex-col justify-between"
     >
-        <div class="space-y-4">
-            <div>
-                <span class="text-gray-600">Full Name:</span>
-                <span class="font-bold text-stone-900 ml-1"> {{ wishlist.reader?.data.name }} </span>
-            </div>
-            <div>
-                <span class="text-gray-600">Email:</span>
-                <span class="font-bold text-stone-900 ml-1"> {{ wishlist.reader?.data.email }}</span>
-            </div>
-            <div>
-                <span class="text-gray-600">Address:</span>
-                <span class="font-bold text-stone-900 ml-1"> {{ wishlist.reader?.data.address }}</span>
-            </div>
-            <div>
-                <span class="text-gray-600">Created At:</span>
-                <span class="font-bold text-stone-900 ml-1"> {{ useDateFormat(wishlist.reader?.data.created_at || '', 'MMMM Do, YYYY') }}</span>
-            </div>
+      <div class="space-y-4">
+        <div>
+            <span class="text-gray-600">Full Name:</span>
+            <span class="font-bold text-stone-900 ml-1"> {{ wishlist.reader?.data.name }} </span>
         </div>
+        <div>
+            <span class="text-gray-600">Email:</span>
+            <span class="font-bold text-stone-900 ml-1"> {{ wishlist.reader?.data.email }}</span>
+        </div>
+        <div>
+            <span class="text-gray-600">Address:</span>
+            <span class="font-bold text-stone-900 ml-1"> {{ wishlist.reader?.data.address }}</span>
+        </div>
+        <div>
+            <span class="text-gray-600">Created At:</span>
+            <span class="font-bold text-stone-900 ml-1"> {{ useDateFormat(wishlist.reader?.data.created_at || '', 'MMMM Do, YYYY') }}</span>
+        </div>
+      </div>
     </div>
-    <LoadingCard
-      v-if="status === 'pending'"
-      :quantity="1"
-      :class-value="`w-2/3 h-55`"
-    />
   </div>
   <div class="p-4" v-if="status === 'success'">
     <h3 class="text-lg font-semibold text-gray-800 mb-2">Your wishlists: {{ wishlist.books.count }} books</h3>
@@ -47,7 +35,7 @@
   <LoadingCard
     v-if="status === 'pending'"
     :quantity="1"
-    :class-value="`w-full h-10`"
+    :class-value="`w-full h-[340px] my-4`"
   />
 
   <div class="grid grid-cols-1 sm:grid-cols-5 gap-6">
