@@ -116,6 +116,7 @@
               color="primary"
               variant="subtle"
               class="text-right"
+              :disabled="loading"
               @click="processOrder(option.id)"
             />
           </div>
@@ -146,6 +147,7 @@
             color="primary"
             variant="subtle"
             class="text-right"
+            :disabled="loading"
             @click="extendDueDate"
           />
         </div>
@@ -188,6 +190,7 @@
               color="primary"
               variant="subtle"
               class="text-right"
+              :disabled="loading"
               @click="handleOrderRenew(option.id)"
             />
           </div>
@@ -253,11 +256,9 @@ const emit = defineEmits(['refreshOrders']);
 
 const bookOrderModal = ref(false);
 const orderComment = ref('');
-const orderStatus = ref('');
 const dueDateModal = ref(false);
 const newDueDate = ref('');
 const dueDateComment = ref('');
-const orderRenewStatus = ref('');
 const orderRenewComment = ref('');
 const confirmDueDateModal = ref(false);
 const timelineModal = ref(false);
@@ -268,6 +269,7 @@ const { insert:sendNotification, getNotificationByOrderStatus } = useNotificatio
 const { insert:insertNewDueDate, update:updateOrderRenew } = useOrderRenews();
 const { insert:createOrderTimeline} = useOrderTimeline();
 const { userId } = useAuth();
+const { loading, submit } = useSubmit();
 
 const timelineItems = computed(() => {
   return (props.timeline as StepperItem[]).map((item) => {
@@ -370,48 +372,44 @@ async function handleOrderRenew(orderRenewStatus: string){
   }
 
   if (orderRenewStatus === ORDER_RENEWS_STATUS.REJECTED) {
-    const { error } = await updateOrderRenew(requestOrderRenews.value.id, { status: orderRenewStatus });
-    if (error) {
-      useToastError(error);
-      return;
-    }
+    submit(() => updateOrderRenew(requestOrderRenews.value.id, { status: orderRenewStatus }))
+      .then(async() => {
+        await handleNotificationAndTimeline({
+          readerId: props.user.id,
+          orderId: props.order.id,
+          action: getTimelineTypeViaOrderStatus(NOTIFICATION_TYPES.REJECTED_REQUEST_DUE_DATE),
+          type: NOTIFICATION_TYPES.REJECTED_REQUEST_DUE_DATE,
+          message: NOTIFICATION_MESSAGES.REJECTED_REQUEST_DUE_DATE,
+        });
 
-    await handleNotificationAndTimeline({
-      readerId: props.user.id,
-      orderId: props.order.id,
-      action: getTimelineTypeViaOrderStatus(NOTIFICATION_TYPES.REJECTED_REQUEST_DUE_DATE),
-      type: NOTIFICATION_TYPES.REJECTED_REQUEST_DUE_DATE,
-      message: NOTIFICATION_MESSAGES.REJECTED_REQUEST_DUE_DATE,
-    });
-
-    confirmDueDateModal.value = false;
-    useToastSuccess('Order renew request was rejected successfully!');
-    emit('refreshOrders');
+        confirmDueDateModal.value = false;
+        useToastSuccess('Order renew request was rejected successfully!');
+        emit('refreshOrders');
+      })
+      .catch((error) => useToastError(error));
 
     return;
   }
 
-  Promise.all([
-    updateOrder(props.order.id, { due_date: requestOrderRenews.value.new_due_date }),
-    updateOrderRenew(requestOrderRenews.value.id, { status: orderRenewStatus, comment: orderRenewComment.value }),
+  submit([
+    () => updateOrder(props.order.id, { due_date: requestOrderRenews.value.new_due_date }),
+    () => updateOrderRenew(requestOrderRenews.value.id, { status: orderRenewStatus, comment: orderRenewComment.value }),
   ])
-  .then(async () => {
-    await handleNotificationAndTimeline({
-      readerId: props.user.id,
-      orderId: props.order.id,
-      action: getTimelineTypeViaOrderStatus(NOTIFICATION_TYPES.APPROVED_EXTEND_DUE_DATE),
-      type: NOTIFICATION_TYPES.APPROVED_EXTEND_DUE_DATE,
-      message: NOTIFICATION_MESSAGES.APPROVED_EXTEND_DUE_DATE,
-    });
+    .then(async() => {
+      useToastSuccess(`Order #${props.order.id} was approved!`);
+      confirmDueDateModal.value = false;
 
-    useToastSuccess(`Order #${props.order.id} was approved!`);
-    confirmDueDateModal.value = false;
-    emit('refreshOrders');
-  })
-  .catch((error) => {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error: handleOrderRenew';
-    useToastError(errorMessage);
-  });
+      await handleNotificationAndTimeline({
+        readerId: props.user.id,
+        orderId: props.order.id,
+        action: getTimelineTypeViaOrderStatus(NOTIFICATION_TYPES.APPROVED_EXTEND_DUE_DATE),
+        type: NOTIFICATION_TYPES.APPROVED_EXTEND_DUE_DATE,
+        message: NOTIFICATION_MESSAGES.APPROVED_EXTEND_DUE_DATE,
+      });
+
+      emit('refreshOrders');
+    })
+    .catch((error) => useToastError(error));
 };
 
 function extendDueDate() {
@@ -422,29 +420,27 @@ function extendDueDate() {
     comment: dueDateComment.value,
   };
 
-  Promise.all([
-    insertNewDueDate(data),
-    updateOrder(props.order.id, { due_date: newDueDate.value }),
+  submit([
+    () => insertNewDueDate(data),
+    () => updateOrder(props.order.id, { due_date: newDueDate.value }),
   ])
-  .then(async () => {
-    await handleNotificationAndTimeline({
-      readerId: props.user.id,
-      orderId: props.order.id,
-      action: getTimelineTypeViaOrderStatus(NOTIFICATION_TYPES.STAFF_EXTEND_DUE_DATE),
-      type: NOTIFICATION_TYPES.STAFF_EXTEND_DUE_DATE,
-      message: NOTIFICATION_MESSAGES.STAFF_EXTEND_DUE_DATE,
-    });
+    .then(async() => {
+      useToastSuccess(`Order #${props.order.id} was extended successfully!`);
+      dueDateModal.value = false;
 
-    dueDateModal.value = false;
-    newDueDate.value = '';
-    dueDateComment.value = '';
-    useToastSuccess(`Order #${props.order.id} was extended successfully!`);
-    emit('refreshOrders');
-  })
-  .catch((error) => {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error: extendDueDate';
-    useToastError(errorMessage);
-  });
+      await handleNotificationAndTimeline({
+        readerId: props.user.id,
+        orderId: props.order.id,
+        action: getTimelineTypeViaOrderStatus(NOTIFICATION_TYPES.STAFF_EXTEND_DUE_DATE),
+        type: NOTIFICATION_TYPES.STAFF_EXTEND_DUE_DATE,
+        message: NOTIFICATION_MESSAGES.STAFF_EXTEND_DUE_DATE,
+      });
+
+      newDueDate.value = '';
+      dueDateComment.value = '';
+      emit('refreshOrders');
+    })
+    .catch((error) => useToastError(error));
 };
 
 function processOrder(selectedStatus: string) {
@@ -471,27 +467,26 @@ function processOrder(selectedStatus: string) {
     status: getBookCopyStatusViaOrderStatus(selectedStatus),
   };
 
-  Promise.all([
-    updateOrder(props.order.id, updateOrderData),
-    updateBookCopy(bookCopyId.value, updateBookCopyData),
-  ])
-  .then(async () => {
-    const { type, message } = getNotificationByOrderStatus(selectedStatus);
+  submit([
+    () => updateOrder(props.order.id, updateOrderData),
+    () => updateBookCopy(bookCopyId.value, updateBookCopyData),
+  ]).then(async () => {
+    useToastSuccess(`Order #${props.order.id} was processed successfully!`);
+    bookOrderModal.value = false;
 
+    const { type, message } = getNotificationByOrderStatus(selectedStatus);
     await handleNotificationAndTimeline({
       readerId: props.user.id,
       orderId: props.order.id,
       action: getTimelineTypeViaOrderStatus(selectedStatus),
-      type: type,
-      message: message,
+      type,
+      message,
       comment: orderComment.value,
     });
 
-    bookOrderModal.value = false;
-    useToastSuccess(`Order #${props.order.id} was processed successfully!`);
+    orderComment.value = '';
     emit('refreshOrders');
-  })
-  .catch((error) => {
+  }).catch((error) => {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error: processOrder';
     useToastError(errorMessage);
   });
