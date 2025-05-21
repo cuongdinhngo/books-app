@@ -1,7 +1,7 @@
 <template>
   <USlideover title="" description="">
     <UChip
-      v-if="unreadCounts > 0"
+      v-if="unreadNotificationCounts > 0"
       size="3xl"
       color="success"
     >
@@ -107,6 +107,7 @@ const props = defineProps({
 const { index:getNotifications } = useNotifications();
 const { userRole } = useAuth();
 
+const unreadNotificationCounts = ref(props.unreadCounts);
 const page = ref<Number|null>(1);
 const pageSize = ref<Number|null>(15);
 const isRead = ref<Boolean|null>(null);
@@ -138,13 +139,6 @@ function fetchNotifications(status: 'all' | 'unread') {
     notificationOptions.value.size = pageSize.value;
   }
 }
-
-const unreadNotifications = computed(() => {
-  if (status.value === 'success' && notifications.value?.unread) {
-    return notifications.value?.unread;
-  }
-  return 0;
-});
 
 const hasAllNotificationsLoaded = ref(false);
 
@@ -181,9 +175,11 @@ const channels = useSupabaseClient().channel('notification-insert-channel')
         )
       ) {
         console.log('Notification received:', payload);
+        unreadNotificationCounts.value += 1;
         if (notifications.value?.data) {
           notifications.value.data.unshift(payload.new);
         }
+        useToastSuccess('You have a new notification. Please check it!');
       }
     }
   )
