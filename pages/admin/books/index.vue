@@ -16,40 +16,43 @@
       </button>
     </div>
 
-    <div v-if="showAdvancedSearch">
-      <div class="my-2">
-        <label class="block text-sm font-medium text-gray-700">Publisher</label>
-        <FilterPublisher
-          v-model="selectedPublishers"
-        />
-      </div>
+    <!-- Add transition wrapper here -->
+    <transition name="fade-slide">
+      <div v-if="showAdvancedSearch">
+        <div class="my-2">
+          <label class="block text-sm font-medium text-gray-700">Publisher</label>
+          <FilterPublisher
+            v-model="selectedPublishers"
+          />
+        </div>
 
-      <div class="my-2">
-        <label class="block text-sm font-medium text-gray-700">Category</label>
-        <FilterCategory
-          v-model="selectedCategories"
-        />
-      </div>
+        <div class="my-2">
+          <label class="block text-sm font-medium text-gray-700">Category</label>
+          <FilterCategory
+            v-model="selectedCategories"
+          />
+        </div>
 
-      <div class="my-2">
-        <label class="block text-sm font-medium text-gray-700">Author</label>
-        <FilterAuthor
-          v-model="selectedAuthors"
-        />
-      </div>
+        <div class="my-2">
+          <label class="block text-sm font-medium text-gray-700">Author</label>
+          <FilterAuthor
+            v-model="selectedAuthors"
+          />
+        </div>
 
-      <div class="my-2">
-        <label class="block text-sm font-medium text-gray-700">Status</label>
-        <USelectMenu
-          v-model="bookCopyStatus"
-          :items="BOOK_COPY_OPTION"
-          value-key="id"
-          variant="none"
-          placeholder="Select author"
-          class="w-full border text-stone-800 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+        <div class="my-2">
+          <label class="block text-sm font-medium text-gray-700">Status</label>
+          <USelectMenu
+            v-model="bookCopyStatus"
+            :items="BOOK_COPY_OPTION"
+            value-key="id"
+            variant="none"
+            placeholder="Select author"
+            class="w-full border text-stone-800 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
       </div>
-    </div>
+    </transition>
 
     <div class="flex justify-between gap-4">
       <FormSearchButton
@@ -211,3 +214,17 @@ const columns = [
   }
 ]
 </script>
+
+<style scoped>
+.fade-slide-enter-active, .fade-slide-leave-active {
+  transition: opacity 0.5s, transform 0.5s;
+}
+.fade-slide-enter-from, .fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+.fade-slide-enter-to, .fade-slide-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+</style>
