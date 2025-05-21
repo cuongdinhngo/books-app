@@ -25,8 +25,7 @@ bun install
 To seed the mock DB:
 
 ```bash
-# npm
-npx ts-node commands/seed.ts
+node commands/seed.mjs --truncate
 ```
 
 ## Development Server
