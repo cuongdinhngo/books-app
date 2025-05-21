@@ -230,7 +230,6 @@ const { data:bookCopies, error, refresh, status } = await useAsyncData(
 processItems(bookCopies.value?.all.data);
 
 function searchByStatus (status: string) {
-  console.log('searchByStatus', status);
   page.value = 1;
   if (status.length === 0) {
     itemStatus.value = [];

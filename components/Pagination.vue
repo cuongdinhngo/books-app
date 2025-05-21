@@ -43,8 +43,6 @@ const currentPage = computed({
   }
 });
 
-console.log(`[Pagination] totalCounts = ${props.totalCounts}, currentPagePage = ${props.modelValue}`);
-
 const toPage = (page) => {
   const currentQuery = useRoute().query;
   return {

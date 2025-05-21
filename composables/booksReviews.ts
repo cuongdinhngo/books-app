@@ -15,8 +15,6 @@ const TABLE_NAME = 'books_reviews';
 export const useBooksReviews = () => {
 
   const index = (options: ReviewOptions = {}) => {
-
-    console.log('REVIEW OPTIONS => ', options);
     const {
       columns = '*',
       id = null,

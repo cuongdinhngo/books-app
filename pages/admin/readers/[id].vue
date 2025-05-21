@@ -73,7 +73,6 @@ if (error.value) {
 
 async function handleUploadPhoto(event: Event) {
   const file = event.target.files[0];
-  console.log('handle-upload-photo => ', readerId.value, file);
   if (file && file.type.startsWith("image/")) {
     await update(readerId.value, { photo: file })
       .then(({ error }) => {

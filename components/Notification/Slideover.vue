@@ -174,7 +174,6 @@ const channels = useSupabaseClient().channel('notification-insert-channel')
           (payload.new.user_id === null && userRole.value === USER_ROLE_STAFF)
         )
       ) {
-        console.log('Notification received:', payload);
         unreadNotificationCounts.value += 1;
         if (notifications.value?.data) {
           notifications.value.data.unshift(payload.new);

@@ -127,8 +127,6 @@ const { data: book, error, refresh, status, clear} = useAsyncData(
   { watch: [searchParams.value] }
 );
 
-console.log('BOOKS => ', book.value);
-
 const handleSearch = async() => {
   page.value = 1;
   searchParams.value.title = title.value;
@@ -137,15 +135,6 @@ const handleSearch = async() => {
   searchParams.value.publisherIds = selectedPublishers.value;
   searchParams.value.page = page.value;
   searchParams.value.status = [bookCopyStatus.value];
-  console.log('Current Query:', query);
-  console.log('New Query:', {
-    ...query,
-    title: title.value,
-    authorIds: selectedAuthors.value,
-    categoryIds: selectedCategories.value,
-    publisherIds: selectedPublishers.value,
-    status: bookCopyStatus.value,
-  });
 
   router.push({
     name: 'admin-books',
@@ -158,7 +147,6 @@ const handleSearch = async() => {
       status: bookCopyStatus.value,
     },
   });
-  console.log('SEARCH PARAMS => ', searchParams.value);
 };
 
 const handlePageChange = async(newPage) => {

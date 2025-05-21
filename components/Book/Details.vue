@@ -222,7 +222,6 @@ const submitForm = async() => {
 
             if (data.length === 0) return;
 
-            console.log('REMOVING pending Ids => ', data);
             const ids = data?.map(row => row.id);
             await deleteBookItems({ ids: ids })
               .then(({ error }) => {
@@ -256,11 +255,8 @@ const submitForm = async() => {
       .then(({ data, error }) => {
         if (error) throw error;
 
-        console.log('getBookItems => ', data);
         processItems(data);
       });
-
-    console.log('NEW BOOK ITEMS => ', bookItems.value);
 
     await update(bookId.value, { quantity: quantity.value })
       .then(({ error }) => {

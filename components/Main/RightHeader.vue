@@ -88,8 +88,6 @@ const { index:getNotifications } = useNotifications();
 const bookCounts = computed(() => bookCart.value.length);
 const isAuthenticated = computed(() => !!userId.value);
 
-console.log('USER ID => ', userId.value);
-
 const { data:unreadNotificaitons, error } = await useAsyncData(
   `reader/${userId.value}/unreadNotificaitons`,
   async() => {

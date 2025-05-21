@@ -4,7 +4,6 @@ export const useCrud = (tableName: string) => {
   }
 
   const get = (id: number, columns: string = '*') => {
-    console.log('get', tableName, id, columns);
     return useTable(tableName).select(columns).eq('id', id).single();
   }
 

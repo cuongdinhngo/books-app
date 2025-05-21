@@ -102,8 +102,6 @@ const { data, error, refresh, status } = useAsyncData(
   { watch: [searchParams.value] }
 );
 
-console.log('DATA => ', data);
-
 const sortedOrders = computed(() => {
   if (!data.value.filteredOrders) return [];
   
@@ -125,7 +123,6 @@ const handlePageChange = (newPage) => {
 watch(
   () => useRoute().query,
   (newQuery) => {
-    console.log('newQuery => ', newQuery);
     if (newQuery.status) {
       selectedStatus.value = Array.isArray(newQuery.status) ? newQuery.status : [newQuery.status];
       searchParams.value.status = selectedStatus.value;

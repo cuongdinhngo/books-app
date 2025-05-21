@@ -15,8 +15,6 @@ export const useBooks = () => {
   const { uploadPhoto } = useImages('books');
 
   const index = (options: BookOptions = {}) => {
-    console.log('BOOK OPTIONS => ', options);
-
     const {
       columns = [
         'id',
@@ -70,8 +68,6 @@ export const useBooks = () => {
     if (page && size && page >= 1 && size >= 1) {
       query = query.range((page - 1) * size, page * size - 1);
     }
-
-    console.log('SELECTED COLUMNS => ', selectColumns.toString());
 
     return query.select(selectColumns.toString());
   }

@@ -37,7 +37,6 @@ export const useAuth = () => {
       const { data: user, error: fetchUserError } = await verifyUser(data.user.id);
       if (fetchUserError) throw fetchUserError;
 
-      console.log('user: ', user);
       if (user.id) {
         setAuthenticatedUser(data, user.role);
         return true;
@@ -45,7 +44,7 @@ export const useAuth = () => {
         return false;
       }
     } catch (err) {
-      console.error('[ERROR] FAIELD: signin ', err);
+      console.error('[ERROR] FAILED: signin ', err);
       return false;
     }
   };

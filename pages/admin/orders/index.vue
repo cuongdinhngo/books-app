@@ -235,7 +235,6 @@ async function handleSearchTerm() {
 watch(
   () => useRoute().query,
   (newQuery) => {
-    console.log('NEW QUERIES => ', newQuery);
     if (newQuery.page) {
       page.value = Number(newQuery.page);
       searchParams.value.page = Number(newQuery.page);
