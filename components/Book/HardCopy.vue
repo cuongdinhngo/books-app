@@ -15,6 +15,7 @@
           icon="lucide:arrow-up-from-line"
           color="primary"
           size="lg"
+          :disabled="loading || quantity <= 0"
           @click="submitItems"
         />
       </div>
@@ -75,6 +76,7 @@
         icon="lucide:handshake"
         color="primary"
         size="lg"
+        :disabled="loading"
         @click="updateMultipleCopies(BOOK_COPY_STATUS.OPENING)"
       />
 
@@ -83,6 +85,7 @@
         icon="lucide:book-lock"
         color="primary"
         size="lg"
+        :disabled="loading"
         @click="updateMultipleCopies(BOOK_COPY_STATUS.RETIRED)"
       />
     </div>
@@ -187,6 +190,7 @@ import { useRouteParams, useRouteQuery } from '@vueuse/router';
 import { BOOK_COPY_STATUS } from '~/constants/bookCopies';
 
 const { index, update, upsert } = useBookCopies();
+const { loading, submit } = useSubmit();
 
 const bookId = useRouteParams('id', null, {transform: Number});
 const page = useRouteQuery('page', 1, { transform: Number });
@@ -257,7 +261,11 @@ function handlePageChange (newPage: number) {
 }
 
 async function submitItems() {
-  if (quantity.value <= 0) {
+  if (
+    typeof quantity.value !== 'number' ||
+    isNaN(quantity.value) ||
+    quantity.value <= 0
+  ) {
     useToastError(null, 'Please enter a valid quantity.');
     return;
   }
@@ -268,16 +276,14 @@ async function submitItems() {
     created_at: new Date().toISOString(),
   }));
 
-  await upsert(newItems)
-    .then(({ error }) => {
-      if (error) throw error;
+  submit(() => upsert(newItems))
+    .then(() => {
+      useToastSuccess('Book copies added successfully!!!');
 
       quantity.value = 0;
       refresh().then(() => {
         processItems(bookCopies.value.all.data);
       });
-
-      useToastSuccess('Book copies added successfully!!!');
     })
     .catch((error) => useToastError(error));
 };
@@ -286,7 +292,7 @@ async function submitItems() {
 async function updateMultipleCopies(selectedStatus: string) {
   const selectedRows = table?.value?.tableApi.getFilteredSelectedRowModel().rows;
   if (selectedRows.length === 0) {
-    useToastError('Please select at least one item to enable.');
+    useToastError(null, 'Please select at least one item to enable.');
     return;
   }
 
@@ -313,15 +319,14 @@ async function updateMultipleCopies(selectedStatus: string) {
       });
   }
 
-  await upsert(updatedItems)
-    .then(({ error }) => {
-      if (error) throw error;
+  submit(() => upsert(updatedItems))
+    .then(() => {
+      useToastSuccess('Book items status updated successfully!!!');
 
       table?.value?.tableApi.toggleAllPageRowsSelected(false);
       refresh().then(() => {
         processItems(bookCopies.value.all.data);
       });
-      useToastSuccess('Book items status updated successfully!!!');
     })
     .catch((error) => useToastError(error));
 };

@@ -92,6 +92,7 @@
       icon="lucide:handshake"
       color="primary"
       size="lg"
+      :disabled="loading"
       @click="handleBorrow"
     />
   </div>
@@ -117,6 +118,7 @@ const { insert, index:getOrders } = useOrders();
 const { insert:createOrderTimeline } = useOrderTimeline();
 const { insert:sendNotification } = useNotifications();
 const { wishlists, loadWishlists, addBookToWishlist } = useWishlistActions();
+const { loading, submit } = useSubmit();
 
 const table = useTemplateRef('table');
 const rowSelection = ref<Record<string, boolean>>({})
@@ -173,15 +175,18 @@ async function handleBorrow() {
     created_at: currentDatetime,
   }));
 
-  console.log('orderItems => ', orderItems);
+  submit(() => insert(orderItems))
+    .then(async() => {
+      useToastSuccess('Your order has been created successfully. Please wait for the librarian to approve your order.');
+      resetBookCart(checkoutItems.value);
 
-  return insert(orderItems)
-    .then(async({ error }) => {
-      if (error) throw error;
-
-      const { data:insertedOrders, error: orderError } = await getOrders({ status: [ORDER_STATUS.WAITING], readerId: userId.value, createdAt: currentDatetime });
+      const { data:insertedOrders, error: orderError } = await getOrders({
+        status: [ORDER_STATUS.WAITING],
+        readerId: userId.value,
+        createdAt: currentDatetime
+      });
       if (orderError) throw orderError;
-      console.log('insertedOrders => ', insertedOrders);
+
       const orderTimelines = insertedOrders.map(order => ({
         order_id: order.id,
         action: TIMELINE_TYPES.ORDER_CREATED,
@@ -198,12 +203,9 @@ async function handleBorrow() {
       await createOrderTimeline(orderTimelines);
       await sendNotification(notificationItems);
 
-      resetBookCart(checkoutItems.value);
-      useToastSuccess();
       refresh();
     })
-    .catch((error) => useToastError(error))
-  ;
+    .catch((error) => useToastError(error, 'Something went wrong. Please try again later.'));
 }
 
 function handleRemoveCartItem(bookId: number) {
