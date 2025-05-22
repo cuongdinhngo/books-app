@@ -2,10 +2,21 @@ import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 import { faker } from '@faker-js/faker';
 
+// Book Copy Status Constants
+const BOOK_COPY_STATUS = {
+  PENDING: 'pending',
+  OPENING: 'opening',
+  LOST: 'lost',
+  RETIRED: 'retired'
+};
+
+// User Role Constants
+const USER_ROLE_READER = 'reader';
+const USER_ROLE_STAFF = 'staff';
+
 console.log("Seeding database...");
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
-// Truncate tables if --truncate flag is provided
 const shouldTruncate = process.argv.includes('--truncate');
 
 const tables = [
@@ -55,7 +66,7 @@ async function seedDatabase() {
       console.error("[ERROR] inserting AUTHORS:", authorError);
     }
 
-    // CATEGORIES (realistic genres)
+    // CATEGORIES
     console.log("Seeding categories...");
     const realCategories = [
       "Fiction", "Non-Fiction", "Science Fiction", "Fantasy", "Mystery", "Thriller", "Romance",
@@ -132,9 +143,9 @@ async function seedDatabase() {
       console.error("[ERROR] inserting BOOKS:", bookError);
     }
 
-    // BOOK COPIES (2-5 per book, random status)
+    // BOOK COPIES
     console.log("Seeding book copies...");
-    const statuses = ['pending', 'opening', 'lost', 'retired'];
+    const statuses = [BOOK_COPY_STATUS.PENDING, BOOK_COPY_STATUS.OPENING, BOOK_COPY_STATUS.LOST, BOOK_COPY_STATUS.RETIRED];
     const mockBookCopies = bookIds.flatMap((bookId) => {
       const copyCount = faker.number.int({ min: 2, max: 5 });
       return Array.from({ length: copyCount }, () => ({
@@ -147,7 +158,7 @@ async function seedDatabase() {
       console.error("[ERROR] inserting BOOKS_COPPIES:", bookCopyError);
     }
 
-    // BOOK AUTHORS (1-3 per book)
+    // BOOK AUTHORS
     console.log("Seeding book authors...");
     const mockBookAuthors = [];
     for (const bookId of bookIds) {
@@ -162,7 +173,7 @@ async function seedDatabase() {
       console.error("[ERROR] inserting BOOKS_AUTHORS:", bookAuthorError);
     }
 
-    // BOOK CATEGORIES (1-3 per book)
+    // BOOK CATEGORIES
     console.log("Seeding book categories...");
     const mockBookCategories = [];
     for (const bookId of bookIds) {
@@ -177,7 +188,7 @@ async function seedDatabase() {
       console.error("[ERROR] inserting BOOKS_CATEGORIES:", bookCategoryError);
     }
 
-    // BOOK PUBLISHERS (1-3 per book)
+    // BOOK PUBLISHERS
     console.log("Seeding book publishers...");
     const mockBookPublishers = [];
     for (const bookId of bookIds) {
@@ -196,17 +207,46 @@ async function seedDatabase() {
     console.log("Seeding readers...");
     const readerCount = 300;
     const mockReaders = Array.from({ length: readerCount }, () => ({
-      id: faker.string.uuid(), // Use faker's UUID generator instead of generateUUID
+      id: faker.string.uuid(),
       name: faker.person.fullName(),
       email: faker.internet.email(),
-      role: "reader",
+      role: USER_ROLE_READER,
     }));
     const { error: readerError } = await supabase.from("users").upsert(mockReaders);
     if (readerError) {
       console.error("[ERROR] inserting READERS:", readerError);
     }
 
-    // REVIEWS (2-20 per book, unique (book, reader))
+    await supabase.from("users").upsert([
+      {
+        id: 'f478bf6c-259e-46ce-aac9-2c91bd9d02d8',
+        name: 'Blue Sky',
+        email: 'blue@local.test',
+        role: USER_ROLE_READER,
+      },
+      {
+        id: '4e7ec9df-6a03-4b71-b02e-87dd17576ab1',
+        name: 'Thi Yoko',
+        email: 'thi@local.test',
+        role: USER_ROLE_STAFF,
+      }
+    ]);
+
+    // STAFF
+    console.log("Seeding staff...");
+    const staffCount = 10;
+    const mockStaff = Array.from({ length: staffCount }, () => ({
+      id: faker.string.uuid(),
+      name: faker.person.fullName(),
+      email: faker.internet.email(),
+      role: USER_ROLE_STAFF,
+    }));
+    const { error: staffError } = await supabase.from("users").upsert(mockStaff);
+    if (staffError) {
+      console.error("[ERROR] inserting STAFF:", staffError);
+    }
+
+    // REVIEWS (unique (book, reader))
     console.log("Seeding reviews...");
     const readerIds = mockReaders.map(r => r.id);
     const mockBookReviews = [];
@@ -233,5 +273,3 @@ async function seedDatabase() {
     console.error("Failed to seed database:", err);
   }
 }
-
-
