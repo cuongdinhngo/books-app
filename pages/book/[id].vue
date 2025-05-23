@@ -87,7 +87,7 @@
   />
 
   <h3 class="text-stone-800 font-bold mt-5 mb-2">
-    Same Categories
+    More like this
   </h3>
   <UCarousel
     v-if="status === 'success'"
@@ -181,7 +181,6 @@ definePageMeta({
   layout: 'main'
 })
 
-import { get } from '@nuxt/ui/runtime/utils/index.js';
 import { useRouteParams, useRouteQuery } from '@vueuse/router';
 
 const { userId } = useAuth();
@@ -190,7 +189,7 @@ const { insert, index:getBookReviews } = useBooksReviews();
 const { get:getBookDetails, index:getBooks } = useBooks();
 const { index:getBorrowedBookCounts } = useOrders();
 const { wishlists, addBookToWishlist } = useWishlistActions();
-const { setBreadcrumbs } = useBreadcrumbs(); 
+const { setBreadcrumbs, resetBreadcrumbs } = useBreadcrumbs(); 
 
 const supabase = useSupabaseClient();
 const bookId = useRouteParams('id', null, { transform: Number });
@@ -217,6 +216,34 @@ const { data, error, refresh, status } = useAsyncData(
     if (userId.value) {
       wishlists.value = book.data.wishlists;
     }
+
+    resetBreadcrumbs();
+    setBreadcrumbs([
+      //Category
+      {
+        label: book.data.categories[0].name,
+        icon: 'lucide-book',
+        to: { name: 'index', query: { category: book.data.categories[0].id } }
+      },
+      //Publisher
+      {
+        label: book.data.publishers[0].name,
+        icon: 'lucide:building-2',
+        to: { name: 'index', query: { publisher: book.data.publishers[0].id } }
+      },
+      //Author
+      {
+        label: book.data.authors[0].name,
+        icon: 'lucide-user',
+        to: { name: 'index', query: { author: book.data.authors[0].id } }
+      },
+      //Book
+      {
+        label: book.data.title,
+        icon: 'i-lucide-book-open',
+        to: { name: 'book-id', params: { id: bookId.value } }
+      }
+    ]);
 
     return { book, reviews, rating, borrowedCounts, bookSameCategories}
   }
@@ -263,35 +290,4 @@ function handleBorrow() {
   addToCart(bookId.value);
   useToastSuccess();
 }
-
-onMounted(() => {
-  if (data.value?.book?.data) {
-    setBreadcrumbs([
-      //Category
-      {
-        label: data.value.book.data.categories[0].name,
-        icon: 'lucide-book',
-        to: { name: 'index', query: { category: data.value.book.data.categories[0].id } }
-      },
-      //Publisher
-      {
-        label: data.value.book.data.publishers[0].name,
-        icon: 'lucide:building-2',
-        to: { name: 'index', query: { publisher: data.value.book.data.publishers[0].id } }
-      },
-      //Author
-      {
-        label: data.value.book.data.authors[0].name,
-        icon: 'lucide-user',
-        to: { name: 'index', query: { author: data.value.book.data.authors[0].id } }
-      },
-      //Book
-      {
-        label: data.value.book.data.title,
-        icon: 'i-lucide-book-open',
-        to: { name: 'book-id', params: { id: bookId.value } }
-      }
-    ]);
-  }
-});
 </script>

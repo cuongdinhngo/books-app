@@ -4,9 +4,9 @@
       <img :src="`${book?.coverImage}`" :alt="book?.title" class="w-full h-48 object-scale-down mb-2">
       <div class="flex-grow">
         <p class="font-bold line-clamp-2">{{ book?.title }}</p>
-        <p class="text-sm text-gray-600">Author: {{ book?.authors?.map(author => author.name).join(', ') || 'unknown' }}</p>
-        <p class="text-sm">Publisher: {{ book?.publishers.map(publisher => publisher.name).join(', ') || 'unknown' }}</p>
-        <p class="text-sm">Categories: {{ book?.categories.map(category => category.name).join(', ') || 'unknown' }}</p>
+        <p class="text-sm text-gray-600">Author: {{ book?.authors.length > 1 ? `${book?.authors[0].name}, ...` : book?.authors[0].name }}</p>
+        <p class="text-sm">Publisher: {{ book?.publishers.length > 1 ? `${book.publishers[0].name}, ...` : book.publishers[0].name }}</p>
+        <p class="text-sm">Categories: {{ book?.categories.length > 1 ? `${book?.categories[0].name} & ...` : book?.categories[0].name }}</p>
       </div>
     </div>
   </NuxtLink>

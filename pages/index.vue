@@ -87,7 +87,7 @@ const searchParams = ref({
 });
 
 const {data:books, error, status } = await useAsyncData(
-  `index:${JSON.stringify(searchParams.value)}`,
+  `index?title=${searchParams.value.title}&page=${searchParams.value.page}&categoryIds=${searchParams.value.categoryIds}&publisher=${searchParams.value.publisherIds}&author=${searchParams.value.authorIds}`,
   async() => {
     const [all, topRatings, categories, publishers, authors ] = await Promise.all([
       getAllBooks(searchParams.value),
@@ -113,13 +113,9 @@ async function updateBreadCrumbs(query: Object) {
   resetBreadcrumbs();
   if (query.category) {
     addBreadcrumb({
-      slot: 'dropdown' as const,
       label: 'Categories',
       icon: 'lucide:book',
-      children: books.value.categories.map((category) => ({
-        label: category.name,
-        to: { name: 'index', query: { category: category.id } }
-      }))
+      to: { name: 'explore-type', params: { type: 'categories' } },
     });
     const category = books.value.categories.filter((category) => category.id === Number(query.category))[0];
     addBreadcrumb({
@@ -130,13 +126,9 @@ async function updateBreadCrumbs(query: Object) {
   }
   if (query.publisher) {
     addBreadcrumb({
-      slot: 'dropdown' as const,
       label: 'Publishers',
       icon: 'lucide:building-2',
-      children: books.value.publishers.map((publisher) => ({
-        label: publisher.name,
-        to: { name: 'index', query: { publisher: publisher.id } }
-      }))
+      to: { name: 'explore-type', params: { type: 'publishers' } },
     });
     const publisher = books.value.publishers.filter((publisher) => publisher.id === Number(query.publisher))[0];
     addBreadcrumb({
@@ -147,13 +139,9 @@ async function updateBreadCrumbs(query: Object) {
   }
   if (query.author) {
     addBreadcrumb({
-      slot: 'dropdown' as const,
       label: 'Authors',
       icon: 'lucide:user',
-      children: books.value.authors.map((author) => ({
-        label: author.full_name,
-        to: { name: 'index', query: { author: author.id } }
-      }))
+      to: { name: 'explore-type', params: { type: 'authors' } },
     });
     const author = books.value.authors.filter((author) => author.id === Number(query.author))[0];
     addBreadcrumb({

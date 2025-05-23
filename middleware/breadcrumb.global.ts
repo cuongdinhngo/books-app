@@ -1,5 +1,7 @@
+import { fa, tr } from "@faker-js/faker";
+
 export default defineNuxtRouteMiddleware(async(to, from) => {
-  const { addBreadcrumb, resetBreadcrumbs } = useBreadcrumbs();
+  const { addBreadcrumb, resetBreadcrumbs, setBreadcrumbs } = useBreadcrumbs();
   const isAdminRoute = to.path.includes('/admin');
   const isBookDetailRoute = to.name ===  'book-id';
   const isIndexRoute = to.name === 'index';
@@ -18,48 +20,28 @@ export default defineNuxtRouteMiddleware(async(to, from) => {
 
   useAsyncData(
     `${ to.name }/default-breadcrumb`,
-    async() => {
-      const [categories, publishers, authors ] = await Promise.all([
-        useCategories().index(),
-        usePublishers().index(),
-        useAuthors().index()
-      ]);
-
-      if (categories.data && categories.data.length > 0) {
-        addBreadcrumb({
-          slot: 'dropdown' as const,
+    async () => {
+      setBreadcrumbs([
+        {
           label: 'Categories',
           icon: 'lucide:book',
-          children: categories.data.map((category) => ({
-            label: category.name,
-            to: { name: 'index', query: { category: category.id } }
-          }))
-        });
-      }
-
-      if (publishers.data && publishers.data.length > 0) {
-        addBreadcrumb({
-          slot: 'dropdown' as const,
+          to: { name: 'explore-type', params: { type: 'categories' } },
+        },
+        {
           label: 'Publishers',
           icon: 'lucide:building-2',
-          children: publishers.data.map((publisher) => ({
-            label: publisher.name,
-            to: { name: 'index', query: { publisher: publisher.id } }
-          }))
-        });
-      }
-
-      if (authors.data && authors.data.length > 0) {
-        addBreadcrumb({
-          slot: 'dropdown' as const,
+          to: { name: 'explore-type', params: { type: 'publishers' } },
+        },
+        {
           label: 'Authors',
           icon: 'lucide:user',
-          children: authors.data.map((author) => ({
-            label: author.full_name,
-            to: { name: 'index', query: { author: author.id } }
-          }))
-        });
-      } 
+          to: { name: 'explore-type', params: { type: 'authors' } },
+          class: 'text-(--ui-text-muted) hover:text-(--ui-text)'
+        }
+      ]);
+      return null;
     }
   );
+
+
 })
