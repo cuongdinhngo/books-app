@@ -121,7 +121,7 @@ const notificationOptions = ref({
 });
 
 const { data:notifications, error, status } = await useAsyncData(
-  `notifications/${JSON.stringify(notificationOptions.value)}`,
+  `notifications?toStaff=${props.toStaff}&readerId=${props.userId}&isRead=${isRead.value}&page=${page.value}`,
   () => getNotifications(notificationOptions.value),
   { watch: [ notificationOptions.value ] }
 );
