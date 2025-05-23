@@ -68,7 +68,26 @@
   <DataTable
     v-if="status === 'success'"
     :data="book?.data"
-    :columns="columns"
+    :columns="[
+      {
+        accessorKey: 'id',
+        header: '#',
+        cell: ({ row }) => `#${row.getValue('id')}`
+      },
+      {
+        accessorKey: 'coverImage',
+        header: 'Book',
+      },
+      {
+        accessorKey: 'book_copies',
+        header: 'Quantity',
+        id: 'bookCopyQuantity',
+      },
+      {
+        header: 'Actions',
+        id: 'crud-actions',
+      }
+    ]"
     :delete-item="deleteBook"
     edit-link="admin-books-id"
   />
@@ -122,9 +141,43 @@ const searchParams = ref({
 });
 
 const { data: book, error, refresh, status, clear} = useAsyncData(
-  `books-query:${JSON.stringify(query)}`,
+  `books?title=${title.value}&authorIds=${selectedAuthors.value}&categoryIds=${selectedCategories.value}&publisherIds=${selectedPublishers.value}&status=${bookCopyStatus.value}&page=${page.value}`,
   () => getBooks(searchParams.value),
-  { watch: [searchParams.value] }
+  {
+    transform: (data) => {      
+      if (data && data.data) {
+        return {
+          ...data,
+          data: data.data.map(book => {
+            const totalCopies = book.book_copies ? book.book_copies.length : 0;
+            const statusGroups = {};
+            if (book.book_copies && book.book_copies.length > 0) {
+              book.book_copies.forEach(copy => {
+                if (!statusGroups[copy.status]) {
+                  statusGroups[copy.status] = 0;
+                }
+                statusGroups[copy.status]++;
+              });
+            }
+
+            const orderedCopies = { total: totalCopies };
+            BOOK_COPY_OPTION.forEach(option => {
+              if (statusGroups[option.id]) {
+                orderedCopies[option.id] = statusGroups[option.id];
+              }
+            });
+            
+            return {
+              ...book,
+              book_copies: orderedCopies
+            };
+          })
+        };
+      }
+      return data;
+    }, 
+    watch: [searchParams.value]
+  }
 );
 
 const handleSearch = async() => {
@@ -180,27 +233,6 @@ function deleteBook(bookId: number) {
     .catch((error) => useToastError(error));
   ;
 }
-
-const columns = [
-  {
-    accessorKey: 'id',
-    header: '#',
-    cell: ({ row }) => `#${row.getValue('id')}`
-  },
-  {
-    accessorKey: 'coverImage',
-    header: 'Book',
-  },
-  {
-    accessorKey: 'authors',
-    header: `Authors`,
-    cell: ({ row }) => `${row.getValue('authors').map(author => author.name).join(', ')}`
-  },
-  {
-    header: 'Actions',
-    id: 'crud-actions',
-  }
-]
 </script>
 
 <style scoped>

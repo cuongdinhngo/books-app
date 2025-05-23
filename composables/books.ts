@@ -23,6 +23,7 @@ export const useBooks = () => {
         `publishers (id, name)`,
         `authors (id, name:full_name)`,
         `categories (id, name)`,
+        `book_copies (id, status)`
       ],
       ids = null,
       title = null,

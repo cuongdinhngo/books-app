@@ -95,6 +95,18 @@
       </UBadge>
     </template>
 
+    <template #bookCopyQuantity-cell="{ row }">
+      <UBadge
+        class="capitalize mr-2"
+        variant="subtle"
+        v-for="(bookCopy, index) in row.original.book_copies"
+        :key="index"
+        :color="bookItemStatusColor[index]"
+      >
+        {{ index }}: {{ bookCopy }}
+      </UBadge>
+    </template>
+
     <template #bookItemStatusAction-cell="{ row }">
       <UBadge class="capitalize" variant="subtle" :color="orderItemStatusColor[row.original.status]">
         {{ row.original.status }}
@@ -284,9 +296,11 @@ const bookItemStatusColor = {
   opening: 'success',
   pending: 'warning',
   borrowed: 'warning',
-  lost: 'warning',
+  borrowing: 'success',
+  lost: 'error',
   rejected: 'neutral',
   closed: 'neutral',
+  retired: 'neutral',
 }
 
 function transformOrderItemStatus(data) {
