@@ -222,7 +222,7 @@ async function seedDatabase() {
         book_copy_id: '#bookCopyId#',
         created_at: 'past_date',
         due_date: 'created_at + 7 days',
-        returned_at: 'is gte due_date',
+        returned_at: null,
         notifications: [
           {
             type: NOTIFICATION_TYPES.NEW_ORDER,
@@ -466,7 +466,7 @@ async function seedDatabase() {
     const mockOrders = [];
     const mockNotifications = [];
     const mockOrderTimeline = [];
-    const mockOrderRenews = []; // Add this array to store order renewals
+    const mockOrderRenews = [];
 
     const { data: openingBookCopies } = await supabase
       .from("book_copies")
@@ -530,7 +530,8 @@ async function seedDatabase() {
           book_copy_id: bookCopyId,
           created_at,
           due_date,
-          returned_at: flow.status !== ORDER_STATUS.REJECT ? returned_at : null,
+          returned_at: flow.status === ORDER_STATUS.LOST ? null : 
+                       flow.status !== ORDER_STATUS.REJECT ? returned_at : null,
         };
         mockOrders.push(order);
         
@@ -550,12 +551,20 @@ async function seedDatabase() {
             if (faker.datatype.boolean()) {
               notificationDate.setDate(notificationDate.getDate() + 1);
             }
-          } else if (notification.created_at === 'is same date of returned_at') {
-            if (flow.status !== ORDER_STATUS.REJECT) {
+          } else if (notification.created_at === 'is same date of returned_at' || 
+                    notification.created_at === 'is same date of order returned_at') {
+            if (flow.status === ORDER_STATUS.LOST) {
+              // For LOST orders, use a date after due_date for the notification
+              notificationDate = new Date(dueDate);
+              notificationDate.setDate(dueDate.getDate() + faker.number.int({ min: 1, max: 10 }));
+            } else if (flow.status !== ORDER_STATUS.REJECT) {
               notificationDate = new Date(returned_at);
             } else {
               notificationDate = new Date(pastDate);
             }
+          } else if (notification.created_at === 'created_at + 7 days') {
+            notificationDate = new Date(pastDate);
+            notificationDate.setDate(pastDate.getDate() + 7);
           } else {
             notificationDate = new Date(pastDate);
           }
@@ -582,11 +591,18 @@ async function seedDatabase() {
               timelineDate.setDate(timelineDate.getDate() + 1);
             }
           } else if (timeline.created_at === 'is same date of returned_at') {
-            if (flow.status !== ORDER_STATUS.REJECT) {
+            if (flow.status === ORDER_STATUS.LOST) {
+              // For LOST orders, use a date after due_date for the CLOSED/LOST action
+              timelineDate = new Date(dueDate);
+              timelineDate.setDate(dueDate.getDate() + faker.number.int({ min: 1, max: 10 }));
+            } else if (flow.status !== ORDER_STATUS.REJECT) {
               timelineDate = new Date(returned_at);
             } else {
               timelineDate = new Date(pastDate);
             }
+          } else if (timeline.created_at === 'created_at + 7 days') {
+            timelineDate = new Date(pastDate);
+            timelineDate.setDate(pastDate.getDate() + 7);
           } else {
             timelineDate = new Date(pastDate);
           }
