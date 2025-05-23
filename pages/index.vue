@@ -29,7 +29,7 @@
         v-if="hasQueries === false"
         class="text-stone-800 font-bold my-1"
       >
-        New Books
+        All Books
       </h3>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 my-5">
         <BookItem

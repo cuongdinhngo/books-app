@@ -414,7 +414,6 @@ export type Database = {
         Row: {
           book_copy_id: number | null
           book_id: number
-          comment: string | null
           created_at: string
           due_date: string | null
           id: number
@@ -426,7 +425,6 @@ export type Database = {
         Insert: {
           book_copy_id?: number | null
           book_id: number
-          comment?: string | null
           created_at?: string
           due_date?: string | null
           id?: number
@@ -438,7 +436,6 @@ export type Database = {
         Update: {
           book_copy_id?: number | null
           book_id?: number
-          comment?: string | null
           created_at?: string
           due_date?: string | null
           id?: number
@@ -563,6 +560,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      execute_sql: {
+        Args: { sql: string }
+        Returns: undefined
+      }
       get_admin_dashboard_counts: {
         Args: Record<PropertyKey, never>
         Returns: Json
@@ -593,12 +594,33 @@ export type Database = {
           rating_count: number
         }[]
       }
+      get_book_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          status: string
+          status_count: number
+        }[]
+      }
+      get_categories_with_top_rated_book: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: number
+          name: string
+          photo: string
+        }[]
+      }
+      get_daily_order_counts: {
+        Args: Record<PropertyKey, never> | { period: number }
+        Returns: {
+          order_date: string
+          order_count: number
+        }[]
+      }
       get_due_orders: {
         Args: { currentdate: string }
         Returns: {
           book_copy_id: number | null
           book_id: number
-          comment: string | null
           created_at: string
           due_date: string | null
           id: number
@@ -627,6 +649,13 @@ export type Database = {
           photo: string
           last_message: string
           message_created_at: string
+        }[]
+      }
+      get_order_status_stats: {
+        Args: { period: number }
+        Returns: {
+          status: string
+          status_count: number
         }[]
       }
       get_receiver_with_last_message: {

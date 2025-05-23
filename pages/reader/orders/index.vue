@@ -40,6 +40,11 @@
     :items-per-page="pageSize"
     @changePage="handlePageChange"
   />
+
+  <!-- Suggest books on categories by Explore Category -->
+  <ExploreCategory
+    v-if="status === 'success' && data.filteredCount == 0"
+  />
 </template>
 
 <script setup lang="ts">

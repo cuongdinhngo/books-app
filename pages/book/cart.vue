@@ -1,6 +1,10 @@
 <template>
-  <h3 class="text-stone-900">Your book cart</h3>
-  <h3 v-if="bookCart.length === 0" class="text-primary-900">Enjoy your time and choose your love books</h3>
+  <div class="flex flex-col min-h-[calc(100vh-120px)]">
+  <h3 class="text-stone-900 font-bold text-xl">Your book cart</h3>
+  <div v-if="bookCart.length === 0" class="text-center flex flex-col items-center justify-center">
+    <img :src="publicAsset('img/cart.png')" class="w-[100px] h-[100px]"/>
+    <h3 class="text-primary-900">Your cart has no books. Enjoy your time and choose your love books</h3>
+  </div>
   <UTable
     v-if="status === 'success' && bookCart.length > 0"
     ref="table"
@@ -100,6 +104,10 @@
   <LoadingProcess
     v-if="status === 'pending'"
   />
+
+  <!-- Suggest books on categories by Explore Category -->
+  <ExploreCategory />
+  </div>
 </template>
 
 <script setup lang="ts">
