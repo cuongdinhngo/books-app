@@ -18,7 +18,7 @@
 
   <div class="mb-8">
     <h2 class="text-xl font-bold text-gray-900 mb-4">Overview Orders</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-4">
       <AdminCard
         v-if="dashboardStatus === 'success'"
         v-for="item in orderStats"
@@ -123,6 +123,18 @@ let orderCards = [
     id: 'borrowed_orders',
     to: { name: "admin-orders", query: { status: ORDER_STATUS.CLOSE } },
     label: 'Closed Orders',
+    count: 0
+  },
+  {
+    id: 'rejected_orders',
+    to: { name: "admin-orders", query: { status: ORDER_STATUS.REJECT } },
+    label: 'Rejected Orders',
+    count: 0
+  },
+  {
+    id: 'lost_orders',
+    to: { name: "admin-orders", query: { status: ORDER_STATUS.LOST } },
+    label: 'Lost Orders',
     count: 0
   },
   {
