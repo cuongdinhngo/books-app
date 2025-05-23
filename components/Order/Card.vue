@@ -44,6 +44,10 @@
               {{ order.status }}
             </UBadge>
           </p>
+          <p>
+            <span class="font-semibold">Renew:</span>
+            {{ orderRenews.length }} times
+          </p>
         </div>
         <!-- Second Column: Ordered Date, Due Date, Returned Date -->
         <div class="w-1/2 space-y-2">
