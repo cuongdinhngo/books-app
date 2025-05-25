@@ -601,6 +601,17 @@ export type Database = {
           status_count: number
         }[]
       }
+      get_books_by_copy_status: {
+        Args:
+          | { p_status: string }
+          | { p_status: string; p_offset?: number; p_limit?: number }
+        Returns: {
+          book_id: number
+          title: string
+          quantity: number
+          cover_image: string
+        }[]
+      }
       get_categories_with_top_rated_book: {
         Args: Record<PropertyKey, never>
         Returns: {

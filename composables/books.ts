@@ -23,7 +23,6 @@ export const useBooks = () => {
         `publishers (id, name)`,
         `authors (id, name:full_name)`,
         `categories (id, name)`,
-        `book_copies (id, status)`
       ],
       ids = null,
       title = null,
@@ -31,10 +30,11 @@ export const useBooks = () => {
       publisherIds = [],
       categoryIds = [],
       status = null,
+      isHead = false,
       page = null,
       size = null
     } = options;
-    let query = useTable(TABLE_NAME).select('*', {count: 'exact'}).order('id', { ascending: false });;
+    let query = useTable(TABLE_NAME).select('*', { count: 'exact', head: isHead }).order('id', { ascending: false });;
     let selectColumns = [];
     selectColumns.push(columns);
 
@@ -64,6 +64,8 @@ export const useBooks = () => {
     if (status && status.length > 0) {
       selectColumns.push('book_copies!inner(status)');
       query = query.in('book_copies.status', status);
+    } else {
+      selectColumns.push('book_copies (id, status)');
     }
 
     if (page && size && page >= 1 && size >= 1) {
@@ -117,6 +119,6 @@ export const useBooks = () => {
     get,
     update,
     remove,
-    getTopRatings
+    getTopRatings,
   }
 }

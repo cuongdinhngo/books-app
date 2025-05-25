@@ -30,6 +30,7 @@ export interface BookOptions {
   publisherIds?: (number)[],
   categoryIds?: (number)[],
   status?: (string)[],
+  isHead?: boolean,
   page?: number,
   size?: number
 }

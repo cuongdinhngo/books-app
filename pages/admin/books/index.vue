@@ -47,7 +47,7 @@
             :items="BOOK_COPY_OPTION"
             value-key="id"
             variant="none"
-            placeholder="Select author"
+            placeholder="Select status"
             class="w-full border text-stone-800 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -140,7 +140,7 @@ const searchParams = ref({
   size: pageSize
 });
 
-const { data: book, error, refresh, status, clear} = useAsyncData(
+const { data: book, error, refresh, status, clear} = await useAsyncData(
   `books?title=${title.value}&authorIds=${selectedAuthors.value}&categoryIds=${selectedCategories.value}&publisherIds=${selectedPublishers.value}&status=${bookCopyStatus.value}&page=${page.value}`,
   () => getBooks(searchParams.value),
   {
@@ -180,6 +180,9 @@ const { data: book, error, refresh, status, clear} = useAsyncData(
   }
 );
 
+console.log('ERROR => ', error);
+console.log('DATA => ', book);
+
 const handleSearch = async() => {
   page.value = 1;
   searchParams.value.title = title.value;
@@ -189,17 +192,7 @@ const handleSearch = async() => {
   searchParams.value.page = page.value;
   searchParams.value.status = [bookCopyStatus.value];
 
-  router.push({
-    name: 'admin-books',
-    query: {
-      ...query,
-      title: title.value,
-      authorIds: selectedAuthors.value,
-      categoryIds: selectedCategories.value,
-      publisherIds: selectedPublishers.value,
-      status: bookCopyStatus.value,
-    },
-  });
+  console.log('searchParams', searchParams.value);
 };
 
 const handlePageChange = async(newPage) => {
