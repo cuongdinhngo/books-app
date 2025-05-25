@@ -5,14 +5,13 @@
       
       <!-- Dashboard Grid Layout -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
-        <!-- Row 1 -->
+
+        <!-- Book Stats dashboard -->
         <div class="flex flex-col">
-          <!-- Dashboard Book Rank Component -->
-          <DashboardBookRank class="h-full" />
+          <DashboardBookStats class="h-full" />
         </div>
         
-        <div class="bg-white rounded-lg shadow p-4 flex flex-col">
+        <div class="flex flex-col">
           <h2 class="text-lg font-semibold mb-4">User Activity</h2>
           <div class="flex-1 min-h-[200px]">
             <!-- Chart component will go here -->
@@ -49,5 +48,7 @@
 </template>
 
 <script lang="ts" setup>
+import { DashboardBookStats } from '#components';
+
 // Chart data and components will be imported and defined here
 </script>
