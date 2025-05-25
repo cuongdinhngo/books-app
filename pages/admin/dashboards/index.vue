@@ -11,14 +11,9 @@
           <DashboardBookStats class="h-full" />
         </div>
         
+        <!-- Top Borrowed Books dashboard -->
         <div class="flex flex-col">
-          <h2 class="text-lg font-semibold mb-4">User Activity</h2>
-          <div class="flex-1 min-h-[200px]">
-            <!-- Chart component will go here -->
-            <div class="flex items-center justify-center h-full bg-gray-100 rounded">
-              Chart 2 Placeholder
-            </div>
-          </div>
+          <DashboardBorrowedBook class="h-full" />
         </div>
         
         <!-- Row 2 -->

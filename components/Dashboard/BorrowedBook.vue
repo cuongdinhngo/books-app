@@ -2,16 +2,20 @@
   <UCard class="h-full text-primary-50">
     <template #header>
       <div class="flex justify-between items-center w-full">
-        <h2 class="text-lg font-semibold">Book Stats</h2>
+        <h2 class="text-lg font-semibold">Top Borrowed Books</h2>
         <div class="flex items-center gap-3">
           <USelect 
-            v-model="copyStatus" 
+            v-model="orderStatus" 
             value-key="id"
-            :items="BOOK_COPY_OPTION" 
+            :items="[
+              { id: ORDER_STATUS.CLOSE, label: capitalize(ORDER_STATUS.CLOSE) },
+              { id: ORDER_STATUS.REJECT, label: capitalize(ORDER_STATUS.REJECT) },
+              { id: ORDER_STATUS.LOST, label: capitalize(ORDER_STATUS.LOST) }
+            ]"
             class="w-48" 
             @change="refreshStatus"
           />
-          <USelect 
+          <USelect
             v-model="size" 
             :items="PAGE_SIZE_OPTIONS" 
             class="w-24" 
@@ -34,8 +38,8 @@
               id: 'book',
             },
             {
-              accessorKey: 'quantity',
-              header: 'Quantity'
+              accessorKey: 'borrowed_count',
+              header: 'Counts'
             },
           ]"
           class="flex-1 max-h-[320px]"
@@ -73,45 +77,55 @@
 </template>
 
 <script lang="ts" setup>
-import { BOOK_COPY_OPTION } from '~/constants/bookCopies';
 import { PAGE_SIZE_OPTIONS } from '~/constants/common';
+import { ORDER_STATUS } from '~/constants/orders';
 
 const { index:getBooks } = useBooks();
 
-const copyStatus = ref(BOOK_COPY_OPTION[0].id);
+const supbase = useSupabaseClient();
+const orderStatus = ref(ORDER_STATUS.CLOSE);
 const size = ref(PAGE_SIZE_OPTIONS[0].value);
 const page = ref(1);
 const searchParams = ref({
-  status: copyStatus.value === null ? [] : [copyStatus.value],
+  status: orderStatus.value === null ? [] : [orderStatus.value],
   isHead: true,
   page: page.value,
   size: size.value,
 });
 
 const { data, error, status:loadingStatus, refresh } = useAsyncData(
-  `book-rank?status=${copyStatus.value}&page=${page.value}&size=${size.value}`,
+  `top-borrowed-book?status=${orderStatus.value}&page=${page.value}&size=${size.value}`,
   async() => {
     const [ books, totalCount ] = await Promise.all([
-      useSupabaseClient().rpc(
-        'get_books_by_copy_status',
+      supbase.rpc(
+        'get_top_borrowed_books',
         {
           p_status: searchParams.value.status[0],
           p_limit: searchParams.value.size,
           p_offset: (searchParams.value.page - 1) * searchParams.value.size,
         }
       ),
-      getBooks(searchParams.value),
+      supbase.rpc(
+        'get_top_borrowed_books_count',
+        {
+          p_status: searchParams.value.status[0],
+        }
+      ),
     ]);
+
+    console.log('books', books);
+    console.log('totalCount', totalCount);
 
     return {
       books: books.data,
-      count: totalCount.count,
+      count: totalCount.data,
     };
   },
   { watch: [ searchParams.value ] }
 );
 
 function refreshStatus() {
+  console.log('Refreshing status with copyStatus:', copyStatus.value);
   page.value = 1;
   searchParams.value.status = copyStatus.value === null ? [] : [copyStatus.value];
 }
@@ -119,11 +133,16 @@ function refreshStatus() {
 function handlePageChange(newPage) {
   page.value = newPage;
   searchParams.value.page = newPage;
+  console.log('Updated searchParams:', searchParams.value);
 }
 
 function handleSizeChange() {
   page.value = 1;
   searchParams.value.size = size.value;
   searchParams.value.page = 1;
+  console.log('Updated searchParams:', searchParams.value);
 }
+
+console.log('DATA => ', data);
+console.log('error', error);
 </script>
