@@ -20,6 +20,12 @@ const items = ref([
     icon: 'lucide:house'
   },
   {
+    label: 'Dashboards',
+    name: 'dashboards',
+    to: { name: 'admin-dashboards' },
+    icon: 'lucide:chart-no-axes-combined'
+  },
+  {
     label: 'Books',
     name: 'books',
     to: { name: 'admin-books'},

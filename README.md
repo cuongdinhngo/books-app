@@ -28,6 +28,12 @@ To seed the mock DB:
 node commands/seed.mjs --truncate
 ```
 
+## Generating TypeScript Types
+
+```bash
+npx supabase gen types typescript --project-id "$PROJECT_REF" --schema public > types/database.types.ts
+```
+
 ## Development Server
 
 Start the development server on `http://localhost:3000`:
