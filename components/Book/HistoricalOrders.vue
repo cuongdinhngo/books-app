@@ -47,13 +47,17 @@
     </UTable>
     <LoadingProcess v-if="status === 'pending'" />
 
-    <Pagination
-      v-model="page"
-      v-if="status === 'success' && data.count > 0"
-      :totalCounts="data.count"
-      :items-per-page="pageSize"
-      @changePage="handlePageChange"
-    />
+    <div class="mt-6 flex justify-center space-x-2 text-stone-950" id="with-links">
+      <UPagination
+        v-if="status === 'success'"
+        v-model:page="page"
+        :total="data.count"
+        :items-per-page="pageSize"
+        show-edges
+        :sibling-count="2"
+        @update:page="handlePageChange"
+      />
+    </div>
   </div>
 </template>
 
@@ -67,7 +71,7 @@ const pageSize = 10;
 const searchParams = ref({
   bookId: bookId.value,
   page: page.value,
-  pageSize: pageSize,
+  size: pageSize,
 });
 
 const mapBadgeColor = {
@@ -85,7 +89,7 @@ function handlePageChange(newPage) {
 }
 
 const { data, error, status } = useAsyncData(
-  `book/${bookId.value}/orders`,
+  `book/${bookId.value}/orders/page/${page.value}`,
   () => getOrders({...searchParams.value}),
   { watch: [searchParams.value] }
 );
