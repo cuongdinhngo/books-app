@@ -5,15 +5,14 @@
         <h2 class="text-lg font-semibold">Top Borrowed Books</h2>
         <div class="flex items-center gap-3">
           <USelect 
-            v-model="orderStatus" 
+            v-model="sortBy" 
             value-key="id"
             :items="[
-              { id: ORDER_STATUS.CLOSE, label: capitalize(ORDER_STATUS.CLOSE) },
-              { id: ORDER_STATUS.REJECT, label: capitalize(ORDER_STATUS.REJECT) },
-              { id: ORDER_STATUS.LOST, label: capitalize(ORDER_STATUS.LOST) }
+              { id: `average_rating`, label: `Average Rating` },
+              { id: `review_count`, label: `Review Counts` },
             ]"
             class="w-48" 
-            @change="refreshStatus"
+            @change="refreshSortBy"
           />
           <USelect
             v-model="size" 
@@ -38,8 +37,12 @@
               id: 'book',
             },
             {
-              accessorKey: 'borrowed_count',
-              header: 'Counts'
+              accessorKey: 'average_rating',
+              header: 'Avg. Rating'
+            },
+            {
+              accessorKey: 'review_count',
+              header: 'Review counts'
             },
           ]"
           class="flex-1 max-h-[320px]"
@@ -78,40 +81,35 @@
 
 <script lang="ts" setup>
 import { PAGE_SIZE_OPTIONS } from '~/constants/common';
-import { ORDER_STATUS } from '~/constants/orders';
-
-const { index:getBooks } = useBooks();
 
 const supbase = useSupabaseClient();
-const orderStatus = ref(ORDER_STATUS.CLOSE);
+const sortBy = ref('average_rating');
 const size = ref(PAGE_SIZE_OPTIONS[0].value);
 const page = ref(1);
 const searchParams = ref({
-  status: orderStatus.value === null ? [] : [orderStatus.value],
+  sortBy: sortBy.value,
   isHead: true,
   page: page.value,
   size: size.value,
 });
 
-const { data, error, status:loadingStatus } = useAsyncData(
-  `top-borrowed-book?status=${orderStatus.value}&page=${page.value}&size=${size.value}`,
+const { data, error, status:loadingStatus, refresh } = useAsyncData(
+  `top-rating-book?status=${sortBy.value}&page=${page.value}&size=${size.value}`,
   async() => {
     const [ books, totalCount ] = await Promise.all([
       supbase.rpc(
-        'get_top_borrowed_books',
+        'get_top_rated_books',
         {
-          p_status: searchParams.value.status[0],
+          p_sort_by: searchParams.value.sortBy,
           p_limit: searchParams.value.size,
           p_offset: (searchParams.value.page - 1) * searchParams.value.size,
         }
       ),
-      supbase.rpc(
-        'get_top_borrowed_books_count',
-        {
-          p_status: searchParams.value.status[0],
-        }
-      ),
+      supbase.rpc('get_top_rated_books_count'),
     ]);
+
+    console.log('books', books);
+    console.log('totalCount', totalCount);
 
     return {
       books: books.data,
@@ -121,19 +119,25 @@ const { data, error, status:loadingStatus } = useAsyncData(
   { watch: [ searchParams.value ] }
 );
 
-function refreshStatus() {
+function refreshSortBy() {
   page.value = 1;
-  searchParams.value.status = copyStatus.value === null ? [] : [copyStatus.value];
+  searchParams.value.page = 1;
+  searchParams.value.sortBy = sortBy.value;
 }
 
 function handlePageChange(newPage) {
   page.value = newPage;
   searchParams.value.page = newPage;
+  console.log('Updated searchParams:', searchParams.value);
 }
 
 function handleSizeChange() {
   page.value = 1;
   searchParams.value.size = size.value;
   searchParams.value.page = 1;
+  console.log('Updated searchParams:', searchParams.value);
 }
+
+console.log('DATA => ', data);
+console.log('error', error);
 </script>

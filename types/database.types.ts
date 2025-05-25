@@ -715,6 +715,22 @@ export type Database = {
           book_image: string
         }[]
       }
+      get_top_rated_books: {
+        Args:
+          | { p_offset?: number; p_limit?: number }
+          | { p_sort_by?: string; p_offset?: number; p_limit?: number }
+        Returns: {
+          book_id: number
+          title: string
+          cover_image: string
+          average_rating: number
+          review_count: number
+        }[]
+      }
+      get_top_rated_books_count: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       notify_wishlist_availability: {
         Args: Record<PropertyKey, never>
         Returns: undefined
