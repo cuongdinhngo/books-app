@@ -4,7 +4,7 @@
       <h3 class="text-stone-800 font-bold my-1">
         All {{ capitalize(type) }}
       </h3>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-6 my-5">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-10 gap-6 my-5">
         <ExploreItem
           v-if="status === 'success'"
           v-for="item in data.data"
