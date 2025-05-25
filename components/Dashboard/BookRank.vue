@@ -2,8 +2,23 @@
   <UCard class="h-full text-primary-50">
     <template #header>
       <div class="flex justify-between items-center w-full">
-        <h2 class="text-lg font-semibold">Book Rank</h2>
-        <USelect v-model="copyStatus" value-key="id" :items="BOOK_COPY_OPTION" class="w-48" @change="refreshStatus"/>
+        <h2 class="text-lg font-semibold">Book Stats</h2>
+        <div class="flex items-center gap-3">
+          <USelect 
+            v-model="copyStatus" 
+            value-key="id"
+            :items="BOOK_COPY_OPTION" 
+            class="w-48" 
+            @change="refreshStatus"
+          />
+          <USelect 
+            v-model="size" 
+            :items="PAGE_SIZE_OPTIONS" 
+            class="w-24" 
+            placeholder="Size"
+            @change="handleSizeChange"
+          />
+        </div>
       </div>
     </template>
     <div class="h-80">
@@ -50,7 +65,7 @@
           :items-per-page="size"
           show-edges
           :sibling-count="2"
-          :update-page="handlePageChange"
+          @update:page="handlePageChange"
         />
       </div>
     </template>
@@ -59,22 +74,32 @@
 
 <script lang="ts" setup>
 import { BOOK_COPY_OPTION } from '~/constants/bookCopies';
+import { PAGE_SIZE_OPTIONS } from '~/constants/common';
 
 const { index:getBooks } = useBooks();
 
 const copyStatus = ref(BOOK_COPY_OPTION[0].id);
-const size = 10;
+const size = ref(PAGE_SIZE_OPTIONS[0].value);
 const page = ref(1);
 const searchParams = ref({
   status: copyStatus.value === null ? [] : [copyStatus.value],
   isHead: true,
+  page: page.value,
+  size: size.value,
 });
 
 const { data, error, status:loadingStatus, refresh } = useAsyncData(
-  `book-rank?status=${copyStatus.value}&page=${page.value}`,
+  `book-rank?status=${copyStatus.value}&page=${page.value}&size=${size.value}`,
   async() => {
     const [ books, totalCount ] = await Promise.all([
-      useSupabaseClient().rpc('get_books_by_copy_status', { p_status: copyStatus.value, p_limit: size, p_offset: (page.value - 1) * size }),
+      useSupabaseClient().rpc(
+        'get_books_by_copy_status',
+        {
+          p_status: searchParams.value.status[0],
+          p_limit: searchParams.value.size,
+          p_offset: (searchParams.value.page - 1) * searchParams.value.size,
+        }
+      ),
       getBooks(searchParams.value),
     ]);
 
@@ -86,18 +111,26 @@ const { data, error, status:loadingStatus, refresh } = useAsyncData(
       count: totalCount.count,
     };
   },
-  { watch: [page] }
+  { watch: [ searchParams.value ] }
 );
 
 function refreshStatus() {
   console.log('Refreshing status with copyStatus:', copyStatus.value);
-  searchParams.value.status = copyStatus.value === null ? [] : [copyStatus.value];
   page.value = 1;
-  refresh();
+  searchParams.value.status = copyStatus.value === null ? [] : [copyStatus.value];
 }
 
 function handlePageChange(newPage) {
   page.value = newPage;
+  searchParams.value.page = newPage;
+  console.log('Updated searchParams:', searchParams.value);
+}
+
+function handleSizeChange() {
+  page.value = 1;
+  searchParams.value.size = size.value;
+  searchParams.value.page = 1;
+  console.log('Updated searchParams:', searchParams.value);
 }
 
 console.log('DATA => ', data);
