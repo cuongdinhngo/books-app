@@ -695,6 +695,20 @@ export type Database = {
           is_read: boolean
         }[]
       }
+      get_top_books_by_author: {
+        Args: { p_author_id: number; p_offset?: number; p_limit?: number }
+        Returns: {
+          book_id: number
+          title: string
+          cover_image: string
+          author_name: string
+          order_count: number
+        }[]
+      }
+      get_top_books_by_author_count: {
+        Args: { p_author_id: number }
+        Returns: number
+      }
       get_top_books_by_category: {
         Args:
           | { p_category_id: number; p_offset?: number; p_limit?: number }

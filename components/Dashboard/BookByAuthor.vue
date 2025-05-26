@@ -1,12 +1,12 @@
 <template>
   <DashboardCard
     v-model:page="searchParams.page"
-    v-model:status="searchParams.category"
+    v-model:status="searchParams.author"
     v-model:size="searchParams.size"
-    title="Top Categories"
+    title="Top Authors"
     :loading-status="loadingStatus"
     :total-count="loadingStatus === 'success' ? (data.count ?? 0) : 0"
-    :status-options="categoryOptions"
+    :status-options="authorOptions"
   >
     <!-- Card slot -->
     <UTable
@@ -19,8 +19,8 @@
           id: 'book',
         },
         {
-          accessorKey: 'category_name',
-          header: 'Category'
+          accessorKey: 'author_name',
+          header: 'Author'
         },
         {
           accessorKey: 'order_count',
@@ -44,45 +44,44 @@
 </template>
 
 <script lang="ts" setup>
-import { BOOK_COPY_OPTION, BOOK_COPY_STATUS } from '~/constants/bookCopies';
 import { PAGE_SIZE_OPTIONS, CATEGORY_ALL_ID, CATEGORY_ALL_LABEL } from '~/constants/common';
 
-const { index:getCategories } = useCategories();
+const { index:getAuthors } = useAuthors();
 
 const supabase = useSupabaseClient();
-const category = ref(CATEGORY_ALL_ID);
+const author = ref(CATEGORY_ALL_ID);
 const size = ref(PAGE_SIZE_OPTIONS[0].value);
 const page = ref(1);
 const searchParams = ref({
-  category: category.value,
+  author: author.value,
   isHead: true,
   page: page.value,
   size: size.value,
 });
 
 const { data, error, status:loadingStatus } = useAsyncData(
-  `book-by-category?category=${category.value}&page=${page.value}&size=${size.value}`,
+  `book-by-author?author=${author.value}&page=${page.value}&size=${size.value}`,
   async() => {
-    const [ categories, books, totalCount ] = await Promise.all([
-      getCategories(),
+    const [ authors, books, totalCount ] = await Promise.all([
+      getAuthors(),
       supabase.rpc(
-        'get_top_books_by_category',
+        'get_top_books_by_author',
         {
-          p_category_id: searchParams.value.category,
+          p_author_id: searchParams.value.author,
           p_limit: searchParams.value.size,
           p_offset: (searchParams.value.page - 1) * searchParams.value.size,
         }
       ),
       supabase.rpc(
-        'get_top_books_by_category_count',
+        'get_top_books_by_author_count',
         {
-          p_category_id: searchParams.value.category,
+          p_author_id: searchParams.value.author,
         }
       )
     ]);
 
     return {
-      categories: categories.data,
+      authors: authors.data,
       books: books.data,
       count: totalCount.data,
     };
@@ -90,13 +89,15 @@ const { data, error, status:loadingStatus } = useAsyncData(
   { watch: [ searchParams.value ] }
 );
 
-const categoryOptions = computed(() => {
+const authorOptions = computed(() => {
   return [
     { id: CATEGORY_ALL_ID, label: CATEGORY_ALL_LABEL },
-    ...(data.value?.categories || []).map(category => ({
-      id: category.id,
-      label: category.name,
+    ...(data.value?.authors || []).map(author => ({
+      id: author.id,
+      label: author.full_name,
     })),
   ];
 });
+
+console.log('DATA => ', data.value);
 </script>

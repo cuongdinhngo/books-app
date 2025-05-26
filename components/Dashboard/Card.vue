@@ -4,7 +4,7 @@
       <div class="flex justify-between items-center w-full">
         <h2 class="text-lg font-semibold">{{ title }}</h2>
         <div class="flex items-center gap-3">
-          <USelect 
+          <USelectMenu
             v-model="status" 
             value-key="id"
             :items="statusOptions" 
@@ -60,7 +60,8 @@ const props = defineProps({
     default: 'pending'
   },
   statusOptions: {
-    type: Array<{ id: string; label: string }>,
+    type: Array,
+    default: () => []
   }
 });
 
@@ -75,7 +76,7 @@ const page = defineModel('page', {
 });
 
 const status = defineModel('status', {
-  type: String,
+  type: [String, Number],
   default: ''
 });
 

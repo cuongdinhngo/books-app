@@ -29,6 +29,11 @@
           <DashboardBookByCategory class="h-full" />
         </div>
 
+        <!-- Top Books via Author dashboard -->
+        <div class="flex flex-col">
+          <DashboardBookByAuthor class="h-full" />
+        </div>
+
       </div>
     </div>
   </div>
