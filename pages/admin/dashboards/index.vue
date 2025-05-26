@@ -24,6 +24,11 @@
           <DashboardBorrowedReader class="h-full" />
         </div>
 
+        <!-- Top Books via Category dashboard -->
+        <div class="flex flex-col">
+          <DashboardBookByCategory class="h-full" />
+        </div>
+
       </div>
     </div>
   </div>

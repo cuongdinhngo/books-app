@@ -695,6 +695,23 @@ export type Database = {
           is_read: boolean
         }[]
       }
+      get_top_books_by_category: {
+        Args:
+          | { p_category_id: number; p_offset?: number; p_limit?: number }
+          | { p_category_name: string; p_offset?: number; p_limit?: number }
+          | { p_offset?: number; p_limit?: number }
+        Returns: {
+          book_id: number
+          title: string
+          cover_image: string
+          category_name: string
+          order_count: number
+        }[]
+      }
+      get_top_books_by_category_count: {
+        Args: { p_category_id: number }
+        Returns: number
+      }
       get_top_borrowed_books: {
         Args:
           | { p_offset?: number; p_limit?: number }
