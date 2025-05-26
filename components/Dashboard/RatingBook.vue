@@ -2,7 +2,7 @@
   <UCard class="h-full text-primary-50">
     <template #header>
       <div class="flex justify-between items-center w-full">
-        <h2 class="text-lg font-semibold">Top Borrowed Books</h2>
+        <h2 class="text-lg font-semibold">Rating Books</h2>
         <div class="flex items-center gap-3">
           <USelect 
             v-model="sortBy" 
@@ -70,7 +70,6 @@
           v-model:page="page"
           :total="data.count"
           :items-per-page="size"
-          show-edges
           :sibling-count="2"
           @update:page="handlePageChange"
         />
@@ -108,9 +107,6 @@ const { data, error, status:loadingStatus, refresh } = useAsyncData(
       supbase.rpc('get_top_rated_books_count'),
     ]);
 
-    console.log('books', books);
-    console.log('totalCount', totalCount);
-
     return {
       books: books.data,
       count: totalCount.data,
@@ -137,7 +133,4 @@ function handleSizeChange() {
   searchParams.value.page = 1;
   console.log('Updated searchParams:', searchParams.value);
 }
-
-console.log('DATA => ', data);
-console.log('error', error);
 </script>

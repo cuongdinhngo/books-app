@@ -2,7 +2,7 @@
   <UCard class="h-full text-primary-50">
     <template #header>
       <div class="flex justify-between items-center w-full">
-        <h2 class="text-lg font-semibold">Top Borrowed Books</h2>
+        <h2 class="text-lg font-semibold">Borrowed Books</h2>
         <div class="flex items-center gap-3">
           <USelect 
             v-model="orderStatus" 
@@ -67,7 +67,6 @@
           v-model:page="page"
           :total="data.count"
           :items-per-page="size"
-          show-edges
           :sibling-count="2"
           @update:page="handlePageChange"
         />

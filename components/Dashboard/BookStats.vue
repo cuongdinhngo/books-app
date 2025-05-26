@@ -63,7 +63,6 @@
           v-model:page="page"
           :total="data.count"
           :items-per-page="size"
-          show-edges
           :sibling-count="2"
           @update:page="handlePageChange"
         />
@@ -88,7 +87,7 @@ const searchParams = ref({
   size: size.value,
 });
 
-const { data, error, status:loadingStatus, refresh } = useAsyncData(
+const { data, error, status:loadingStatus } = useAsyncData(
   `book-rank?status=${copyStatus.value}&page=${page.value}&size=${size.value}`,
   async() => {
     const [ books, totalCount ] = await Promise.all([

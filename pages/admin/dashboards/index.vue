@@ -1,10 +1,8 @@
 <template>
   <div class="flex flex-col h-full text-stone-900">
     <div class="flex-1 overflow-y-auto p-6">
-      <h1 class="text-2xl font-bold mb-6">Admin Dashboards</h1>
-      
       <!-- Dashboard Grid Layout -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
         <!-- Book Stats dashboard -->
         <div class="flex flex-col">
