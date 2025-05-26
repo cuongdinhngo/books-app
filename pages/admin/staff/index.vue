@@ -44,7 +44,7 @@
   >
     <template #staffName-cell="{ row }">
       <div class="flex items-center gap-3">
-        <UAvatar :src="row.original.photo" size="xl" class="rounded-none"/>
+        <UAvatar :src="row.original.photo || publicAsset('img/human.jpg')" size="xl" class="rounded-none"/>
         <div>
           <NuxtLink :to="{ name: 'admin-staff-id', params: { id: row.original.id }}">
             <p class="font-medium text-primary-500">{{ row.original.name }}</p>

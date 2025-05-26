@@ -64,7 +64,7 @@
     <template #author-cell="{ row }">
       <NuxtLink :to="{ name: 'admin-authors-id', params: { id: row.original.id}}">
         <div class="flex items-center gap-3">
-          <UAvatar :src="row.original.photo" size="xl" class="rounded-none"/>
+          <UAvatar :src="row.original.photo || publicAsset('img/human.jpg')" size="xl" class="rounded-none"/>
           <div>
             <p class="font-medium text-stone-800">{{ row.original.full_name}}</p>
           </div>
