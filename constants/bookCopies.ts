@@ -4,8 +4,8 @@ export const BOOK_COPY_STATUS = {
   BORROWING: 'borrowing',
   LOST: 'lost',
   RETIRED: 'retired',
-  UNAVAILABLE: 'unavailable',
-  AVAILABLE: 'available'
+  UNAVAILABLE: 'unavailable', // This status is used when the book copies are lost or retired
+  AVAILABLE: 'available', // This status is used when the book copies are pending or opening or borrowing
 };
 
 export const BOOK_COPY_OPTION = [
