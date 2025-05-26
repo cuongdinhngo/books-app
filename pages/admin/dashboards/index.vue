@@ -14,21 +14,16 @@
           <DashboardBorrowedBook class="h-full" />
         </div>
         
-        <!-- Row 2 -->
+        <!-- Top Rating Books dashboard -->
         <div class="flex flex-col">
           <DashboardRatingBook class="h-full" />
         </div>
         
-        <div class="bg-white rounded-lg shadow p-4 flex flex-col">
-          <h2 class="text-lg font-semibold mb-4">Monthly Revenue</h2>
-          <div class="flex-1 min-h-[200px]">
-            <!-- Chart component will go here -->
-            <div class="flex items-center justify-center h-full bg-gray-100 rounded">
-              Chart 4 Placeholder
-            </div>
-          </div>
+        <!-- Top Borrowed Readers dashboard -->
+        <div class="flex flex-col">
+          <DashboardBorrowedReader class="h-full" />
         </div>
-        
+
       </div>
     </div>
   </div>

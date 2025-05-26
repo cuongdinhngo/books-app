@@ -706,6 +706,21 @@ export type Database = {
         Args: { p_status: string }
         Returns: number
       }
+      get_top_borrowed_readers: {
+        Args:
+          | { p_offset?: number; p_limit?: number }
+          | { p_status: string; p_offset?: number; p_limit?: number }
+        Returns: {
+          reader_id: string
+          name: string
+          email: string
+          borrow_count: number
+        }[]
+      }
+      get_top_borrowed_readers_count: {
+        Args: { p_status: string }
+        Returns: number
+      }
       get_top_ordered_books: {
         Args: { limit_count?: number }
         Returns: {
