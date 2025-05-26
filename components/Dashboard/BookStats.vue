@@ -7,7 +7,14 @@
           <USelect 
             v-model="copyStatus" 
             value-key="id"
-            :items="BOOK_COPY_OPTION" 
+            :items="[
+              { id: BOOK_COPY_STATUS.PENDING, label: capitalize(BOOK_COPY_STATUS.PENDING) },
+              { id: BOOK_COPY_STATUS.OPENING, label: capitalize(BOOK_COPY_STATUS.OPENING) },
+              { id: BOOK_COPY_STATUS.BORROWING, label: capitalize(BOOK_COPY_STATUS.BORROWING) },
+              { id: BOOK_COPY_STATUS.LOST, label: capitalize(BOOK_COPY_STATUS.LOST) },
+              { id: BOOK_COPY_STATUS.RETIRED, label: capitalize(BOOK_COPY_STATUS.RETIRED) },
+              { id: BOOK_COPY_STATUS.UNAVAILABLE, label: capitalize(BOOK_COPY_STATUS.UNAVAILABLE) },
+            ]" 
             class="w-48" 
             @change="refreshStatus"
           />
@@ -72,7 +79,7 @@
 </template>
 
 <script lang="ts" setup>
-import { BOOK_COPY_OPTION } from '~/constants/bookCopies';
+import { BOOK_COPY_OPTION, BOOK_COPY_STATUS } from '~/constants/bookCopies';
 import { PAGE_SIZE_OPTIONS } from '~/constants/common';
 
 const { index:getBooks } = useBooks();
