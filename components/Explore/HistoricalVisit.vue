@@ -13,10 +13,10 @@
     class="p-5 bg-primary-50"
   >
   <NuxtLink :to="{ name: 'book-id', params: { id: item?.book_id } }">
-    <div class="bg-white pt-3 text-stone-600 h-[270px] rounded-lg hover:shadow-lg">
+    <div class="bg-white pt-3 text-stone-600 h-[260px] rounded-lg hover:shadow-lg">
       <img :src="item.cover_image || getDefaultBookCover()" class="w-full h-48 object-scale-down">
-      <p class="font-bold line-clamp-1 text-center">{{ item?.title }}</p>
-      <p class="text-center">Borrowed counts: {{ item.borrow_count }}</p>
+      <p class="font-bold line-clamp-1 text-sm text-center">{{ item?.title }}</p>
+      <p class="text-center text-sm">Borrowed counts: {{ item.borrow_count }}</p>
     </div>
   </NuxtLink>
   </UCarousel>

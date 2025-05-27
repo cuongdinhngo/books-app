@@ -14,7 +14,9 @@ export const useHistories = () => {
     histories.value = JSON.parse(localStorage.getItem('histories') || '[]');
     const existingIndex = histories.value.findIndex((item) => item.key === key);
     if (existingIndex !== -1) {
-      histories.value[existingIndex].items = items;
+      const existingItems = histories.value[existingIndex].items;
+      const uniqueNewItems = items.filter(item => !existingItems.includes(item));
+      histories.value[existingIndex].items = [...existingItems, ...uniqueNewItems];
     } else {
       histories.value.push({ key, items });
     }
