@@ -74,6 +74,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: number
+          preview_file: string | null
           title: string
         }
         Insert: {
@@ -81,6 +82,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: number
+          preview_file?: string | null
           title: string
         }
         Update: {
@@ -88,6 +90,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: number
+          preview_file?: string | null
           title?: string
         }
         Relationships: []
@@ -743,7 +746,6 @@ export type Database = {
           book_id: number
           title: string
           cover_image: string
-          category_name: string
           borrow_count: number
         }[]
       }

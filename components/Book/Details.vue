@@ -37,6 +37,29 @@
             type="file"
             @change="handleFileUpload"
           />
+
+          <!-- Book Preview upload-->
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Book preview</label>
+            <div class="flex w-full justify-between items-center">
+              <input
+                class="text-sm w-2/3 border p-1 border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400 text-stone-900 mr-2"
+                placeholder="Book preview pdf"
+                type="file"
+                @change="handlePreviewUpload"
+              >
+              <UButton label="Preview" color="primary" variant="subtle" @click="previewModal = !previewModal"/>
+              <UModal v-model:open="previewModal" title="Modal fullscreen">
+                <template #content>
+                  <iframe
+                    :src="bookPreview"
+                    class="w-[900px] h-[800px] border-none"
+                  ></iframe>
+                </template>
+              </UModal>
+            </div>
+          </div>
+
         </div>
 
         <!-- Right Side: Book Cover -->
@@ -97,6 +120,8 @@ const oldAuthors = ref([]);
 const oldCategories = ref([]);
 const oldPublishers = ref([]);
 const bookItems = ref([]);
+const selectedPreview = ref(null);
+const previewModal = ref(false);
 
 const { data:book, error, refresh } = await useAsyncData(
   `book-${bookId.value}`,
@@ -112,6 +137,9 @@ description.value = book.value.data.description;
 quantity.value = book.value.data.quantity;
 selectedPhoto.value = null;
 imagePreview.value = book.value.data.coverImage;
+const bookPreview = computed(() => {
+  return book.value.data.previewFile ?? '';
+});
 
 selectedPublishers.value = book.value.data.publishers.map(publisher => Number(publisher.id));
 selectedCategories.value = book.value.data.categories.map(category => Number(category.id));
@@ -129,6 +157,16 @@ const handleFileUpload = (file) => {
   }
 };
 
+const handlePreviewUpload = (event) => {
+  const file = event.target.files[0];
+  if (file && file.type === "application/pdf") {
+    selectedPreview.value = file;
+    bookPreview.value = URL.createObjectURL(file);
+  } else {
+    useToastError('Please upload a valid PDF file.');
+  }
+};
+
 const submitForm = async() => {
   let book = {
     id: bookId.value,
@@ -140,6 +178,13 @@ const submitForm = async() => {
     book = {
       ...book,
       cover_image: selectedPhoto.value
+    }
+  }
+
+  if (selectedPreview.value) {
+    book = {
+      ...book,
+      preview_file: selectedPreview.value
     }
   }
 

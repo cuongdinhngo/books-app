@@ -81,6 +81,10 @@ export const useBooks = () => {
     if (imageUrl) {
       data.cover_image = imageUrl;
     }
+    const previewUrl = await uploadPhoto(data.preview_file, 'book-preview');
+    if (previewUrl) {
+      data.preview_file = previewUrl;
+    }
     return createNewBook(data);
   }
 
@@ -90,6 +94,7 @@ export const useBooks = () => {
       title,
       description,
       coverImage:cover_image,
+      previewFile:preview_file,
       publishers(id, name),
       authors(id, name:full_name),
       categories(id, name),
@@ -106,6 +111,10 @@ export const useBooks = () => {
     const imageUrl = await uploadPhoto(data.cover_image, 'books');
     if (imageUrl) {
       data.cover_image = imageUrl;
+    }
+    const previewUrl = await uploadPhoto(data.preview_file, 'book-preview');
+    if (previewUrl) {
+      data.preview_file = previewUrl;
     }
     return updateBook(id, data);
   }

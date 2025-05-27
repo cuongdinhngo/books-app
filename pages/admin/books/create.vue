@@ -30,6 +30,7 @@
             />
           </div>
 
+          <!-- Book Cover upload-->
           <FormInputDiv
             label-name="Book cover photo"
             placeholder="Cover photo"
@@ -37,6 +38,39 @@
             @change="handleFileUpload"
           />
 
+          <!-- Book Preview upload-->
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Book preview</label>
+            <div class="flex w-full justify-between items-center">
+              <input
+                class="text-sm w-2/3 border p-1 border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400 text-stone-900 mr-2"
+                placeholder="Book preview pdf"
+                type="file"
+                @change="handlePreviewUpload"
+              />
+              <UButton
+                v-if="bookPreview"
+                label="Preview"
+                color="primary"
+                variant="subtle"
+                @click="previewModal = !previewModal"
+              />
+              <UModal
+                v-if="bookPreview"
+                v-model:open="previewModal"
+                title="Modal fullscreen"
+              >
+                <template #content>
+                  <iframe
+                    :src="bookPreview"
+                    class="w-[900px] h-[800px] border-none"
+                  ></iframe>
+                </template>
+              </UModal>
+            </div>
+          </div>
+
+          <!-- Quantity -->
           <div>
             <label class="block text-sm font-medium text-gray-700">Quantity</label>
             <UInputNumber
@@ -45,10 +79,6 @@
               placeholder="Enter quantity"
               variant="subtle"
               :min="0"
-              @change="updateItemStatus"
-              :ui="{
-
-              }"
             />
           </div>
         </div>
@@ -59,6 +89,8 @@
           </div>
         </div>
       </div>
+
+      <!-- Description -->
       <div class="mt-6">
         <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
         <UTextarea
@@ -69,6 +101,7 @@
           variant="subtle"
         />
       </div>
+
       <div class="mt-6">
         <button
           type="submit"
@@ -98,6 +131,9 @@ const selectedPhoto = ref(null);
 const imagePreview = ref('');
 const quantity = ref(0);
 const description = ref(null);
+const selectedPreview = ref(null);
+const bookPreview = ref('');
+const previewModal = ref(false);
 
 const handleFileUpload = (file) => {
   if (file && file.type.startsWith("image/")) {
@@ -106,19 +142,37 @@ const handleFileUpload = (file) => {
   }
 };
 
+const handlePreviewUpload = (event) => {
+  const file = event.target.files[0];
+  if (file && file.type === "application/pdf") {
+    selectedPreview.value = file;
+    bookPreview.value = URL.createObjectURL(file);
+  } else {
+    useToastError('Please upload a valid PDF file.');
+  }
+};
+
 const submitForm = async() => {
-  let book = {
+  let book: Tables<'books'> = {
     title: title.value,
-    quantity: quantity.value,
     description: description.value
-  } as Tables<'books'>;
+  };
 
   if (selectedPhoto.value) {
     book = {
       ...book,
-      cover_image: selectedPhoto.value
+      cover_image: selectedPhoto.value ?? null
     }
   }
+
+  if (selectedPreview.value) {
+    book = {
+      ...book,
+      preview_file: selectedPreview.value
+    }
+  }
+
+  const { error } = await insert(book);
 
   await insert(book)
     .then(async({ error }) => {
@@ -161,7 +215,9 @@ const submitForm = async() => {
       selectedAuthors.value = [];
       selectedCategories.value = [];
       selectedPublishers.value = [];
-      description.value = '';
+      description.value = null;
+      selectedPreview.value = null;
+      selectedPhoto.value = null;
     })
     .catch((error) => useToastError(error));
 }

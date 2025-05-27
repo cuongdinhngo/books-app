@@ -2,12 +2,29 @@
   <div class="flex flex-col md:flex-row gap-6">
     <!-- Book Cover -->
     <div class="w-full md:w-1/3 flex justify-center">
-      <img
-        v-if="status === 'success'"
-        :src="data?.book.data.coverImage"
-        alt="Book Cover" 
-        class="w-80 h-100 object-cover rounded-lg shadow"
-      />
+      <div class="flex flex-col items-center">
+        <img
+          v-if="status === 'success'"
+          :src="data?.book.data.coverImage"
+          alt="Book Cover" 
+          class="w-80 h-100 object-cover rounded-lg shadow"
+        />
+        <UButton
+          label="Preview book"
+          color="primary"
+          variant="subtle"
+          class="mt-4"
+          @click="previewModal = !previewModal"
+        />
+      </div>
+      <UModal v-model:open="previewModal" title="Book Preview">
+        <template #content>
+          <iframe
+            :src="data?.book.data.previewFile"
+            class="w-[1000px] h-[800px] border-none"
+          ></iframe>
+        </template>
+      </UModal>
       <LoadingCard
         v-if="status === 'pending'"
         :quantity="1"
@@ -206,6 +223,7 @@ const bookId = useRouteParams('id', null, { transform: Number });
 const categoryIds = useRouteQuery('category', null);
 const rating = ref('');
 const content = ref('');
+const previewModal = ref(false);
 
 storeHistoricalVisit('categories', categoryIds.value ?? []);
 
