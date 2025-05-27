@@ -19,37 +19,52 @@
     <div class="w-full md:w-2/3 space-y-4" v-if="status === 'success'">
       <div>
         <p class="text-lg font-semibold text-gray-900">{{ data?.book.data.title }}</p>
-        <div class="flex items-center text-sm text-gray-900 mt-1">
-          <BookStarRating
-            :rating="data?.rating.data.average_rating ?? 0"
-            :is-show-value="true"
-          />
+        <!-- Row 1: Star Rating and Borrowed Counts in same line -->
+        <div class="flex items-center gap-4 text-sm mt-1">
+          <div class="flex items-center text-gray-900">
+            <BookStarRating
+              :rating="data?.rating.data.average_rating ?? 0"
+              :is-show-value="true"
+            />
+          </div>
+          <div class="text-sm font-medium">
+            <label class="inline text-gray-600">Borrowed Counts:</label>
+            <span class="text-gray-900 ml-1">{{ data?.borrowedCounts.count }}</span>
+          </div>
         </div>
-        <div class="text-sm font-medium mt-1">
-          <label class="inline text-gray-600">Borrowed Counts:</label>
-          <span class="text-gray-900 ml-2">{{ data?.borrowedCounts.count }}</span>
-        </div>
       </div>
-      <div class="text-sm font-medium">
-        <label class="block text-gray-600">Authors</label>
-        <ul class="text-gray-900 list-disc list-inside">
-          <li v-for="author in data?.book.data.authors" :key="author.id">
-            {{ author.name }}
-          </li>
-        </ul>
+      
+      <!-- Row 2: Categories -->
+      <div class="text-sm font-medium flex items-center flex-wrap">
+        <label class="text-gray-600 mr-2 w-20">Categories:</label>
+        <UBadge
+          class="capitalize mx-1"
+          variant="subtle"
+          v-for="category in data?.book.data.categories"
+          :key="category.id"
+        >
+          <NuxtLink :to="{ name: 'index', query: { category: category.id} }">{{ category.name }}</NuxtLink>
+        </UBadge>
       </div>
-      <div class="text-sm font-medium">
-        <label class="block text-gray-600">Categories</label>
-        <ul class="text-gray-900 list-disc list-inside">
-          <li v-for="category in data?.book.data.categories" :key="category.id">
-            {{ category.name }}
-          </li>
-        </ul>
+
+      <!-- Row 3: Authors -->
+      <div class="text-sm font-medium flex items-center flex-wrap">
+        <label class="text-gray-600 mr-2 w-20">Authors:</label>
+        <template v-for="(author, index) in data?.book.data.authors" :key="author.id">
+          <span class="text-gray-900 hover:text-primary-500">
+            <NuxtLink :to="{ name: 'index', query: { author: author.id } }">{{ author.name }}</NuxtLink>
+          </span>
+          <span v-if="index < data?.book.data.authors.length - 1" class="text-gray-900 mr-2">, </span>
+        </template>
       </div>
+      
+      <!-- Row 4: Quantity -->
       <div class="text-sm font-medium">
-        <label class="inline text-gray-600">Quantity: </label>
+        <label class="inline text-gray-600">Available book: </label>
         <span class="text-gray-900"> {{ data?.book.data?.book_copies.filter(item => item.status === 'opening').length }} </span>
       </div>
+      
+      <!-- Row 5: Borrow & Wishlist buttons -->
       <div class="flex space-x-4">
         <UButton
           v-if="data?.book.data?.book_copies.filter(item => item.status === 'opening').length > 0"
@@ -67,6 +82,12 @@
             Wishlist
         </UButton>
       </div>
+      
+      <!-- Description (moved inside book details) -->
+      <div class="text-sm font-medium">
+        <label class="block text-gray-900">Description</label>
+        <p class="text-gray-600">{{ data?.book.data.description }}</p>
+      </div>
     </div>
     <LoadingCard
       v-if="status === 'pending'"
@@ -75,11 +96,6 @@
     />
   </div>
 
-  <!-- Description -->
-  <div class="mt-6 text-sm font-medium" v-if="status === 'success'">
-    <label class="block text-gray-600">Description</label>
-    <p class=" text-gray-900">{{ data?.book.data.description }}</p>
-  </div>
   <LoadingCard
     v-if="status === 'pending'"
     :quantity="1"
