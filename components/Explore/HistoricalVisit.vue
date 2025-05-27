@@ -1,9 +1,12 @@
 <template>
-  <h3 class="text-stone-800 font-bold mb-1">
+  <h3
+    v-if="status === 'success' && data?.data?.length > 0"
+    class="text-stone-800 font-bold mb-1"
+  >
     You might like these
   </h3>
   <UCarousel
-    v-if="status === 'success'"
+    v-if="status === 'success' && data?.data?.length > 0"
     v-slot="{ item }"
     loop
     arrows
