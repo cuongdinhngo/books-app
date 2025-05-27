@@ -38,7 +38,7 @@
       <div class="text-sm font-medium flex items-center flex-wrap">
         <label class="text-gray-600 mr-2 w-20">Categories:</label>
         <UBadge
-          class="capitalize mx-1"
+          class="capitalize mr-2"
           variant="subtle"
           v-for="category in data?.book.data.categories"
           :key="category.id"
@@ -95,13 +95,6 @@
       :class-value="`w-full md:w-2/3`"
     />
   </div>
-
-  <LoadingCard
-    v-if="status === 'pending'"
-    :quantity="1"
-    :class-value="`w-full h-[200px] my-4`"
-  />
-
   <h3 class="text-stone-800 font-bold mt-5 mb-2">
     More like this
   </h3>
@@ -205,13 +198,16 @@ const { insert, index:getBookReviews } = useBooksReviews();
 const { get:getBookDetails, index:getBooks } = useBooks();
 const { index:getBorrowedBookCounts } = useOrders();
 const { wishlists, addBookToWishlist } = useWishlistActions();
-const { setBreadcrumbs, resetBreadcrumbs } = useBreadcrumbs(); 
+const { setBreadcrumbs, resetBreadcrumbs } = useBreadcrumbs();
+const { store:storeHistoricalVisit } = useHistories();
 
 const supabase = useSupabaseClient();
 const bookId = useRouteParams('id', null, { transform: Number });
 const categoryIds = useRouteQuery('category', null);
 const rating = ref('');
 const content = ref('');
+
+storeHistoricalVisit('categories', categoryIds.value ?? []);
 
 const { data, error, refresh, status } = useAsyncData(
   `book-${bookId.value}`,
@@ -223,7 +219,7 @@ const { data, error, refresh, status } = useAsyncData(
       getBorrowedBookCounts({ bookId: bookId.value, isHead: true }),
       getBooks({
         columns: 'book_id:id, book_title:title, book_image:cover_image',
-        categoryIds: categoryIds.value,
+        categoryIds: categoryIds.value ?? [],
         page: 1,
         size: 10
       })
