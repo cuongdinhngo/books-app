@@ -10,6 +10,7 @@
           class="w-80 h-100 object-cover rounded-lg shadow"
         />
         <UButton
+          v-if="status === 'success' && data?.book.data.previewFile"
           label="Preview book"
           color="primary"
           variant="subtle"
