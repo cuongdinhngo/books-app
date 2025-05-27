@@ -46,6 +46,19 @@ export default defineAppConfig({
           subtle: 'bg-white text-stone-900 ring-gray-300'
         }
       }
+    },
+    carousel: {
+      slots: {
+        dots: '-bottom-0',
+        dot: 'w-6 h-1',
+      },
+      variants: {
+        active: {
+          true: {
+            dot: 'bg-primary-500',
+          }
+        }
+      }
     }
   }
 })

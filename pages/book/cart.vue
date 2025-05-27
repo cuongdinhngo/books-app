@@ -107,6 +107,13 @@
 
   <!-- Suggest books on categories by Explore Category -->
   <ExploreCategory />
+
+  <!-- Suggest top borrowed book based on historical visits -->
+  <ExploreHistoricalVisit
+    history-key="categories"
+    :limit="20"
+  />
+
   </div>
 </template>
 

@@ -737,6 +737,26 @@ export type Database = {
           borrowed_count: number
         }[]
       }
+      get_top_borrowed_books_by_categories: {
+        Args: { p_category_ids: number[]; p_offset?: number; p_limit?: number }
+        Returns: {
+          book_id: number
+          title: string
+          cover_image: string
+          category_name: string
+          borrow_count: number
+        }[]
+      }
+      get_top_borrowed_books_by_category: {
+        Args: { p_category_ids: number[]; p_offset?: number; p_limit?: number }
+        Returns: {
+          book_id: number
+          title: string
+          cover_image: string
+          category_name: string
+          borrow_count: number
+        }[]
+      }
       get_top_borrowed_books_count: {
         Args: { p_status: string }
         Returns: number

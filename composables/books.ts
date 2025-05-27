@@ -12,6 +12,7 @@ export const BOOK_STATUS = {
 const { insert: createNewBook, get: getBook, update: updateBook, remove } = useCrud(TABLE_NAME);
 
 export const useBooks = () => {
+  const supabase = useSupabaseClient();
   const { uploadPhoto } = useImages('books');
 
   const index = (options: BookOptions = {}) => {
@@ -109,8 +110,20 @@ export const useBooks = () => {
     return updateBook(id, data);
   }
 
-  const getTopRatings = () => {
-    return useSupabaseClient().rpc('get_average_ratings_with_book_details', {limit_count: 10});
+  const getTopRatings = (limit: number = 10) => {
+    return supabase.rpc('get_average_ratings_with_book_details', { limit_count: limit });
+  }
+
+  const getTopBorrowedBooksByHistoricalVisits = (key: string = 'categories', limit: number = 10, offset: number = 0) => {
+    const categories = useHistories().get(key);
+    if (categories.length === 0) {
+      return [];
+    } else {
+      return supabase.rpc(
+        'get_top_borrowed_books_by_categories',
+        { p_category_ids: categories.map((category) => Number(category)), p_limit: limit, p_offset: offset }
+      );
+    }
   }
 
   return {
@@ -120,5 +133,6 @@ export const useBooks = () => {
     update,
     remove,
     getTopRatings,
+    getTopBorrowedBooksByHistoricalVisits
   }
 }

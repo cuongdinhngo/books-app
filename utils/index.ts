@@ -68,6 +68,14 @@ export function publicAsset(path: string) {
   return `${baseURL}${path}`;
 }
 
+export function getDefaultBookCover() {
+  return publicAsset('img/cover.jpg');
+}
+
+export function getDefaultHumanAvatar() {
+  return publicAsset('img/human.jpg');
+}
+
 export function generateRating(length: number, filledChar: string = '★', emptyChar: string = '☆') {
   if (length < 0) length = 0;
   if (length > 5) length = 5;
