@@ -1,5 +1,5 @@
 <template>
-  <NuxtLink :to="`/book/${book?.book_id}`">
+  <NuxtLink :to="{ name: 'book-id', params: { id: book?.book_id } }">
     <div :class="classValue">
       <img :src="`${book?.book_image}`" :alt="book?.book_title" class="w-full h-48 object-scale-down mb-2">
       <p class="font-bold line-clamp-2">{{ book?.book_title }}</p>
