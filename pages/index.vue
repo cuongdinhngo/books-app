@@ -57,7 +57,7 @@
         />
         <LoadingCard
           v-if="status === 'pending'"
-          :quantity="15"
+          :quantity="pageSize"
           :class-value="`w-full h-[340px]`"
         />
       </div>
