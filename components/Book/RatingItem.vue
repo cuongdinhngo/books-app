@@ -5,10 +5,10 @@
       <p class="font-bold line-clamp-2">{{ book?.book_title }}</p>
       <p
         v-if="book.average_rating"
-        class="text-sm text-gray-600"
+        class="text-sm"
       >
         Rating:
-        <span class="text-yellow-400">{{ generateRating(book.average_rating) }}</span>
+        <span class="text-yellow-400 hover:text-yellow-300">{{ generateRating(book.average_rating) }}</span>
       </p>
 
       <p
@@ -36,7 +36,7 @@ const props = defineProps({
   },
   classValue: {
     type: String,
-    default: 'bg-white p-4 rounded-lg shadow text-stone-900 h-[320px]'
+    default: 'bg-white p-4 rounded-lg shadow text-stone-900 h-[320px] hover:shadow-lg hover:text-stone-500 transition-shadow'
   }
 });
 </script>
