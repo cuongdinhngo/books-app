@@ -91,7 +91,7 @@ const page = useRouteQuery('page', '1', { transform: Number });
 const category = useRouteQuery('category', null, { transform: Number });
 const publisher = useRouteQuery('publisher', null, { transform: Number });
 const author = useRouteQuery('author', null, { transform: Number });
-const pageSize = 15;
+const pageSize = 18;
 
 const hasQueries = computed(() => isExistedQueries(['category', 'publisher', 'author']));
 
