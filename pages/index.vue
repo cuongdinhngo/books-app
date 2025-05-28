@@ -50,6 +50,7 @@
           v-if="books?.allCount > 0"
           :totalCounts="books.allCount"
           :items-per-page="pageSize"
+          :enable-total-counts="false"
         />
         <h3 v-else class="flex justify-center">No data</h3>
       </div>

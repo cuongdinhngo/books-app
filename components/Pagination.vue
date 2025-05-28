@@ -1,9 +1,11 @@
 <template>
-  <div class="mt-6 flex justify-center space-x-2 text-stone-950" id="with-links">
+  <div class="mt-6 flex flex-col items-center gap-4" id="with-links">
+    <p class="text-stone-800 self-start" v-if="enableTotalCounts">
+      Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to {{ Math.min(currentPage * itemsPerPage, totalCounts) }} of {{ totalCounts }} items
+    </p>
     <UPagination
       v-if="totalCounts > 0"
       v-model="currentPage"
-      show-edges
       :sibling-count="siblingCount"
       :items-per-page="itemsPerPage"
       :total="totalCounts"
@@ -30,6 +32,10 @@ const props = defineProps({
   siblingCount: {
     type: Number,
     default: 2
+  },
+  enableTotalCounts: {
+    type: Boolean,
+    default: true
   }
 });
 const emit = defineEmits(['update:page', 'changePage']);
