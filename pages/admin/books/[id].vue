@@ -50,6 +50,9 @@ const activeTab = ref<string>(useRouteQuery('tab', 'details').value);
 
 function handleTabChange(tabId: string) {
   activeTab.value = tabId;
-  router.replace({ name: 'admin-books-id', query: { tab: tabId } });
+  router.replace({
+    name: 'admin-books-id',
+    query: { ...router.currentRoute.value.query, tab: tabId }
+  });
 }
 </script>

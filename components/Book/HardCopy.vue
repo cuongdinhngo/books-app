@@ -1,6 +1,6 @@
 <template>
   <div class="p-3" v-if="status === 'success'">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+    <div class="flex justify-between items-center gap-4 mb-5">
       <div class="flex items-center space-x-2">
         <label class="block text-sm font-medium text-gray-700">Quantity</label>
         <UInputNumber
@@ -19,6 +19,14 @@
           @click="submitItems"
         />
       </div>
+      <UButton
+        label="Reset"
+        icon="lucide:refresh-ccw"
+        color="secondary"
+        size="md"
+        @click="resetCopyQuery"
+        class="ml-4"
+      />
     </div>
 
     <!-- INVENTORY -->
@@ -147,19 +155,27 @@
       </template>
 
       <template #actions-cell="{ row }">
-        <USwitch
-          v-if="[BOOK_COPY_STATUS.OPENING, BOOK_COPY_STATUS.PENDING].includes(row.original.status)"
-          :ui="{
-            label: 'text-stone-900'
-          }"
-          :key="row.original.id"
-          variant="subtle"
-          unchecked-icon="lucide-x"
-          checked-icon="lucide-check"
-          :label="row.original.status === BOOK_COPY_STATUS.OPENING ? 'Disable' : 'Enable'"
-          :modelValue="row.original.status === BOOK_COPY_STATUS.OPENING"
-          @update:modelValue="(value) => handleStatusChange(row, value)"
-        />
+        <div class="flex items-center gap-2">
+          <USwitch
+            v-if="[BOOK_COPY_STATUS.OPENING, BOOK_COPY_STATUS.PENDING].includes(row.original.status)"
+            :ui="{
+              label: 'text-stone-900'
+            }"
+            :key="row.original.id"
+            variant="subtle"
+            unchecked-icon="lucide-x"
+            checked-icon="lucide-check"
+            :label="row.original.status === BOOK_COPY_STATUS.OPENING ? 'Disable' : 'Enable'"
+            :modelValue="row.original.status === BOOK_COPY_STATUS.OPENING"
+            @update:modelValue="(value) => handleStatusChange(row, value)"
+          />
+
+          <!-- QR Code Modal -->
+          <BookQRCanvas
+            :bookId="bookId"
+            :copyId="row.original.id"
+          />
+        </div>
       </template>
     </UTable>
 
@@ -191,9 +207,11 @@ import { BOOK_COPY_STATUS } from '~/constants/bookCopies';
 
 const { index, update, upsert } = useBookCopies();
 const { loading, submit } = useSubmit();
+const router = useRouter();
 
 const bookId = useRouteParams('id', null, {transform: Number});
 const page = useRouteQuery('page', 1, { transform: Number });
+const copyId = useRouteQuery('copy', null, { transform: Number });
 const pageSize = 5;
 
 const table = useTemplateRef('table');
@@ -207,6 +225,7 @@ const quantity = ref(0);
 const itemStatus = ref<string[]>([]);
 const searchParams = ref({
   bookIds: [bookId.value],
+  ids: copyId.value ? [copyId.value] : [],
   status: itemStatus.value,
   page: page.value,
   size: pageSize
@@ -216,7 +235,7 @@ const { data:bookCopies, error, refresh, status } = await useAsyncData(
   `book/${bookId.value}/items/page/${page.value}`,
   async() => {
     const [ all, perPage ] = await Promise.all([
-      index({ bookIds: [bookId.value] }),
+      index({ bookIds: [bookId.value]}),
       index(searchParams.value)
     ]);
 
@@ -353,5 +372,16 @@ const bookItemStatusColor = {
   rejected: 'neutral',
   closed: 'neutral',
   retired: 'neutral',
+}
+
+function resetCopyQuery() {
+  const { copy, ...restQueries } = router.currentRoute.value.query;
+  router.replace({
+    name: 'admin-books-id',
+    params: router.currentRoute.value.params,
+    query: restQueries
+  });
+  copyId.value = null;
+  searchParams.value.ids = [];
 }
 </script>

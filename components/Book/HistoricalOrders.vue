@@ -67,9 +67,11 @@ const { index:getOrders} = useOrders();
 
 const bookId = useRouteParams('id', null, { transform: Number });
 const page = useRouteQuery('page', 1, { transform: Number });
+const bookCopyId = useRouteQuery('copy', null, { transform: Number });
 const pageSize = 10;
 const searchParams = ref({
   bookId: bookId.value,
+  bookCopyId: bookCopyId.value,
   page: page.value,
   size: pageSize,
 });

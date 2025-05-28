@@ -109,3 +109,15 @@ export function isExistedParams() {
   const currentParams = Object.keys(useRoute().params);
   return currentParams.length > 0;
 }
+
+export function getAppPath() {
+  const appUrl = useRuntimeConfig().public.appUrl;
+  if (!appUrl) {
+    throw new Error('App URL is not defined in runtime config.');
+  }
+
+  const baseURL = useRuntimeConfig().app.baseURL;
+  const fullBaseUrl = appUrl.endsWith('/') ? appUrl.slice(0, -1) : appUrl;
+
+  return baseURL.endsWith('/') ? `${fullBaseUrl}${baseURL}` : `${fullBaseUrl}${baseURL}/`;
+}

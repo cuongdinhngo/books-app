@@ -51,6 +51,7 @@
               <UButton
                 v-if="bookPreview"
                 label="Preview"
+                icon="lucide:book-open"
                 color="primary"
                 variant="subtle"
                 @click="previewModal = !previewModal"
