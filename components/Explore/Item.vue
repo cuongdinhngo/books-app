@@ -1,15 +1,24 @@
 <template>
-  <NuxtLink :to="to">
-    <div :class="`bg-white p-4 rounded-lg shadow text-stone-900 ${heightItem}`">
+  <NuxtLink :to="to" class="block">
+    <div 
+      :class="[
+        'bg-white p-4 rounded-lg shadow text-stone-900',
+        'hover:shadow-lg hover:text-stone-500 transition-shadow',
+        heightItem
+      ]"
+    >
       <img
-        :src="item.photo ? item.photo: type === 'publishers' ? publicAsset('img/cover.jpg') : publicAsset('img/human.jpg')"
+        :src="imageUrl"
         :alt="item.name"
-        :class="`${imageSize} object-scale-down mb-2`"
+        :class="['object-scale-down mb-2', imageSize]"
+        loading="lazy"
+        decoding="async"
       />
       <p class="font-bold line-clamp-2 text-center">{{ item.name }}</p>
     </div>
   </NuxtLink>
 </template>
+
 <script setup lang="ts">
 const props = defineProps({
   item: {
@@ -43,5 +52,12 @@ const to = computed(() => {
       [queryMap[props.type]]: props.item.id
     }
   };
+});
+
+const imageUrl = computed(() => {
+  if (props.item.photo) return props.item.photo;
+  return props.type === 'publishers' 
+    ? publicAsset('img/cover.jpg')
+    : publicAsset('img/human.jpg');
 });
 </script>

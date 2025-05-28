@@ -132,7 +132,7 @@
   >
     <BookRatingItem
       :book="item"
-      :class-value="`bg-white p-4 rounded-lg shadow text-stone-900 h-[300px]`"
+      :class-value="`bg-white p-4 rounded-lg shadow text-stone-900 h-[280px] hover:shadow-lg hover:text-stone-500 transition-shadow`"
     />
   </UCarousel>
   <LoadingProcessing
