@@ -10,7 +10,11 @@
         loop
         arrows
         :items="books?.topRatings"
-        :ui="{ item: 'basis-1/6', next: 'end-0', prev: 'start-0' }"
+        :ui="{
+          item: 'basis-full sm:basis-1/2 md:basis-1/2 lg:basis-1/4 xl:basis-1/6',
+          next: 'end-0',
+          prev: 'start-0'
+        }"
         class="p-5 bg-primary-50"
       >
         <BookRatingItem
@@ -31,7 +35,20 @@
       >
         All Books
       </h3>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 my-5">
+      <div
+        class="
+          grid
+          grid-cols-1
+          xs:grid-cols-2
+          sm:grid-cols-2
+          md:grid-cols-2
+          lg:grid-cols-4
+          xl:grid-cols-5
+          2xl:grid-cols-6
+          gap-4
+          md:gap-6 my-5
+        "
+      >
         <BookItem
           v-if="status === 'success'"
           v-for="item in books.all"

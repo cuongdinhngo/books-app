@@ -123,7 +123,11 @@
     loop
     arrows
     :items="filteredBookSameCategories"
-    :ui="{ item: 'basis-1/6', next: 'end-0', prev: 'start-0' }"
+    :ui="{
+      item: 'basis-full sm:basis-1/2 md:basis-1/2 lg:basis-1/4 xl:basis-1/6',
+      next: 'end-0',
+      prev: 'start-0'
+    }"
     class="p-5 bg-primary-50"
   >
     <BookRatingItem

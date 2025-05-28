@@ -1,8 +1,7 @@
 <template>
   <header class="bg-primary-500 p-4 flex items-center justify-between">
     <div class="text-2xl font-bold text-white"><NuxtLink to="/">Look Book</NuxtLink></div>
-    <div class="w-1/2">
-
+    <div class="w-1/2 lg:block hidden">
       <UModal>
         <UButton
           label="Searching..."
@@ -24,10 +23,33 @@
         </template>
       </UModal>
     </div>
+
+    <!-- Mobile Search Button -->
+    <div class="lg:hidden block">
+      <UModal>
+        <UButton
+          color="neutral"
+          variant="subtle"
+          label="Search"
+          icon="lucide-search"
+        />
+
+        <template #content>
+          <UCommandPalette
+            v-model:search-term="searchTerm"
+            :groups="resultGroups"
+            loading
+            placeholder="Looking for books, categories, or publishers..."
+            class="h-80"
+            @keyup.enter="handleSearch"
+          />
+        </template>
+      </UModal>
+    </div>
+
     <div class="flex items-center space-x-4">
       <MainRightHeader />
     </div>
-
   </header>
 </template>
 
