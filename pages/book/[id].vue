@@ -12,6 +12,7 @@
         <UButton
           v-if="status === 'success' && data?.book.data.previewFile"
           label="Preview book"
+          icon="lucide:book-open"
           color="primary"
           variant="subtle"
           class="mt-4"

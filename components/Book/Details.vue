@@ -48,7 +48,7 @@
                 type="file"
                 @change="handlePreviewUpload"
               >
-              <UButton label="Preview" color="primary" variant="subtle" @click="previewModal = !previewModal"/>
+              <UButton label="Preview" icon="lucide:book-open" color="primary" variant="subtle" @click="previewModal = !previewModal"/>
               <UModal v-model:open="previewModal" title="Modal fullscreen">
                 <template #content>
                   <iframe
