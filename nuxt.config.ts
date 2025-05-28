@@ -32,7 +32,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      appUrl: process.env.APP_URL
+      appUrl: process.env.APP_URL || 'https://cuongdinhngo.github.io'
     }
   },
 })
