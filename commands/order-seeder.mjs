@@ -71,6 +71,7 @@ const shouldTruncate = process.argv.includes('--truncate');
 const tables = [
   'orders',
   'order_timeline',
+  'order_renews',
   'notifications',
 ];
 
@@ -519,11 +520,8 @@ async function seedDatabase() {
         returnedDate.setDate(dueDate.getDate() + faker.number.int({ min: 0, max: 5 }));
         const returned_at = returnedDate.toISOString();
         
-        const orderId = nextOrderId++;
-        
-        // Create order
+        // Remove id from order
         const order = {
-          id: orderId,
           status: flow.status,
           reader_id: readerId,
           book_id: bookId,
@@ -534,13 +532,16 @@ async function seedDatabase() {
                        flow.status !== ORDER_STATUS.REJECT ? returned_at : null,
         };
         mockOrders.push(order);
-        
+
+        // Use the index in this batch as a temporary order reference for notifications/timeline/renews
+        const tempOrderRef = mockOrders.length - 1;
+
         // Process notifications
         for (const notificationTemplate of flow.notifications) {
           const notification = {
             ...notificationTemplate,
             user_id: notificationTemplate.user_id === '#readerId#' ? readerId : notificationTemplate.user_id,
-            notifiable_id: notificationTemplate.notifiable_id === '#orderId#' ? orderId : notificationTemplate.notifiable_id,
+            notifiable_id: notificationTemplate.notifiable_id === '#orderId#' ? tempOrderRef : notificationTemplate.notifiable_id,
           };
           
           let notificationDate;
@@ -554,7 +555,6 @@ async function seedDatabase() {
           } else if (notification.created_at === 'is same date of returned_at' || 
                     notification.created_at === 'is same date of order returned_at') {
             if (flow.status === ORDER_STATUS.LOST) {
-              // For LOST orders, use a date after due_date for the notification
               notificationDate = new Date(dueDate);
               notificationDate.setDate(dueDate.getDate() + faker.number.int({ min: 1, max: 10 }));
             } else if (flow.status !== ORDER_STATUS.REJECT) {
@@ -579,7 +579,7 @@ async function seedDatabase() {
             ...timelineTemplate,
             user_id: timelineTemplate.user_id === '#readerId#' ? readerId : 
                      timelineTemplate.user_id === '#staffId#' ? staffId : timelineTemplate.user_id,
-            order_id: timelineTemplate.order_id === '#orderId#' ? orderId : timelineTemplate.order_id,
+            order_id: timelineTemplate.order_id === '#orderId#' ? tempOrderRef : timelineTemplate.order_id,
           };
           
           let timelineDate;
@@ -592,7 +592,6 @@ async function seedDatabase() {
             }
           } else if (timeline.created_at === 'is same date of returned_at') {
             if (flow.status === ORDER_STATUS.LOST) {
-              // For LOST orders, use a date after due_date for the CLOSED/LOST action
               timelineDate = new Date(dueDate);
               timelineDate.setDate(dueDate.getDate() + faker.number.int({ min: 1, max: 10 }));
             } else if (flow.status !== ORDER_STATUS.REJECT) {
@@ -615,7 +614,7 @@ async function seedDatabase() {
         if (flow.order_renews) {
           const orderRenew = {
             ...flow.order_renews,
-            order_id: flow.order_renews.order_id === '#orderId#' ? orderId : flow.order_renews.order_id,
+            order_id: flow.order_renews.order_id === '#orderId#' ? tempOrderRef : flow.order_renews.order_id,
           };
           
           // Calculate dates for the order renewal
@@ -645,21 +644,44 @@ async function seedDatabase() {
 
     // SEEDING orders
     console.log("Seeding orders...");
-    const { error: ordersError } = await supabase.from("orders").upsert(mockOrders);
+    const { data: insertedOrders, error: ordersError } = await supabase
+      .from("orders")
+      .insert(mockOrders)
+      .select();
     if (ordersError) {
       console.error("[ERROR] inserting ORDERS:", ordersError);
     }
 
+    // Map temporary order references to real order IDs
+    const orderIdMap = insertedOrders.map((order, idx) => order.id);
+
+    // Update notifiable_id and order_id in notifications, timelines, and renews
+    mockNotifications.forEach(n => {
+      if (typeof n.notifiable_id === "number") {
+        n.notifiable_id = orderIdMap[n.notifiable_id];
+      }
+    });
+    mockOrderTimeline.forEach(t => {
+      if (typeof t.order_id === "number") {
+        t.order_id = orderIdMap[t.order_id];
+      }
+    });
+    mockOrderRenews.forEach(r => {
+      if (typeof r.order_id === "number") {
+        r.order_id = orderIdMap[r.order_id];
+      }
+    });
+
     // SEEDING notifications
-    console.log("Sedding notifications...");
-    const { error: notificationsError } = await supabase.from("notifications").upsert(mockNotifications);
+    console.log("Seeding notifications...");
+    const { error: notificationsError } = await supabase.from("notifications").insert(mockNotifications);
     if (notificationsError) {
       console.error("[ERROR] inserting NOTIFICATIONS:", notificationsError);
     }
 
     // SEEDING order timeline
     console.log("Seeding order timeline...");
-    const { error: timelineError } = await supabase.from("order_timeline").upsert(mockOrderTimeline);
+    const { error: timelineError } = await supabase.from("order_timeline").insert(mockOrderTimeline);
     if (timelineError) {
       console.error("[ERROR] inserting ORDER_TIMELINE:", timelineError);
     }
@@ -667,7 +689,7 @@ async function seedDatabase() {
     // SEEDING order_renews
     console.log("Seeding order renews...");
     if (mockOrderRenews.length > 0) {
-      const { error: renewsError } = await supabase.from("order_renews").upsert(mockOrderRenews);
+      const { error: renewsError } = await supabase.from("order_renews").insert(mockOrderRenews);
       if (renewsError) {
         console.error("[ERROR] inserting ORDER_RENEWS:", renewsError);
       }

@@ -25,7 +25,8 @@ bun install
 To seed the mock DB:
 
 ```bash
-node commands/seed.mjs --truncate
+node commands/general-seeder.mjs --truncate
+node commands/order-seeder.mjs --truncate
 ```
 
 ## Generating TypeScript Types

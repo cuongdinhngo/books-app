@@ -51,20 +51,25 @@ async function truncateAllTables(tables) {
   }
 }
 
+async function insertAndFetchAll(table, data) {
+  const { data: rows, error } = await supabase.from(table).insert(data).select();
+  if (error) {
+    console.error(`[ERROR] inserting ${table.toUpperCase()}:`, error);
+    return [];
+  }
+  return rows;
+}
+
 async function seedDatabase() {
   console.log("Seeding database...");
-  
-  try {    
+
+  try {
     // AUTHORS
     console.log("Seeding authors...");
-    const mockAuthors = Array.from({ length: 100 }, (_, i) => ({
-      id: i + 1,
+    const mockAuthors = Array.from({ length: 100 }, () => ({
       full_name: faker.person.fullName(),
     }));
-    const { error: authorError } = await supabase.from("authors").upsert(mockAuthors);
-    if (authorError) {
-      console.error("[ERROR] inserting AUTHORS:", authorError);
-    }
+    const authors = await insertAndFetchAll("authors", mockAuthors);
 
     // CATEGORIES
     console.log("Seeding categories...");
@@ -75,25 +80,15 @@ async function seedDatabase() {
     ];
     const categoryCount = faker.number.int({ min: 15, max: 20 });
     const selectedCategories = faker.helpers.arrayElements(realCategories, categoryCount);
-    const mockCategories = selectedCategories.map((name, i) => ({
-      id: i + 1,
-      name,
-    }));
-    const { error: categoryError } = await supabase.from("categories").upsert(mockCategories);
-    if (categoryError) {
-      console.error("[ERROR] inserting CATEGORIES:", categoryError);
-    }
+    const mockCategories = selectedCategories.map((name) => ({ name }));
+    const categories = await insertAndFetchAll("categories", mockCategories);
 
     // PUBLISHERS
     console.log("Seeding publishers...");
-    const mockPublishers = Array.from({ length: 20 }, (_, i) => ({
-      id: i + 1,
+    const mockPublishers = Array.from({ length: 20 }, () => ({
       name: faker.company.name(),
     }));
-    const { error: publisherError } = await supabase.from("publishers").upsert(mockPublishers);
-    if (publisherError) { 
-      console.error("[ERROR] inserting PUBLISHERS:", publisherError);
-    }
+    const publishers = await insertAndFetchAll("publishers", mockPublishers);
 
     // BOOKS
     console.log("Seeding books...");
@@ -127,21 +122,18 @@ async function seedDatabase() {
       'https://feizrojtanowvxiiashl.supabase.co/storage/v1/object/public/books/books/ddd8952b-5050-4c77-9f23-9a69d9c93a2b.jpg',
       'https://feizrojtanowvxiiashl.supabase.co/storage/v1/object/public/books/books/f06a2a73-f4f5-4a42-aa04-ea711d9302d9.webp'
     ];
-    let bookIds = [];
-    const mockBooks = Array.from({ length: quantity }, (_, index) => {
-      const bookId = index + 1;
-      bookIds.push(bookId);
-      return {
-        id: bookId,
-        title: faker.lorem.words({ min: 2, max: 5 }).replace(/^\w/, c => c.toUpperCase()),
-        description: faker.lorem.paragraphs(faker.number.int({ min: 10, max: 30 }), '\n\n'),
-        cover_image: bookCovers.length ? bookCovers[index % bookCovers.length] : faker.image.urlPicsumPhotos(),
-      }
-    });
-    const { error: bookError } = await supabase.from("books").upsert(mockBooks);
-    if (bookError) {
-      console.error("[ERROR] inserting BOOKS:", bookError);
+    const bookPreview = 'https://feizrojtanowvxiiashl.supabase.co/storage/v1/object/public/books/book-preview/a1b5cf3c-c2f2-4af4-971d-f37ccf2f448c.pdf';
+    const mockBooks = Array.from({ length: quantity }, () => ({
+      title: faker.lorem.words({ min: 2, max: 5 }).replace(/^\w/, c => c.toUpperCase()),
+      description: faker.lorem.paragraphs(faker.number.int({ min: 10, max: 30 }), '\n\n'),
+      cover_image: bookCovers.length ? bookCovers[Math.floor(Math.random() * bookCovers.length)] : faker.image.urlPicsumPhotos(),
+      preview_file: Math.random() < 0.5 ? bookPreview : null,
+    }));
+    const books = await insertAndFetchAll("books", mockBooks);
+    if (!books.length) {
+      console.error("[ERROR] inserting BOOKS");
     }
+    const bookIds = books.map(b => b.id);
 
     // BOOK COPIES
     console.log("Seeding book copies...");
@@ -163,7 +155,7 @@ async function seedDatabase() {
     const mockBookAuthors = [];
     for (const bookId of bookIds) {
       const authorCount = faker.number.int({ min: 1, max: 3 });
-      const authorIds = faker.helpers.arrayElements(mockAuthors.map(a => a.id), authorCount);
+      const authorIds = faker.helpers.arrayElements(authors.map(a => a.id), authorCount);
       for (const author_id of authorIds) {
         mockBookAuthors.push({ book_id: bookId, author_id });
       }
@@ -178,7 +170,7 @@ async function seedDatabase() {
     const mockBookCategories = [];
     for (const bookId of bookIds) {
       const catCount = faker.number.int({ min: 1, max: 3 });
-      const catIds = faker.helpers.arrayElements(mockCategories.map(c => c.id), catCount);
+      const catIds = faker.helpers.arrayElements(categories.map(c => c.id), catCount);
       for (const category_id of catIds) {
         mockBookCategories.push({ book_id: bookId, category_id });
       }
@@ -193,7 +185,7 @@ async function seedDatabase() {
     const mockBookPublishers = [];
     for (const bookId of bookIds) {
       const pubCount = faker.number.int({ min: 1, max: 3 });
-      const pubIds = faker.helpers.arrayElements(mockPublishers.map(p => p.id), pubCount);
+      const pubIds = faker.helpers.arrayElements(publishers.map(p => p.id), pubCount);
       for (const publisher_id of pubIds) {
         mockBookPublishers.push({ book_id: bookId, publisher_id });
       }
