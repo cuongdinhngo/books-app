@@ -6,6 +6,7 @@
       v-model="inputModel"
       :placeholder="placeholder"
       :type="type"
+      :multiple="multiple"
       @change="handleFileChange"
     >
   </div>

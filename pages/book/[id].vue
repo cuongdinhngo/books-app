@@ -3,22 +3,53 @@
     <!-- Book Cover -->
     <div class="w-full md:w-1/3 flex justify-center">
       <div class="flex flex-col items-center">
-        <img
-          v-if="status === 'success'"
-          :src="data?.book.data.coverImage"
-          alt="Book Cover" 
-          class="w-80 h-100 object-cover rounded-lg shadow"
-        />
-        <UButton
-          v-if="status === 'success' && data?.book.data.previewFile"
-          label="Preview book"
-          icon="lucide:book-open"
-          color="primary"
-          variant="subtle"
-          class="mt-4"
-          @click="previewModal = !previewModal"
-        />
+        <div class="w-full">
+          <UCarousel
+            v-if="status === 'success'"
+            ref="carousel"
+            v-slot="{ item }"
+            :arrows="bookPhotos.length > 1"
+            :items="bookPhotos"
+            :prev="{ onClick: onClickPrev }"
+            :next="{ onClick: onClickNext }"
+            class="w-[320px] mx-auto flex flex-col justify-center items-center"
+            @select="onSelect"
+          >
+            <div class="relative">
+              <img :src="item" width="320" height="320" class="rounded-lg object-contain">
+            </div>
+          </UCarousel>
+
+          <div
+            v-if="status === 'success' && bookPhotos.length > 1"
+            class="flex gap-1 justify-between pt-4 max-w-xs mx-auto h-[95px]"
+          >
+            <div
+              v-for="(item, index) in bookPhotos"
+              :key="index"
+              class="size-11 opacity-25 hover:opacity-100 transition-opacity"
+              :class="{ 'opacity-100': activeIndex === index }"
+              @click="select(index)"
+            >
+              <img :src="item" width="44" height="44" class="rounded-lg cursor-pointer">
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <UButton
+            v-if="status === 'success' && data?.book.data.previewFile"
+            label="Preview book"
+            icon="lucide:book-open"
+            color="primary"
+            variant="subtle"
+            class="flex"
+            @click="previewModal = !previewModal"
+          />
+        </div>
       </div>
+
+      <!-- Modal for Book Preview -->
       <UModal v-model:open="previewModal" title="Book Preview">
         <template #content>
           <iframe
@@ -114,6 +145,8 @@
       :class-value="`w-full md:w-2/3`"
     />
   </div>
+
+  <!-- Suggest same books -->
   <h3 class="text-stone-800 font-bold mt-5 mb-2">
     More like this
   </h3>
@@ -285,6 +318,22 @@ const { data, error, refresh, status } = useAsyncData(
   }
 );
 
+const bookPhotos = computed(() => {
+  if (!data.value?.book.data) return [];
+  
+  const photos = data.value.book.data.book_photos
+    .map(photo => photo.image_url)
+    .filter(url => url !== data.value?.book.data.coverImage);
+  
+  const cover = data.value.book.data.coverImage;
+  
+  if (cover) {
+    return [cover, ...photos];
+  }
+  
+  return photos;
+});
+
 const filteredBookSameCategories = computed(() => {
   return data.value?.bookSameCategories.data
   .filter(item => item.book_id !== bookId.value)
@@ -325,5 +374,23 @@ async function submitReview() {
 function handleBorrow() {
   addToCart(bookId.value);
   useToastSuccess();
+}
+
+const carousel = useTemplateRef('carousel')
+const activeIndex = ref(0)
+
+function onClickPrev() {
+  activeIndex.value--
+}
+function onClickNext() {
+  activeIndex.value++
+}
+function onSelect(index: number) {
+  activeIndex.value = index
+}
+
+function select(index: number) {
+  activeIndex.value = index
+  carousel.value?.emblaApi?.scrollTo(index)
 }
 </script>

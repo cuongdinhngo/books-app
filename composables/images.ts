@@ -1,7 +1,7 @@
 export const useImages = (bucketName: string) => {
   const bucketModel = useSupabaseClient().storage.from(bucketName);
 
-  const uploadPhoto = async(photo: any, directory = 'public') => {
+  const uploadPhoto = async(photo: File, directory = 'public') => {
     let publicUrl = null;
     if (photo) {
       const photoExt = photo.name.split('.').pop();

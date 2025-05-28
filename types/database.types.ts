@@ -68,6 +68,35 @@ export type Database = {
           },
         ]
       }
+      book_photos: {
+        Row: {
+          book_id: number
+          id: number
+          image_url: string
+          is_primary: boolean | null
+        }
+        Insert: {
+          book_id: number
+          id?: number
+          image_url: string
+          is_primary?: boolean | null
+        }
+        Update: {
+          book_id?: number
+          id?: number
+          image_url?: string
+          is_primary?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_photos_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       books: {
         Row: {
           cover_image: string | null

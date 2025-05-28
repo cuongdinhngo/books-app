@@ -98,7 +98,8 @@ export const useBooks = () => {
       publishers(id, name),
       authors(id, name:full_name),
       categories(id, name),
-      book_copies(id, book_id, status)
+      book_copies(id, book_id, status),
+      book_photos(id, image_url)
     `;
     if (columns.length > 0) {
       selectColumns = `${selectColumns}, ${columns}`;
@@ -108,10 +109,13 @@ export const useBooks = () => {
   }
 
   const update = async (id: number, data: Tables<'books'>) => {
-    const imageUrl = await uploadPhoto(data.cover_image, 'books');
-    if (imageUrl) {
-      data.cover_image = imageUrl;
+    if (data.cover_image && typeof data.cover_image !== 'string') {
+      const imageUrl = await uploadPhoto(data.cover_image, 'books');
+      if (imageUrl) {
+        data.cover_image = imageUrl;
+      }
     }
+
     const previewUrl = await uploadPhoto(data.preview_file, 'book-preview');
     if (previewUrl) {
       data.preview_file = previewUrl;

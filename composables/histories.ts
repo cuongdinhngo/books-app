@@ -15,8 +15,12 @@ export const useHistories = () => {
     const existingIndex = histories.value.findIndex((item) => item.key === key);
     if (existingIndex !== -1) {
       const existingItems = histories.value[existingIndex].items;
-      const uniqueNewItems = items.filter(item => !existingItems.includes(item));
-      histories.value[existingIndex].items = [...existingItems, ...uniqueNewItems];
+      if (items.length === 1 && !existingItems.includes(items[0])) {
+        histories.value[existingIndex].items = [...existingItems, items[0]];
+      } else if (items.length > 1) {
+        const uniqueNewItems = items.filter(item => !existingItems.includes(item));
+        histories.value[existingIndex].items = [...existingItems, ...uniqueNewItems];
+      }
     } else {
       histories.value.push({ key, items });
     }

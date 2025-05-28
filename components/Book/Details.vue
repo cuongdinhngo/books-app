@@ -35,6 +35,7 @@
             label-name="Book cover photo"
             placeholder="Cover photo"
             type="file"
+            :multiple="true"
             @change="handleFileUpload"
           />
 
@@ -48,7 +49,14 @@
                 type="file"
                 @change="handlePreviewUpload"
               >
-              <UButton label="Preview" icon="lucide:book-open" color="primary" variant="subtle" @click="previewModal = !previewModal"/>
+              <UButton
+                v-if="bookPreview"
+                label="Preview"
+                icon="lucide:book-open"
+                color="primary"
+                variant="subtle"
+                @click="previewModal = !previewModal"
+              />
               <UModal v-model:open="previewModal" title="Modal fullscreen">
                 <template #content>
                   <iframe
@@ -64,8 +72,50 @@
 
         <!-- Right Side: Book Cover -->
         <div class="flex items-center justify-center">
-          <div class="flex w-75 h-90 bg-gray-100 rounded-md">
-            <img id="photoPreview" :src="imagePreview" alt="Photo Preview" class="rounded-md">
+          <div class="w-full">
+            <UCarousel
+              ref="carousel"
+              v-slot="{ item }"
+              arrows
+              :items="bookPhotos"
+              :prev="{ onClick: onClickPrev }"
+              :next="{ onClick: onClickNext }"
+              class="w-[170px] mx-auto flex flex-col justify-center items-center"
+              @select="onSelect"
+            >
+              <div class="relative">
+                <img :src="item" width="170" height="170" class="rounded-lg object-contain">
+                <UButton
+                  type="button"
+                  icon="lucide:trash-2"
+                  color="primary"
+                  variant="solid"
+                  class="absolute bottom-2 right-2 z-10"
+                  @click="removePhoto(item)"
+                />
+                <UButton
+                  :disabled="item === primaryPhoto"
+                  type="button"
+                  icon="lucide:star"
+                  :color="item === primaryPhoto ? 'warning' : 'primary'"
+                  variant="solid"
+                  class="absolute bottom-2 left-2 z-10"
+                  @click="starPhoto(item)"
+                />
+              </div>
+            </UCarousel>
+
+            <div class="flex gap-1 justify-between pt-4 max-w-xs mx-auto">
+              <div
+                v-for="(item, index) in bookPhotos"
+                :key="index"
+                class="size-11 opacity-25 hover:opacity-100 transition-opacity"
+                :class="{ 'opacity-100': activeIndex === index }"
+                @click="select(index)"
+              >
+                <img :src="item" width="44" height="44" class="rounded-lg">
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -104,6 +154,7 @@ const { insert:insertBooksAuthors, remove:deleteBooksAuthors } = useBooksAuthors
 const { insert:insertBooksCategories, remove:deleteBooksCategories } = useBooksCategories();
 const { insert:insertBooksPublishers, remove:deleteBooksPublishers } = useBooksPublishers();
 const { insert:insertBooksItems, remove:deleteBookItems, index:getBookItems } = useBookCopies();
+const { remove:deleteBookPhoto, insert:insertBookPhotos } = useBookPhotos();
 
 const bookId = useRouteParams('id', null, { transform: Number });
 
@@ -111,7 +162,7 @@ const title = ref('');
 const selectedAuthors = ref([]);
 const selectedCategories = ref([]);
 const selectedPublishers = ref([]);
-const selectedPhoto = ref(null);
+const selectedPhotos = ref(null);
 const imagePreview = ref('');
 const quantity = ref(0);
 const description = ref(null);
@@ -122,6 +173,7 @@ const oldPublishers = ref([]);
 const bookItems = ref([]);
 const selectedPreview = ref(null);
 const previewModal = ref(false);
+const bookPreview = ref('');
 
 const { data:book, error, refresh } = await useAsyncData(
   `book-${bookId.value}`,
@@ -135,10 +187,16 @@ if (error.value) {
 title.value = book.value.data.title;
 description.value = book.value.data.description;
 quantity.value = book.value.data.quantity;
-selectedPhoto.value = null;
+selectedPhotos.value = null;
 imagePreview.value = book.value.data.coverImage;
-const bookPreview = computed(() => {
+bookPreview.value = computed(() => {
   return book.value.data.previewFile ?? '';
+}).value;
+const bookPhotos = computed(() => {
+  return book.value.data.book_photos.map(photo => photo.image_url);
+});
+const primaryPhoto = computed(() => {
+  return book.value.data.coverImage;
 });
 
 selectedPublishers.value = book.value.data.publishers.map(publisher => Number(publisher.id));
@@ -150,10 +208,48 @@ oldAuthors.value = book.value.data.authors.map(author => Number(author.id));
 oldPublishers.value = book.value.data.publishers.map(publisher => Number(publisher.id));
 oldQuantity.value = book.value.data.quantity;
 
-const handleFileUpload = (file) => {
-  if (file && file.type.startsWith("image/")) {
-    selectedPhoto.value = file;
-    imagePreview.value = URL.createObjectURL(file);
+async function removePhoto(photo: string) {
+  if (primaryPhoto.value === photo) {
+    useToastError('removePhoto', 'Cannot remove the primary photo');
+    return;
+  }
+  const bookPhotoId = book.value.data.book_photos.find(p => p.image_url === photo)?.id;
+  console.log('bookPhotoId', bookPhotoId);
+  if (!bookPhotoId) {
+    useToastError('removePhoto', 'Photo not found');
+    return;
+  }
+  const response = window.confirm('Are you sure you want to remove this photo?');
+  if (!response) {
+    return;
+  }
+  const { error } = await deleteBookPhoto(bookPhotoId);
+  if (error) {
+    useToastError(error);
+    return;
+  }
+  book.value.data.book_photos = book.value.data.book_photos.filter(p => p.image_url !== photo);
+  useToastSuccess('Photo removed successfully');
+}
+
+async function starPhoto(photo: string) {
+  const { error } = await update(bookId.value, { cover_image: photo });
+  if (error) {
+    useToastError(error);
+    return;
+  }
+  book.value.data.coverImage = photo;
+  useToastSuccess('Photo starred successfully');
+}
+
+const handleFileUpload = (files: Array<File>) => {
+  console.log('multiple files => ', files);
+  const photos = files.filter((photo) => photo.type.startsWith("image/"));
+  if (photos.length > 0) {
+    selectedPhotos.value = photos;
+    previewPhotos.value = photos.map((photo) => URL.createObjectURL(photo));
+  } else {
+    useToastError('Please upload a valid image file.');
   }
 };
 
@@ -173,13 +269,6 @@ const submitForm = async() => {
     title: title.value,
     description: description.value
   } as Tables<'books'>;
-
-  if (selectedPhoto.value) {
-    book = {
-      ...book,
-      cover_image: selectedPhoto.value
-    }
-  }
 
   if (selectedPreview.value) {
     book = {
@@ -238,6 +327,10 @@ const submitForm = async() => {
             if (bookPublisherError) throw bookPublisherError;
           })
       }
+
+      //process book_photos
+      const {error:bookPhotosError} = await insertBookPhotos(selectedPhotos.value, bookId.value);
+      if (bookPhotosError) throw bookPhotosError;
     })
     .catch((error) => useToastError(error));
 
@@ -341,5 +434,23 @@ const submitForm = async() => {
 
   refresh();
   useToastSuccess();
+}
+
+const carousel = useTemplateRef('carousel')
+const activeIndex = ref(0)
+
+function onClickPrev() {
+  activeIndex.value--
+}
+function onClickNext() {
+  activeIndex.value++
+}
+function onSelect(index: number) {
+  activeIndex.value = index
+}
+
+function select(index: number) {
+  activeIndex.value = index
+  carousel.value?.emblaApi?.scrollTo(index)
 }
 </script>

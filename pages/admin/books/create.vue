@@ -35,6 +35,7 @@
             label-name="Book cover photo"
             placeholder="Cover photo"
             type="file"
+            :multiple="true"
             @change="handleFileUpload"
           />
 
@@ -123,23 +124,31 @@ const { insert:insertBookAuthors } = useBooksAuthors();
 const { insert:insertBookCategories } = useBooksCategories();
 const { insert:insertBookPublishers } = useBooksPublishers();
 const { insert:insertBookItems } = useBookCopies();
+const { insert:insertBookPhotos } = useBookPhotos();
 
 const title = ref('');
 const selectedAuthors = ref([]);
 const selectedCategories = ref([]);
 const selectedPublishers = ref([]);
-const selectedPhoto = ref(null);
+const selectedPhotos = ref([]);
 const imagePreview = ref('');
 const quantity = ref(0);
 const description = ref(null);
 const selectedPreview = ref(null);
 const bookPreview = ref('');
 const previewModal = ref(false);
+const previewPhotos = ref([]);
 
-const handleFileUpload = (file) => {
-  if (file && file.type.startsWith("image/")) {
-    selectedPhoto.value = file;
-    imagePreview.value = URL.createObjectURL(file);
+const handleFileUpload = (files: Array<File>) => {
+  console.log('multiple files => ', files);
+  const photos = files.filter((photo) => photo.type.startsWith("image/"));
+  if (photos.length > 0) {
+    selectedPhotos.value = photos;
+    previewPhotos.value = photos.map((photo) => URL.createObjectURL(photo));
+    console.log('previewPhotos => ', previewPhotos.value);
+    imagePreview.value = previewPhotos.value[0]; // Show the first photo as preview
+  } else {
+    useToastError('Please upload a valid image file.');
   }
 };
 
@@ -158,13 +167,6 @@ const submitForm = async() => {
     title: title.value,
     description: description.value
   };
-
-  if (selectedPhoto.value) {
-    book = {
-      ...book,
-      cover_image: selectedPhoto.value ?? null
-    }
-  }
 
   if (selectedPreview.value) {
     book = {
@@ -204,9 +206,13 @@ const submitForm = async() => {
       const { error: bookPublishersError } = await insertBookPublishers(bookPublishers);
       if (bookPublishersError) throw bookPublishersError;
 
+      //insert book_copies
       const booksItemsData = Array.from({ length: quantity.value }, () => ({ book_id: book.id, status: 'pending' }));
       const { error: bookItemsError } = await insertBookItems(booksItemsData);
       if (bookItemsError) throw bookItemsError;
+
+      //insert book_photos
+      const { error: bookPhotosError } = await insertBookPhotos(selectedPhotos.value, book.id);
 
       useToastSuccess();
       title.value = '';
@@ -216,9 +222,14 @@ const submitForm = async() => {
       selectedPublishers.value = [];
       description.value = null;
       selectedPreview.value = null;
-      selectedPhoto.value = null;
+      selectedPhotos.value = [];
       imagePreview.value = '';
       bookPreview.value = '';
+      
+      // Add timeout and navigation
+      setTimeout(() => {
+        navigateTo({name: 'admin-books-id', params: { id: book.id } });
+      }, 1000);
     })
     .catch((error) => useToastError(error));
 }
