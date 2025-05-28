@@ -172,8 +172,6 @@ const submitForm = async() => {
     }
   }
 
-  const { error } = await insert(book);
-
   await insert(book)
     .then(async({ error }) => {
       if (error) throw error;
@@ -218,6 +216,8 @@ const submitForm = async() => {
       description.value = null;
       selectedPreview.value = null;
       selectedPhoto.value = null;
+      imagePreview.value = '';
+      bookPreview.value = '';
     })
     .catch((error) => useToastError(error));
 }
