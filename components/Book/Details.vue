@@ -333,6 +333,7 @@ const submitForm = async() => {
         const {error:bookPhotosError} = await insertBookPhotos(selectedPhotos.value, bookId.value);
         if (bookPhotosError) throw bookPhotosError;
         selectedPhotos.value = null;
+      }
     })
     .catch((error) => useToastError(error));
 
