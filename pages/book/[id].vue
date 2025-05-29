@@ -134,9 +134,9 @@
       </div>
       
       <!-- Description (moved inside book details) -->
-      <div class="text-sm font-medium">
-        <label class="block text-gray-900">Description</label>
-        <p class="text-gray-600">{{ data?.book.data.description }}</p>
+      <div class="text-sm">
+        <label class="block text-gray-900 font-medium">Description</label>
+        <BookSafeHtml :content="data?.book.data.description || ''" class="text-gray-600" />
       </div>
     </div>
     <LoadingCard

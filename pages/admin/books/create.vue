@@ -95,13 +95,7 @@
       <!-- Description -->
       <div class="mt-6">
         <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-        <UTextarea
-          v-model="description"
-          :rows="5"
-          autoresize
-          class="w-full"
-          variant="subtle"
-        />
+        <BookEditor v-model:description="description"/>
       </div>
 
       <div class="mt-6">
@@ -133,7 +127,7 @@ const selectedPublishers = ref([]);
 const selectedPhotos = ref([]);
 const imagePreview = ref('');
 const quantity = ref(0);
-const description = ref(null);
+const description = ref('');
 const selectedPreview = ref(null);
 const bookPreview = ref('');
 const previewModal = ref(false);

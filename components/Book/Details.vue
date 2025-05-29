@@ -123,13 +123,7 @@
       <!-- DESCRIPTION -->
       <div class="mt-6">
         <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-        <UTextarea
-          v-model="description"
-          :rows="5"
-          autoresize
-          class="w-full"
-          variant="subtle"
-        />
+        <BookEditor v-model:description="description"/>
       </div>
 
       <div class="mt-6">
@@ -165,7 +159,7 @@ const selectedPublishers = ref([]);
 const selectedPhotos = ref(null);
 const imagePreview = ref('');
 const quantity = ref(0);
-const description = ref(null);
+const description = ref('');
 const oldQuantity = ref(0);
 const oldAuthors = ref([]);
 const oldCategories = ref([]);
@@ -197,11 +191,17 @@ const bookPhotos = computed(() => {
     .filter(photo => photo.image_url !== book.value.data.coverImage)
     .map(photo => photo.image_url);
 
-  return [book.value.data.coverImage, ...photos];
+  if (book.value.data.coverImage) {
+    return [book.value.data.coverImage, ...photos];
+  }
+
+  return [...photos];
 });
 const primaryPhoto = computed(() => {
   return book.value.data.coverImage;
 });
+
+console.log('bookPhotos => ', bookPhotos.value);
 
 selectedPublishers.value = book.value.data.publishers.map(publisher => Number(publisher.id));
 selectedCategories.value = book.value.data.categories.map(category => Number(category.id));
@@ -333,8 +333,10 @@ const submitForm = async() => {
       }
 
       //process book_photos
-      const {error:bookPhotosError} = await insertBookPhotos(selectedPhotos.value, bookId.value);
-      if (bookPhotosError) throw bookPhotosError;
+      if (selectedPhotos.value && selectedPhotos.value.length > 1) {
+        const {error:bookPhotosError} = await insertBookPhotos(selectedPhotos.value, bookId.value);
+        if (bookPhotosError) throw bookPhotosError;
+      }
     })
     .catch((error) => useToastError(error));
 
