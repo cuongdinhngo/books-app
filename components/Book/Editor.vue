@@ -14,7 +14,7 @@ const description = defineModel('description', {
 let quill: Quill;
 
 const handleEditorClick = () => {
-  if (quill) {
+  if (quill && description.value.length === 0) {
     quill.setSelection(0, 0);
     quill.focus();
   }
