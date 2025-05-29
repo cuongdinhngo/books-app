@@ -139,8 +139,7 @@ const handleFileUpload = (files: Array<File>) => {
   if (photos.length > 0) {
     selectedPhotos.value = photos;
     previewPhotos.value = photos.map((photo) => URL.createObjectURL(photo));
-    console.log('previewPhotos => ', previewPhotos.value);
-    imagePreview.value = previewPhotos.value[0]; // Show the first photo as preview
+    imagePreview.value = previewPhotos.value[0];
   } else {
     useToastError('Please upload a valid image file.');
   }
@@ -166,6 +165,13 @@ const submitForm = async() => {
     book = {
       ...book,
       preview_file: selectedPreview.value
+    }
+  }
+
+  if (selectedPhotos.value.length > 0) {
+    book = {
+      ...book,
+      cover_image: selectedPhotos.value[0]
     }
   }
 
