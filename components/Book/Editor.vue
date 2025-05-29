@@ -1,6 +1,7 @@
 <template>
-  <div id="editor" class="editor-content text-stone-800 min-h-[200px]"></div>
+  <div id="editor" class="editor-content text-stone-800 min-h-[200px]" @click="handleEditorClick"></div>
 </template>
+
 <script setup lang="ts">
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
@@ -10,8 +11,17 @@ const description = defineModel('description', {
   type: String,
 });
 
+let quill: Quill;
+
+const handleEditorClick = () => {
+  if (quill) {
+    quill.setSelection(0, 0);
+    quill.focus();
+  }
+};
+
 onMounted(() => {
-  const quill = new Quill('#editor', {
+  quill = new Quill('#editor', {
     modules: {
       toolbar: [
         ['bold', 'italic'],
