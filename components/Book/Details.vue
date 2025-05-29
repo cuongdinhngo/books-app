@@ -336,7 +336,7 @@ const submitForm = async() => {
       if (selectedPhotos.value && selectedPhotos.value.length > 1) {
         const {error:bookPhotosError} = await insertBookPhotos(selectedPhotos.value, bookId.value);
         if (bookPhotosError) throw bookPhotosError;
-      }
+        selectedPhotos.value = null;
     })
     .catch((error) => useToastError(error));
 
