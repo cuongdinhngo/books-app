@@ -180,9 +180,6 @@ const { data: book, error, refresh, status, clear} = await useAsyncData(
   }
 );
 
-console.log('ERROR => ', error);
-console.log('DATA => ', book);
-
 const handleSearch = async() => {
   page.value = 1;
   searchParams.value.title = title.value;
@@ -191,8 +188,6 @@ const handleSearch = async() => {
   searchParams.value.publisherIds = selectedPublishers.value;
   searchParams.value.page = page.value;
   searchParams.value.status = [bookCopyStatus.value];
-
-  console.log('searchParams', searchParams.value);
 };
 
 const handlePageChange = async(newPage) => {

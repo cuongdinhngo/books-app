@@ -98,6 +98,4 @@ const authorOptions = computed(() => {
     })),
   ];
 });
-
-console.log('DATA => ', data.value);
 </script>

@@ -201,8 +201,6 @@ const primaryPhoto = computed(() => {
   return book.value.data.coverImage;
 });
 
-console.log('bookPhotos => ', bookPhotos.value);
-
 selectedPublishers.value = book.value.data.publishers.map(publisher => Number(publisher.id));
 selectedCategories.value = book.value.data.categories.map(category => Number(category.id));
 selectedAuthors.value = book.value.data.authors.map(author => Number(author.id));
@@ -218,7 +216,6 @@ async function removePhoto(photo: string) {
     return;
   }
   const bookPhotoId = book.value.data.book_photos.find(p => p.image_url === photo)?.id;
-  console.log('bookPhotoId', bookPhotoId);
   if (!bookPhotoId) {
     useToastError('removePhoto', 'Photo not found');
     return;
@@ -247,7 +244,6 @@ async function starPhoto(photo: string) {
 }
 
 const handleFileUpload = (files: Array<File>) => {
-  console.log('multiple files => ', files);
   const photos = files.filter((photo) => photo.type.startsWith("image/"));
   if (photos.length > 0) {
     selectedPhotos.value = photos;

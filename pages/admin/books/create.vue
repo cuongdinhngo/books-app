@@ -134,7 +134,6 @@ const previewModal = ref(false);
 const previewPhotos = ref([]);
 
 const handleFileUpload = (files: Array<File>) => {
-  console.log('multiple files => ', files);
   const photos = files.filter((photo) => photo.type.startsWith("image/"));
   if (photos.length > 0) {
     selectedPhotos.value = photos;

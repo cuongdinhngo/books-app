@@ -93,13 +93,11 @@ function refreshStatus() {
 function handlePageChange(newPage) {
   page.value = newPage;
   searchParams.value.page = newPage;
-  console.log('Updated searchParams:', searchParams.value);
 }
 
 function handleSizeChange() {
   page.value = 1;
   searchParams.value.size = size.value;
   searchParams.value.page = 1;
-  console.log('Updated searchParams:', searchParams.value);
 }
 </script>
