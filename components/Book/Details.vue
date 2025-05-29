@@ -105,7 +105,7 @@
               </div>
             </UCarousel>
 
-            <div class="flex gap-1 justify-between pt-4 max-w-xs mx-auto">
+            <div class="flex gap-2 justify-center pt-4 items-center">
               <div
                 v-for="(item, index) in bookPhotos"
                 :key="index"
@@ -193,7 +193,11 @@ bookPreview.value = computed(() => {
   return book.value.data.previewFile ?? '';
 }).value;
 const bookPhotos = computed(() => {
-  return book.value.data.book_photos.map(photo => photo.image_url);
+  const photos = book.value.data.book_photos
+    .filter(photo => photo.image_url !== book.value.data.coverImage)
+    .map(photo => photo.image_url);
+
+  return [book.value.data.coverImage, ...photos];
 });
 const primaryPhoto = computed(() => {
   return book.value.data.coverImage;

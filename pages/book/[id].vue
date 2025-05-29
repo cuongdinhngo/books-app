@@ -22,12 +22,12 @@
 
           <div
             v-if="status === 'success' && bookPhotos.length > 1"
-            class="flex gap-1 justify-between pt-4 max-w-xs mx-auto h-[95px]"
+            class="flex gap-2 justify-center items-center h-[95px]"
           >
             <div
               v-for="(item, index) in bookPhotos"
               :key="index"
-              class="size-11 opacity-25 hover:opacity-100 transition-opacity"
+              class="opacity-25 hover:opacity-100 transition-opacity"
               :class="{ 'opacity-100': activeIndex === index }"
               @click="select(index)"
             >
